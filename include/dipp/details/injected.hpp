@@ -1,6 +1,7 @@
 #pragma once
 
 #include "descriptor.hpp"
+#include "scope.hpp"
 
 namespace dipp
 {
@@ -70,8 +71,8 @@ namespace dipp
 
     //
 
-    template<typename Ty, service_lifetime Lifetime, service_scope_type ScopeTy,
-             dependency_container_type DepsTy = dependency<>, string_literal Key = string_literal<0>{}>
+    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>,
+             string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
     using injected_functor = base_injected<functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 
     template<typename Ty, service_lifetime Lifetime, string_literal Key = string_literal<0>{}>
@@ -83,15 +84,15 @@ namespace dipp
     template<typename Ty, service_lifetime Lifetime, string_literal Key = string_literal<0>{}>
     using injected_extern_shared = base_injected<extern_shared_service_descriptor<Ty, Lifetime>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, service_scope_type ScopeTy,
-             dependency_container_type DepsTy = dependency<>, string_literal Key = string_literal<0>{}>
+    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>,
+             string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
     using injected_unique = base_injected<unique_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, service_scope_type ScopeTy,
-             dependency_container_type DepsTy = dependency<>, string_literal Key = string_literal<0>{}>
+    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>,
+             string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
     using injected_shared = base_injected<shared_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, service_scope_type ScopeTy,
-             dependency_container_type DepsTy = dependency<>, string_literal Key = string_literal<0>{}>
+    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>,
+             string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
     using injected = base_injected<local_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 } // namespace dipp

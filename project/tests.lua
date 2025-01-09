@@ -3,8 +3,9 @@
 
 -- opts:
 --  opts.name: the project test name
+--  opts.path: the path to the test files
 local function add_test(opts)
-    local file_path = os.projectdir() .. "/tests/" .. opts.name
+    local file_path = os.projectdir() .. "/tests/" .. opts.path
     target(opts.name)
         set_group("tests")
         set_kind("binary")
@@ -18,4 +19,4 @@ local function add_test(opts)
     target_end()
 end
 
-add_test({name = "basic_services"})
+add_test({name = "test_basic_services", path = "basic_services"})

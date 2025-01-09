@@ -92,7 +92,6 @@ namespace dipp
         typename Ty::descriptor_type;
         typename Ty::value_type;
         typename Ty::string_literal_type;
-        { Ty::key } -> std::convertible_to<string_literal<0>>;
 
         typename Ty::reference_type;
         typename Ty::const_reference_type;
