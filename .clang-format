@@ -1,0 +1,19 @@
+---
+Language:     Cpp
+BasedOnStyle: Microsoft
+SortIncludes: Never
+PointerAlignment: Left
+AccessModifierOffset: -4
+NamespaceIndentation: All
+BreakConstructorInitializers: AfterColon
+Cpp11BracedListStyle: false
+PenaltyBreakBeforeFirstCallParameter: 0
+BraceWrapping:
+  AfterCaseLabel: true
+  BeforeLambdaBody: true
+  AfterUnion: true
+SpaceAfterTemplateKeyword: false
+AlignConsecutiveMacros: Consecutive
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveBitFields: Consecutive
+AlignConsecutiveDeclarations: Consecutive
