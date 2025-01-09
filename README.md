@@ -8,7 +8,7 @@ dipp is a header-only library inspired by the .NET [`Microsoft.Extensions.Depend
 
 Here's a quick demo to show usage of this library. This is some basic usage of the library with two user classes.
 
-```c++
+```cpp
 #include <dipp/dipp.hpp>
 #include <cassert>
 
@@ -70,7 +70,7 @@ int main()
 
 Keyed services are services that are registered with a unique key identifier. This allows you to have multiple services of the same type but with different implementations. Here's an example of how to use keyed services.
 
-```c++
+```cpp
 #include <dipp/dipp.hpp>
 #include <cassert>
 
