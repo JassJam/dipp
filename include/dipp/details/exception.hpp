@@ -1,11 +1,24 @@
 #pragma once
 
 #include <stdexcept>
+#include <utility>
 
 namespace dipp
 {
     namespace details
     {
+#if _HAS_CXX23
+        [[noreturn]] void unreachable()
+        {
+            std::unreachable();
+        }
+#else
+        [[noreturn]] void unreachable()
+        {
+            std::terminate();
+        }
+#endif
+
         template<typename ExceptionTy, typename Ty>
             requires std::is_base_of_v<std::exception, ExceptionTy>
         [[noreturn]] void fail()
@@ -13,7 +26,7 @@ namespace dipp
 #ifndef DIPP_NO_EXCEPTIONS
             ExceptionTy::template do_throw<Ty>();
 #endif
-            std::unreachable();
+            unreachable();
         }
     } // namespace details
 

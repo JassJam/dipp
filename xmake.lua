@@ -1,3 +1,7 @@
+option("no-test")
+    set_default(false)
+option_end()
+
 add_rules("mode.debug")
 
 --
@@ -20,4 +24,7 @@ end
 
 includes("project/deps.lua")
 includes("project/project.lua")
-includes("project/tests.lua")
+
+if is_config("no-test", false) then
+    includes("project/tests.lua")
+end

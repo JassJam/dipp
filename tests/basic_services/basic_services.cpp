@@ -15,7 +15,7 @@ struct Camera
 
     int fov;
 };
-using CameraService = dipp::injected<Camera, dipp::service_lifetime::transient, dipp::default_service_scope>;
+using CameraService = dipp::injected<Camera, dipp::service_lifetime::transient>;
 
 struct Scene
 {
@@ -26,8 +26,7 @@ struct Scene
     CameraService camera;
     int           max_entities;
 };
-using SceneService = dipp::injected<Scene, dipp::service_lifetime::singleton, dipp::default_service_scope,
-                                    dipp::dependency<CameraService>>;
+using SceneService = dipp::injected<Scene, dipp::service_lifetime::singleton, dipp::dependency<CameraService>>;
 
 struct World
 {
@@ -38,8 +37,8 @@ struct World
     {
     }
 };
-using WorldService = dipp::injected<World, dipp::service_lifetime::scoped, dipp::default_service_scope,
-                                    dipp::dependency<SceneService, CameraService>>;
+using WorldService =
+    dipp::injected<World, dipp::service_lifetime::scoped, dipp::dependency<SceneService, CameraService>>;
 
 //
 

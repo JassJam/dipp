@@ -3,7 +3,6 @@
 #include "core.hpp"
 #include "memory.hpp"
 #include "exception.hpp"
-#include "injected.hpp"
 
 namespace dipp
 {
@@ -93,7 +92,7 @@ namespace dipp
             }
             else
             {
-                std::unreachable();
+                details::unreachable();
             }
         }
 
