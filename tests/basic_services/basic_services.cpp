@@ -42,7 +42,7 @@ using WorldService =
 
 //
 
-BOOST_AUTO_TEST_CASE(TransientReference)
+BOOST_AUTO_TEST_CASE(TransientReference_Test)
 {
     dipp::default_service_collection collection;
 
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(TransientReference)
     BOOST_CHECK_NE(a.ptr(), b.ptr());
 }
 
-BOOST_AUTO_TEST_CASE(MixedLifetimes)
+BOOST_AUTO_TEST_CASE(MixedLifetimes_Test)
 {
     dipp::default_service_collection collection;
 
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(MixedLifetimes)
     BOOST_CHECK_EQUAL(scene.ptr(), world->scene.ptr());
 }
 
-BOOST_AUTO_TEST_CASE(MixedLifetimes_WithScopes)
+BOOST_AUTO_TEST_CASE(MixedLifetimes_WithScopes_Test)
 {
     dipp::default_service_collection collection;
 

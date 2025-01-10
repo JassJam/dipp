@@ -33,6 +33,18 @@ namespace dipp
             return m_Storage->get_service<DescTy, key>(*this, *m_SingletonStorage, m_LocalStorage);
         }
 
+    public:
+        template<base_injected_type InjectableTy> [[nodiscard]] bool has() const noexcept
+        {
+            return m_Storage->has_service<typename InjectableTy::descriptor_type, InjectableTy::key>();
+        }
+
+        template<service_descriptor_type DescTy, string_literal key = string_literal<0>{}>
+        [[nodiscard]] bool has() const noexcept
+        {
+            return m_Storage->has_service<DescTy, key>();
+        }
+
     private:
         storage_type*           m_Storage;
         singleton_storage_type* m_SingletonStorage;

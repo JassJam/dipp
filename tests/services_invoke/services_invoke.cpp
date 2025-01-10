@@ -35,7 +35,7 @@ void compare_window_not_equal(WindowService window, const Window& expected)
 
 //
 
-BOOST_AUTO_TEST_CASE(BasicInvoke)
+BOOST_AUTO_TEST_CASE(BasicInvoke_Test)
 {
     Window windowA(1024, 768);
     Window windowB(1920, 1080);

@@ -43,7 +43,6 @@ namespace dipp
             }
 
             auto& info = it->second;
-
             if constexpr (DescTy::lifetime == service_lifetime::singleton)
             {
                 auto singleton_handle = SingletonMemTy::policy_type::make_key(typeid(service_type), key.c_str());
@@ -94,6 +93,17 @@ namespace dipp
             {
                 details::unreachable();
             }
+        }
+
+    public:
+        template<service_descriptor_type DescTy, string_literal key = string_literal<0>{}>
+        [[nodiscard]] bool has_service() const noexcept
+        {
+            using value_type   = typename DescTy::value_type;
+            using service_type = typename DescTy::service_type;
+
+            auto handle = policy_type::make_key(typeid(service_type), key.c_str());
+            return m_Services.contains(handle);
         }
 
     private:

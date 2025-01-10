@@ -51,11 +51,12 @@ namespace dipp
 
     //
 
-    template<typename Ty, service_lifetime Lifetime> class extern_service_descriptor
+    template<typename Ty, service_lifetime Lifetime, service_scope_type ScopeTy> class extern_service_descriptor
     {
     public:
         using value_type   = std::reference_wrapper<Ty>;
         using service_type = std::reference_wrapper<Ty>;
+        using scope_type   = ScopeTy;
 
         static constexpr service_lifetime lifetime = Lifetime;
 
@@ -63,7 +64,7 @@ namespace dipp
         {
         }
 
-        template<service_scope_type ScopeTy> constexpr value_type load(ScopeTy&) noexcept
+        constexpr value_type load(scope_type&) noexcept
         {
             return m_Service;
         }
@@ -74,11 +75,12 @@ namespace dipp
 
     //
 
-    template<typename Ty, service_lifetime Lifetime> class const_extern_service_descriptor
+    template<typename Ty, service_lifetime Lifetime, service_scope_type ScopeTy> class const_extern_service_descriptor
     {
     public:
         using value_type   = std::reference_wrapper<const Ty>;
         using service_type = std::reference_wrapper<const Ty>;
+        using scope_type   = ScopeTy;
 
         static constexpr service_lifetime lifetime = Lifetime;
 
@@ -86,7 +88,7 @@ namespace dipp
         {
         }
 
-        template<service_scope_type ScopeTy> constexpr value_type load(ScopeTy&) noexcept
+        constexpr value_type load(scope_type&) noexcept
         {
             return m_Service;
         }
@@ -97,11 +99,12 @@ namespace dipp
 
     //
 
-    template<typename Ty, service_lifetime Lifetime> class extern_shared_service_descriptor
+    template<typename Ty, service_lifetime Lifetime, service_scope_type ScopeTy> class extern_shared_service_descriptor
     {
     public:
         using value_type   = std::shared_ptr<Ty>;
         using service_type = std::shared_ptr<Ty>;
+        using scope_type   = ScopeTy;
 
         static constexpr service_lifetime lifetime = Lifetime;
 
@@ -109,7 +112,7 @@ namespace dipp
         {
         }
 
-        template<service_scope_type ScopeTy> value_type load(ScopeTy&) noexcept
+        value_type load(scope_type&) noexcept
         {
             return m_Service;
         }
@@ -135,6 +138,7 @@ namespace dipp
         }
 
         template<typename... ArgsTy>
+            requires(!std::is_abstract_v<Ty>)
         constexpr unique_service_descriptor(ArgsTy&&... args) :
             base_class(
                 [args =
@@ -175,6 +179,7 @@ namespace dipp
         }
 
         template<typename... ArgsTy>
+            requires(!std::is_abstract_v<Ty>)
         constexpr shared_service_descriptor(ArgsTy&&... args) :
             base_class(
                 [args =
@@ -215,6 +220,7 @@ namespace dipp
         }
 
         template<typename... ArgsTy>
+            requires(!std::is_abstract_v<Ty>)
         constexpr local_service_descriptor(ArgsTy&&... args) :
             base_class(
                 [args =
