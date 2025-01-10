@@ -50,6 +50,16 @@ namespace dipp
             return m_Value;
         }
 
+        [[nodiscard]] constexpr operator const_reference_type() const noexcept
+        {
+            return get();
+        }
+
+        [[nodiscard]] constexpr operator reference_type() noexcept
+        {
+            return get();
+        }
+
         [[nodiscard]] constexpr const_pointer_type ptr() const noexcept
         {
             return std::addressof(get());

@@ -136,6 +136,7 @@ int mai2()
 * Header only library
 * Clean diagnostics at compile-time.
 * Extensible and flexible to define your own service storage.
+* Non intrusive, you can use it with your existing classes.
 
 ## Requirements
 
