@@ -46,21 +46,6 @@ namespace dipp
         }
     };
 
-    class incompatible_service : public std::runtime_error
-    {
-    private:
-        incompatible_service(const std::string& typeName) : std::runtime_error("Incompatible service: " + typeName)
-        {
-        }
-
-    public:
-        using runtime_error::runtime_error;
-        template<typename Ty> static void do_throw()
-        {
-            throw incompatible_service(typeid(Ty).name());
-        }
-    };
-
     class incompatible_service_descriptor : public std::runtime_error
     {
     private:
