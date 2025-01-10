@@ -31,6 +31,11 @@ namespace dipp
             return m_RootScope;
         }
 
+        [[nodiscard]] auto& root_scope() const noexcept
+        {
+            return m_RootScope;
+        }
+
     public:
         template<base_injected_type InjectableTy> [[nodiscard]] auto get() -> InjectableTy
         {
@@ -43,10 +48,16 @@ namespace dipp
             return root_scope().get<DescTy, key>();
         }
 
-        template<service_descriptor_type DescTy, string_literal key = string_literal<0>{}>
-        [[nodiscard]] auto get() const -> std::add_const_t<typename DescTy::service_type>
+    public:
+        template<base_injected_type InjectableTy> [[nodiscard]] bool has() const noexcept
         {
-            return root_scope().get<DescTy, key>();
+            return root_scope().has<InjectableTy>();
+        }
+
+        template<service_descriptor_type DescTy, string_literal key = string_literal<0>{}>
+        [[nodiscard]] bool has() const noexcept
+        {
+            return root_scope().has<DescTy, key>();
         }
 
     private:

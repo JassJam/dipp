@@ -35,6 +35,11 @@ namespace dipp
         }
 
     public:
+        [[nodiscard]] constexpr auto detach() noexcept
+        {
+            return std::move(m_Value);
+        }
+
         [[nodiscard]] constexpr const_reference_type get() const noexcept
         {
             return m_Value;
@@ -65,34 +70,42 @@ namespace dipp
             return ptr();
         }
 
+        [[nodiscard]] constexpr const_reference_type operator*() const noexcept
+        {
+            return get();
+        }
+
+        [[nodiscard]] constexpr reference_type operator*() noexcept
+        {
+            return get();
+        }
+
     private:
         service_type m_Value;
     };
 
     //
 
-    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>,
-             string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
+    // clang-format off
+    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>, string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
     using injected_functor = base_injected<functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, string_literal Key = string_literal<0>{}>
-    using injected_extern = base_injected<extern_service_descriptor<Ty, Lifetime>, Key>;
+    template<typename Ty, service_lifetime Lifetime, string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
+    using injected_extern = base_injected<extern_service_descriptor<Ty, Lifetime, ScopeTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, string_literal Key = string_literal<0>{}>
-    using injected_const_extern = base_injected<const_extern_service_descriptor<Ty, Lifetime>, Key>;
+    template<typename Ty, service_lifetime Lifetime, string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
+    using injected_const_extern = base_injected<const_extern_service_descriptor<Ty, Lifetime, ScopeTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, string_literal Key = string_literal<0>{}>
-    using injected_extern_shared = base_injected<extern_shared_service_descriptor<Ty, Lifetime>, Key>;
+    template<typename Ty, service_lifetime Lifetime, string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
+    using injected_extern_shared = base_injected<extern_shared_service_descriptor<Ty, Lifetime, ScopeTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>,
-             string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
+    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>, string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
     using injected_unique = base_injected<unique_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>,
-             string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
+    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>, string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
     using injected_shared = base_injected<shared_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>,
-             string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
+    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>, string_literal Key = string_literal<0>{}, service_scope_type ScopeTy = default_service_scope>
     using injected = base_injected<local_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
+    // clang-format on
 } // namespace dipp
