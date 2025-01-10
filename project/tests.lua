@@ -20,3 +20,4 @@ local function add_test(opts)
 end
 
 add_test({name = "test_basic_services", path = "basic_services"})
+add_test({name = "test_services_invoke", path = "services_invoke"})

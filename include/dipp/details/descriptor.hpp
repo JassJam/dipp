@@ -127,9 +127,15 @@ namespace dipp
     public:
         using base_class = functor_service_descriptor<std::unique_ptr<Ty>, Lifetime, ScopeTy, DepsTy>;
 
+        template<typename FnTy>
+            requires std::invocable<FnTy, ScopeTy&>
+        constexpr unique_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
+            base_class(std::move(functor))
+        {
+        }
+
         template<typename... ArgsTy>
-        constexpr unique_service_descriptor(ArgsTy&&... args) noexcept(
-            std::is_nothrow_constructible_v<base_class, std::function<std::unique_ptr<Ty>(ScopeTy&)>>) :
+        constexpr unique_service_descriptor(ArgsTy&&... args) :
             base_class(
                 [args =
                      std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable -> base_class::value_type
@@ -161,11 +167,18 @@ namespace dipp
     public:
         using base_class = functor_service_descriptor<std::shared_ptr<Ty>, Lifetime, ScopeTy, DepsTy>;
 
+        template<typename FnTy>
+            requires std::invocable<FnTy, ScopeTy&>
+        constexpr shared_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
+            base_class(std::move(functor))
+        {
+        }
+
         template<typename... ArgsTy>
-        constexpr shared_service_descriptor(ArgsTy&&... args) noexcept(
-            std::is_nothrow_constructible_v<base_class, std::function<std::shared_ptr<Ty>(ScopeTy&)>>) :
+        constexpr shared_service_descriptor(ArgsTy&&... args) :
             base_class(
-                [args = std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable
+                [args =
+                     std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable -> base_class::value_type
                 {
                     if constexpr (std::tuple_size_v<typename DepsTy::types> == 0)
                     {
@@ -193,6 +206,13 @@ namespace dipp
     {
     public:
         using base_class = functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>;
+
+        template<typename FnTy>
+            requires std::invocable<FnTy, ScopeTy&>
+        constexpr local_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
+            base_class(std::move(functor))
+        {
+        }
 
         template<typename... ArgsTy>
         constexpr local_service_descriptor(ArgsTy&&... args) :
