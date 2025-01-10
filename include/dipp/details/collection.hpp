@@ -9,6 +9,11 @@ namespace dipp
         template<service_policy_type, instance_policy_type, instance_policy_type> friend class service_provider;
 
     public:
+        template<base_injected_type InjectableTy> void add(typename InjectableTy::descriptor_type descriptor)
+        {
+            m_Storage.add_service<typename InjectableTy::descriptor_type, InjectableTy::key>(std::move(descriptor));
+        }
+
         template<base_injected_type InjectableTy> void add()
         {
             m_Storage.add_service<typename InjectableTy::descriptor_type, InjectableTy::key>();
