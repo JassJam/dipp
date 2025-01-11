@@ -185,7 +185,9 @@ BENCHMARK(BM_FruitContainerCreation);
 
 static void BM_FruitResolution(benchmark::State& state)
 {
+    state.PauseTiming();
     auto injector = fruit::Injector(UserServiceComponent::getComponent);
+    state.ResumeTiming();
 
     for (auto _ : state)
     {
@@ -195,33 +197,22 @@ static void BM_FruitResolution(benchmark::State& state)
 }
 BENCHMARK(BM_FruitResolution);
 
-static void BM_FruitUserCreation(benchmark::State& state)
-{
-    auto          injector = fruit::Injector(UserServiceComponent::getComponent);
-    IUserService* service  = injector.get<IUserService*>();
-
-    for (auto _ : state)
-    {
-        service->createUser("test_user");
-    }
-}
-BENCHMARK(BM_FruitUserCreation);
-
 // Kangaru Benchmarks
 static void BM_KangaruContainerCreation(benchmark::State& state)
 {
     for (auto _ : state)
     {
         kgr::container container;
-        auto           service = container.service<IUserServiceService>();
-        benchmark::DoNotOptimize(service);
+        container.emplace<UserServiceService>();
     }
 }
 BENCHMARK(BM_KangaruContainerCreation);
 
 static void BM_KangaruResolution(benchmark::State& state)
 {
+    state.PauseTiming();
     kgr::container container;
+    state.ResumeTiming();
 
     for (auto _ : state)
     {
@@ -231,34 +222,23 @@ static void BM_KangaruResolution(benchmark::State& state)
 }
 BENCHMARK(BM_KangaruResolution);
 
-static void BM_KangaruUserCreation(benchmark::State& state)
-{
-    kgr::container container;
-    auto           service = container.service<IUserServiceService>();
-
-    for (auto _ : state)
-    {
-        service->createUser("test_user");
-    }
-}
-BENCHMARK(BM_KangaruUserCreation);
-
 // Dipp Benchmarks
 static void BM_DippContainerCreation(benchmark::State& state)
 {
     for (auto _ : state)
     {
         auto services = DippConfiguration::setup();
-
-        auto service = services.get<DippUserServiceService>();
-        benchmark::DoNotOptimize(service);
+        benchmark::DoNotOptimize(services);
     }
 }
 BENCHMARK(BM_DippContainerCreation);
 
 static void BM_DippResolution(benchmark::State& state)
 {
+    state.PauseTiming();
     auto services = DippConfiguration::setup();
+    state.ResumeTiming();
+
     for (auto _ : state)
     {
         auto service = services.get<DippUserServiceService>();
@@ -266,17 +246,5 @@ static void BM_DippResolution(benchmark::State& state)
     }
 }
 BENCHMARK(BM_DippResolution);
-
-static void BM_DippUserCreation(benchmark::State& state)
-{
-    auto services = DippConfiguration::setup();
-    auto service  = *services.get<DippUserServiceService>();
-
-    for (auto _ : state)
-    {
-        service->createUser("test_user");
-    }
-}
-BENCHMARK(BM_DippUserCreation);
 
 BENCHMARK_MAIN();
