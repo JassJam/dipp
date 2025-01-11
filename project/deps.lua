@@ -6,3 +6,5 @@ add_requires("boost 1.86.0", {
         test = true
     }
 })
+
+add_requires("benchmark")

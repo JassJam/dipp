@@ -2,17 +2,16 @@ option("no-test")
     set_default(false)
 option_end()
 
-add_rules("mode.debug")
+option("no-benchmark")
+    set_default(false)
+option_end()
+
+add_rules("mode.debug", "mode.releasedbg")
+set_runtimes(is_mode("debug") and "MDd" or "MD")
 
 --
 
-if is_mode("check") then 
-    set_policy("build.sanitizer.address", true)
-    set_runtimes("MTd")
-else 
-    set_runtimes(is_mode("debug") and "MDd" or "MD")
-end
-
+set_symbols("debug")
 set_languages("c++23")
 
 add_extrafiles(".clang-format")
@@ -27,4 +26,8 @@ includes("project/project.lua")
 
 if is_config("no-test", false) then
     includes("project/tests.lua")
+end
+
+if is_config("no-benchmark", false) then
+    includes("project/benchmarks.lua")
 end
