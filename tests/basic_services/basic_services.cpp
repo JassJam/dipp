@@ -86,6 +86,7 @@ BOOST_AUTO_TEST_CASE(ExternReference_Test)
     BOOST_CHECK_EQUAL(b.scene.max_entities, 200);
 
     BOOST_CHECK_EQUAL(&a, &b.scene);
+    BOOST_CHECK_EQUAL(&a, &scene);
 }
 
 BOOST_AUTO_TEST_CASE(MixedLifetimes_Test)
