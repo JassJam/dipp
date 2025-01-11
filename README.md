@@ -152,7 +152,6 @@ $ xmake install -o install
 ```
 
 
-
 ## Run the tests
 
 ```bash
@@ -160,15 +159,33 @@ $ xmake f --no-test=n # to enable/disable tests
 $ xmake run <test_name> # tests found in project/test.lua
 ```
 
-* Explicit, you control the lifetime, key and storage of your services.
-* No auto-registration, you must register your services explicitly.
-* Clean and simple API for simple cases, flexible enough for complex cases
-* Header only library
-* Clean diagnostics at compile-time.
-* Extensible and flexible to define your own service storage.
+
+## Benchmark
+
+Benchmarks were done using the [Google Benchmark library](https://github.com/google/benchmark). The benchmarks were run on a Windows 11 machine with the following specs:
+
+Run on (8 X 2208 MHz CPU s)
+
+- CPU Caches:
+    - L1 Data 32 KiB (x4)
+    - L1 Instruction 32 KiB (x4)
+    - L2 Unified 256 KiB (x4)
+    - L3 Unified 6144 KiB (x1)
+
+| Benchmark                    | Time             | CPU           | Iterations | Library                                         |
+|------------------------------|------------------|---------------|------------| ----------------------------------------------- |
+| BM_FruitContainerCreation    | 18159 ns         | 10010 ns      | 64000      | [Google Fruit](https://github.com/google/fruit) | 
+| BM_FruitResolution           | 5.2015e+12 ns    | 781250000 ns  | 1          | [Google Fruit](https://github.com/google/fruit) |
+| BM_KangaruContainerCreation  | 15125 ns         | 10619 ns      | 64743      | [Kangaru](https://github.com/gracicot/kangaru)  |
+| BM_KangaruResolution         | 5.2036e+12 ns    | 2125000000 ns | 1          | [Kangaru](https://github.com/gracicot/kangaru)  |
+| BM_DippContainerCreation     | 1559 ns          | 1360 ns       | 448000     | [dipp](#)                                       |
+| BM_DippResolution            | 5.2045e+12 ns    | 2890625000 ns | 1          | [dipp](#)                                       |
+
 
 ## Acknowledgements
 
 Inspired by:
 * the .NET [`Microsoft.Extensions.DependencyInjection`](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection) framework
 * the [`kangaru`](https://github.com/gracicot/kangaru.git) library
+* the [`Google Fruit`](https://github.com/google/fruit) library
+* the [`Google Benchmark`](https://github.com/google/benchmark) framework
