@@ -86,9 +86,4 @@ BOOST_AUTO_TEST_CASE(OrthographicCamera_Test)
     BOOST_CHECK_NE(camera1.get(), camera2.get());
 }
 
-BOOST_AUTO_TEST_CASE(Camera_Factory)
-{
-    dipp::default_service_collection collection;
-}
-
 BOOST_AUTO_TEST_SUITE_END()
