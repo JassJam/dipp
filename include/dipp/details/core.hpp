@@ -17,36 +17,39 @@ namespace dipp
         scoped
     };
 
-    template<size_t N> struct string_literal
+    template<size_t N> struct string_hash
     {
-        char data[N];
-
-        constexpr string_literal(const char (&str)[N]) noexcept
+    public:
+        constexpr string_hash(char (&str)[N]) noexcept
         {
             for (size_t i = 0; i < N; ++i)
             {
-                data[i] = str[i];
+                m_Hash = m_Hash * 31 + str[i];
             }
         }
         [[nodiscard]] constexpr size_t size() const noexcept
         {
             return N;
         }
-        [[nodiscard]] constexpr const char* c_str() const noexcept
+        [[nodiscard]] constexpr size_t hash() const noexcept
         {
-            return data;
+            return m_Hash;
         }
+
+    private:
+        size_t m_Hash = 0;
     };
 
-    template<> struct string_literal<0>
+    template<> struct string_hash<0>
     {
+    public:
         [[nodiscard]] constexpr size_t size() const noexcept
         {
             return 0;
         }
-        [[nodiscard]] constexpr const char* c_str() const noexcept
+        [[nodiscard]] constexpr size_t hash() const noexcept
         {
-            return "";
+            return 0;
         }
     };
 
