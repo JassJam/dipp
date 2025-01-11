@@ -12,21 +12,20 @@ namespace dipp
         using policy_type = PolicyTy;
 
     public:
-        template<service_descriptor_type DescTy, string_literal key = string_literal<0>{}> void add_service()
+        template<service_descriptor_type DescTy, string_hash key = string_hash<0>{}> void add_service()
         {
             using service_type = typename DescTy::service_type;
-            emplace_or_override(typeid(service_type), key.c_str(), { DescTy{} });
+            emplace_or_override(typeid(service_type).hash_code(), key.hash(), { DescTy{} });
         }
 
-        template<service_descriptor_type DescTy, string_literal key = string_literal<0>{}>
-        void add_service(DescTy descriptor)
+        template<service_descriptor_type DescTy, string_hash key = string_hash<0>{}> void add_service(DescTy descriptor)
         {
             using service_type = typename DescTy::service_type;
-            emplace_or_override(typeid(service_type), key.c_str(), { std::move(descriptor) });
+            emplace_or_override(typeid(service_type).hash_code(), key.hash(), { std::move(descriptor) });
         }
 
     public:
-        template<service_descriptor_type DescTy, string_literal key = string_literal<0>{},
+        template<service_descriptor_type DescTy, string_hash key = string_hash<0>{},
                  service_storage_memory_type SingletonMemTy, service_storage_memory_type ScopedMemTy>
         [[nodiscard]] auto get_service(typename DescTy::scope_type& scope, SingletonMemTy& singleton_storage,
                                        ScopedMemTy& scoped_storage) -> typename DescTy::service_type
@@ -34,7 +33,7 @@ namespace dipp
             using value_type   = typename DescTy::value_type;
             using service_type = typename DescTy::service_type;
 
-            auto handle = policy_type::make_key(typeid(service_type), key.c_str());
+            auto handle = policy_type::make_key(typeid(service_type).hash_code(), key.hash());
             auto it     = m_Services.find(handle);
 
             if (it == m_Services.end()) [[unlikely]]
@@ -45,8 +44,9 @@ namespace dipp
             auto& info = it->second;
             if constexpr (DescTy::lifetime == service_lifetime::singleton)
             {
-                auto singleton_handle = SingletonMemTy::policy_type::make_key(typeid(service_type), key.c_str());
-                auto instance_iter    = singleton_storage.find(singleton_handle);
+                auto singleton_handle =
+                    SingletonMemTy::policy_type::make_key(typeid(service_type).hash_code(), key.hash());
+                auto instance_iter = singleton_storage.find(singleton_handle);
 
                 if (instance_iter == nullptr)
                 {
@@ -63,7 +63,7 @@ namespace dipp
             }
             else if constexpr (DescTy::lifetime == service_lifetime::scoped)
             {
-                auto scoped_handle = ScopedMemTy::policy_type::make_key(typeid(service_type), key.c_str());
+                auto scoped_handle = ScopedMemTy::policy_type::make_key(typeid(service_type).hash_code(), key.hash());
                 auto instance_iter = scoped_storage.find(scoped_handle);
 
                 if (instance_iter == nullptr)
@@ -96,20 +96,20 @@ namespace dipp
         }
 
     public:
-        template<service_descriptor_type DescTy, string_literal key = string_literal<0>{}>
+        template<service_descriptor_type DescTy, string_hash key = string_hash<0>{}>
         [[nodiscard]] bool has_service() const noexcept
         {
             using value_type   = typename DescTy::value_type;
             using service_type = typename DescTy::service_type;
 
-            auto handle = policy_type::make_key(typeid(service_type), key.c_str());
+            auto handle = policy_type::make_key(typeid(service_type).hash_code(), key.hash());
             return m_Services.contains(handle);
         }
 
     private:
-        void emplace_or_override(std::type_index type, const char* key, policy_type::service_info info)
+        void emplace_or_override(size_t type, size_t hash, policy_type::service_info info)
         {
-            auto handle = policy_type::make_key(type, key);
+            auto handle = policy_type::make_key(type, hash);
             auto iter   = m_Services.find(handle);
 
             if (iter != m_Services.end())

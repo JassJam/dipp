@@ -10,7 +10,7 @@ namespace dipp
         typename Ty::service_info;
 
         {
-            Ty::make_key(std::declval<std::type_index>(), std::declval<const char*>())
+            Ty::make_key(std::declval<size_t>(), std::declval<size_t>())
         } -> std::convertible_to<typename Ty::service_key_type>;
 
         t.find(std::declval<typename Ty::service_key_type>());
@@ -23,7 +23,7 @@ namespace dipp
         typename Ty::instance_info;
 
         {
-            Ty::make_key(std::declval<std::type_index>(), std::declval<const char*>())
+            Ty::make_key(std::declval<size_t>(), std::declval<size_t>())
         } -> std::convertible_to<typename Ty::instance_key_type>;
 
         t.find(std::declval<typename Ty::instance_key_type>());
@@ -91,7 +91,7 @@ namespace dipp
     concept base_injected_type = requires(Ty t) {
         typename Ty::descriptor_type;
         typename Ty::value_type;
-        typename Ty::string_literal_type;
+        typename Ty::string_hash_type;
 
         typename Ty::reference_type;
         typename Ty::const_reference_type;
