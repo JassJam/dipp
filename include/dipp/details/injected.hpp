@@ -11,7 +11,6 @@ namespace dipp
         using descriptor_type            = DescTy;
         using value_type                 = typename descriptor_type::value_type;
         using service_type               = typename descriptor_type::service_type;
-        using string_hash_type           = decltype(Key);
         static constexpr string_hash key = Key;
 
         using reference_type       = std::add_lvalue_reference_t<std::remove_cvref_t<value_type>>;

@@ -39,8 +39,6 @@ namespace dipp
             }
             return hash;
         }
-
-    public:
     };
 
     //
