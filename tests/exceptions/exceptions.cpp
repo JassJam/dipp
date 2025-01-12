@@ -11,16 +11,19 @@ struct Class
 
 BOOST_AUTO_TEST_CASE(ServiceNotFoundException_Test)
 {
+#ifndef DIPP_NO_EXCEPTIONS
     using service = dipp::injected<Class, dipp::service_lifetime::transient>;
 
     dipp::default_service_provider services({});
 
     BOOST_CHECK_EQUAL(services.has<service>(), false);
     BOOST_CHECK_THROW((void)services.get<service>(), dipp::service_not_found);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(IncompatibleServiceDescriptorsException_Test)
 {
+#ifndef DIPP_NO_EXCEPTIONS
     using actual_descriptor =
         dipp::local_service_descriptor<Class, dipp::service_lifetime::singleton, dipp::default_service_scope>;
 
@@ -35,6 +38,7 @@ BOOST_AUTO_TEST_CASE(IncompatibleServiceDescriptorsException_Test)
 
     BOOST_CHECK_EQUAL(services.has<actual_descriptor>(), true);
     BOOST_CHECK_THROW((void)services.get<wrong_descriptor>(), dipp::incompatible_service_descriptor);
+#endif
 }
 
 BOOST_AUTO_TEST_SUITE_END()
