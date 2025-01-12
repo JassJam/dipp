@@ -4,6 +4,9 @@
 
 namespace dipp
 {
+    template<class From, class To>
+    concept convertible_to = std::is_convertible_v<From, To> && requires { static_cast<To>(std::declval<From>()); };
+
     template<typename Ty>
     concept service_policy_service_map_type = requires(Ty t) {
         typename Ty::service_key_type;
@@ -11,7 +14,7 @@ namespace dipp
 
         {
             Ty::make_key(std::declval<size_t>(), std::declval<size_t>())
-        } -> std::convertible_to<typename Ty::service_key_type>;
+        } -> convertible_to<typename Ty::service_key_type>;
 
         t.find(std::declval<typename Ty::service_key_type>());
         t.emplace(std::declval<typename Ty::service_key_type>(), std::declval<typename Ty::service_info>());
@@ -24,7 +27,7 @@ namespace dipp
 
         {
             Ty::make_key(std::declval<size_t>(), std::declval<size_t>())
-        } -> std::convertible_to<typename Ty::instance_key_type>;
+        } -> convertible_to<typename Ty::instance_key_type>;
 
         t.find(std::declval<typename Ty::instance_key_type>());
         t.emplace(std::declval<typename Ty::instance_key_type>(), std::declval<typename Ty::instance_info>());
@@ -69,7 +72,7 @@ namespace dipp
         typename Ty::value_type;
         typename Ty::service_type;
 
-        { Ty::lifetime } -> std::convertible_to<service_lifetime>;
+        { Ty::lifetime } -> convertible_to<service_lifetime>;
         { t.load(std::declval<typename Ty::scope_type&>()) } -> std::same_as<typename Ty::value_type>;
     };
 

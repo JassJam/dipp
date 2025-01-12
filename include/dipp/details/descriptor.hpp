@@ -44,11 +44,6 @@ namespace dipp
         functor_type m_Functor{};
     };
 
-    template<typename FnTy, service_lifetime Lifetime, service_scope_type ScopeTy, dependency_container_type DepsTy>
-        requires std::invocable<FnTy, ScopeTy&>
-    functor_service_descriptor(FnTy)
-        -> functor_service_descriptor<std::invoke_result_t<FnTy, ScopeTy&>, Lifetime, ScopeTy, DepsTy>;
-
     //
 
     template<typename Ty, service_lifetime Lifetime, service_scope_type ScopeTy> class extern_service_descriptor
@@ -153,8 +148,7 @@ namespace dipp
                     else
                     {
                         return std::apply(
-                            [args = std::move(args)](auto&&... args)
-                            { return std::make_unique<Ty>(std::forward<decltype(args)>(args)...); },
+                            [](auto&&... args) { return std::make_unique<Ty>(std::forward<decltype(args)>(args)...); },
                             std::tuple_cat(get_tuple_from_scope<ScopeTy, DepsTy>(scope), std::move(args)));
                     }
                 })
@@ -194,8 +188,7 @@ namespace dipp
                     else
                     {
                         return std::apply(
-                            [args = std::move(args)](auto&&... args)
-                            { return std::make_shared<Ty>(std::forward<decltype(args)>(args)...); },
+                            [](auto&&... args) { return std::make_shared<Ty>(std::forward<decltype(args)>(args)...); },
                             std::tuple_cat(get_tuple_from_scope<ScopeTy, DepsTy>(scope), std::move(args)));
                     }
                 })
@@ -234,8 +227,7 @@ namespace dipp
                     else
                     {
                         return std::apply(
-                            [args = std::move(args)](auto&&... args)
-                            { return Ty(std::forward<decltype(args)>(args)...); },
+                            [](auto&&... args) { return Ty(std::forward<decltype(args)>(args)...); },
                             std::tuple_cat(get_tuple_from_scope<ScopeTy, DepsTy>(scope), std::move(args)));
                     }
                 })

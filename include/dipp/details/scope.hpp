@@ -23,26 +23,26 @@ namespace dipp
     public:
         template<base_injected_type InjectableTy> [[nodiscard]] auto get() -> InjectableTy
         {
-            return m_Storage->get_service<typename InjectableTy::descriptor_type, InjectableTy::key>(
+            return m_Storage->template get_service<typename InjectableTy::descriptor_type, InjectableTy::key>(
                 *this, *m_SingletonStorage, m_LocalStorage);
         }
 
         template<service_descriptor_type DescTy, string_hash key = string_hash<0>{}>
         [[nodiscard]] auto get() -> typename DescTy::service_type
         {
-            return m_Storage->get_service<DescTy, key>(*this, *m_SingletonStorage, m_LocalStorage);
+            return m_Storage->template get_service<DescTy, key>(*this, *m_SingletonStorage, m_LocalStorage);
         }
 
     public:
         template<base_injected_type InjectableTy> [[nodiscard]] bool has() const noexcept
         {
-            return m_Storage->has_service<typename InjectableTy::descriptor_type, InjectableTy::key>();
+            return m_Storage->template has_service<typename InjectableTy::descriptor_type, InjectableTy::key>();
         }
 
         template<service_descriptor_type DescTy, string_hash key = string_hash<0>{}>
         [[nodiscard]] bool has() const noexcept
         {
-            return m_Storage->has_service<DescTy, key>();
+            return m_Storage->template has_service<DescTy, key>();
         }
 
     private:
