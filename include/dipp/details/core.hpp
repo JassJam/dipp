@@ -27,6 +27,11 @@ namespace dipp
         {
         }
 
+        constexpr operator size_t() const noexcept
+        {
+            return value;
+        }
+
         size_t value;
 
     private:
@@ -40,6 +45,16 @@ namespace dipp
             return hash;
         }
     };
+
+    static constexpr size_t key(const char* str) noexcept
+    {
+        return string_hash(str).value;
+    }
+
+    static constexpr size_t key(const std::string_view& str) noexcept
+    {
+        return string_hash(str).value;
+    }
 
     //
 
