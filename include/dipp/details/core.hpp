@@ -17,41 +17,44 @@ namespace dipp
         scoped
     };
 
-    template<size_t N> struct string_hash
+    struct string_hash
     {
-    public:
-        constexpr string_hash(char (&str)[N]) noexcept
+        constexpr string_hash() noexcept : value(0)
         {
-            for (size_t i = 0; i < N; ++i)
-            {
-                m_Hash = m_Hash * 31 + str[i];
-            }
         }
-        [[nodiscard]] constexpr size_t size() const noexcept
+
+        constexpr string_hash(std::string_view str) : value(compute_hash(str))
         {
-            return N;
         }
-        [[nodiscard]] constexpr size_t hash() const noexcept
+
+        constexpr operator size_t() const noexcept
         {
-            return m_Hash;
+            return value;
         }
+
+        size_t value;
 
     private:
-        size_t m_Hash = 0;
+        static constexpr size_t compute_hash(std::string_view str) noexcept
+        {
+            size_t hash = 0;
+            for (char c : str)
+            {
+                hash = hash * 31 + static_cast<size_t>(c);
+            }
+            return hash;
+        }
     };
 
-    template<> struct string_hash<0>
+    static constexpr size_t key(const char* str) noexcept
     {
-    public:
-        [[nodiscard]] constexpr size_t size() const noexcept
-        {
-            return 0;
-        }
-        [[nodiscard]] constexpr size_t hash() const noexcept
-        {
-            return 0;
-        }
-    };
+        return string_hash(str).value;
+    }
+
+    static constexpr size_t key(const std::string_view& str) noexcept
+    {
+        return string_hash(str).value;
+    }
 
     //
 

@@ -12,28 +12,28 @@ namespace dipp
         using policy_type = PolicyTy;
 
     public:
-        template<service_descriptor_type DescTy, string_hash key = string_hash<0>{}> void add_service()
+        template<service_descriptor_type DescTy> void add_service(size_t key)
         {
             using service_type = typename DescTy::service_type;
-            emplace_or_override(typeid(service_type).hash_code(), key.hash(), { DescTy{} });
+            emplace_or_override(typeid(service_type).hash_code(), key, { DescTy{} });
         }
 
-        template<service_descriptor_type DescTy, string_hash key = string_hash<0>{}> void add_service(DescTy descriptor)
+        template<service_descriptor_type DescTy> void add_service(DescTy descriptor, size_t key)
         {
             using service_type = typename DescTy::service_type;
-            emplace_or_override(typeid(service_type).hash_code(), key.hash(), { std::move(descriptor) });
+            emplace_or_override(typeid(service_type).hash_code(), key, { std::move(descriptor) });
         }
 
     public:
-        template<service_descriptor_type DescTy, string_hash key = string_hash<0>{},
-                 service_storage_memory_type SingletonMemTy, service_storage_memory_type ScopedMemTy>
+        template<service_descriptor_type DescTy, service_storage_memory_type SingletonMemTy,
+                 service_storage_memory_type ScopedMemTy>
         [[nodiscard]] auto get_service(typename DescTy::scope_type& scope, SingletonMemTy& singleton_storage,
-                                       ScopedMemTy& scoped_storage) -> typename DescTy::service_type
+                                       ScopedMemTy& scoped_storage, size_t key) -> typename DescTy::service_type
         {
             using value_type   = typename DescTy::value_type;
             using service_type = typename DescTy::service_type;
 
-            auto handle = policy_type::make_key(typeid(service_type).hash_code(), key.hash());
+            auto handle = policy_type::make_key(typeid(service_type).hash_code(), key);
             auto it     = m_Services.find(handle);
 
             if (it == m_Services.end()) [[unlikely]]
@@ -44,9 +44,7 @@ namespace dipp
             auto& info = it->second;
             if constexpr (DescTy::lifetime == service_lifetime::singleton)
             {
-                auto singleton_handle =
-                    SingletonMemTy::policy_type::make_key(typeid(service_type).hash_code(), key.hash());
-                auto instance_iter = singleton_storage.find(singleton_handle);
+                auto instance_iter = singleton_storage.find(handle);
 
                 if (instance_iter == nullptr)
                 {
@@ -56,15 +54,14 @@ namespace dipp
                         details::fail<incompatible_service_descriptor, service_type>();
                     }
 
-                    instance_iter = singleton_storage.emplace(singleton_handle, { descriptor->load(scope) });
+                    instance_iter = singleton_storage.emplace(handle, { descriptor->load(scope) });
                 }
 
                 return service_type{ std::any_cast<value_type&>(instance_iter->Instance) };
             }
             else if constexpr (DescTy::lifetime == service_lifetime::scoped)
             {
-                auto scoped_handle = ScopedMemTy::policy_type::make_key(typeid(service_type).hash_code(), key.hash());
-                auto instance_iter = scoped_storage.find(scoped_handle);
+                auto instance_iter = scoped_storage.find(handle);
 
                 if (instance_iter == nullptr)
                 {
@@ -74,7 +71,7 @@ namespace dipp
                         details::fail<incompatible_service_descriptor, service_type>();
                     }
 
-                    instance_iter = scoped_storage.emplace(scoped_handle, { descriptor->load(scope) });
+                    instance_iter = scoped_storage.emplace(handle, { descriptor->load(scope) });
                 }
 
                 return service_type{ std::any_cast<value_type&>(instance_iter->Instance) };
@@ -96,18 +93,17 @@ namespace dipp
         }
 
     public:
-        template<service_descriptor_type DescTy, string_hash key = string_hash<0>{}>
-        [[nodiscard]] bool has_service() const noexcept
+        template<service_descriptor_type DescTy> [[nodiscard]] bool has_service(size_t key) const noexcept
         {
             using value_type   = typename DescTy::value_type;
             using service_type = typename DescTy::service_type;
 
-            auto handle = policy_type::make_key(typeid(service_type).hash_code(), key.hash());
+            auto handle = policy_type::make_key(typeid(service_type).hash_code(), key);
             return m_Services.contains(handle);
         }
 
     private:
-        void emplace_or_override(size_t type, size_t hash, policy_type::service_info info)
+        void emplace_or_override(size_t type, size_t hash, typename policy_type::service_info info)
         {
             auto handle = policy_type::make_key(type, hash);
             auto iter   = m_Services.find(handle);

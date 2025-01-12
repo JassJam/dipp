@@ -29,7 +29,7 @@ namespace dipp
         static constexpr service_lifetime lifetime = Lifetime;
 
         template<typename FnTy>
-            requires std::invocable<FnTy, scope_type&>
+            requires std::is_invocable_v<FnTy, scope_type&>
         constexpr functor_service_descriptor(FnTy functor) noexcept(
             std::is_nothrow_move_constructible_v<functor_type>) : m_Functor(std::move(functor))
         {
@@ -43,11 +43,6 @@ namespace dipp
     private:
         functor_type m_Functor{};
     };
-
-    template<typename FnTy, service_lifetime Lifetime, service_scope_type ScopeTy, dependency_container_type DepsTy>
-        requires std::invocable<FnTy, ScopeTy&>
-    functor_service_descriptor(FnTy)
-        -> functor_service_descriptor<std::invoke_result_t<FnTy, ScopeTy&>, Lifetime, ScopeTy, DepsTy>;
 
     //
 
@@ -131,7 +126,7 @@ namespace dipp
         using base_class = functor_service_descriptor<std::unique_ptr<Ty>, Lifetime, ScopeTy, DepsTy>;
 
         template<typename FnTy>
-            requires std::invocable<FnTy, ScopeTy&>
+            requires std::is_invocable_v<FnTy, ScopeTy&>
         constexpr unique_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
             base_class(std::move(functor))
         {
@@ -141,8 +136,8 @@ namespace dipp
             requires(!std::is_abstract_v<Ty>)
         constexpr unique_service_descriptor(ArgsTy&&... args) :
             base_class(
-                [args =
-                     std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable -> base_class::value_type
+                [args = std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable ->
+                typename base_class::value_type
                 {
                     if constexpr (std::tuple_size_v<typename DepsTy::types> == 0)
                     {
@@ -153,8 +148,7 @@ namespace dipp
                     else
                     {
                         return std::apply(
-                            [args = std::move(args)](auto&&... args)
-                            { return std::make_unique<Ty>(std::forward<decltype(args)>(args)...); },
+                            [](auto&&... args) { return std::make_unique<Ty>(std::forward<decltype(args)>(args)...); },
                             std::tuple_cat(get_tuple_from_scope<ScopeTy, DepsTy>(scope), std::move(args)));
                     }
                 })
@@ -172,7 +166,7 @@ namespace dipp
         using base_class = functor_service_descriptor<std::shared_ptr<Ty>, Lifetime, ScopeTy, DepsTy>;
 
         template<typename FnTy>
-            requires std::invocable<FnTy, ScopeTy&>
+            requires std::is_invocable_v<FnTy, ScopeTy&>
         constexpr shared_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
             base_class(std::move(functor))
         {
@@ -182,8 +176,8 @@ namespace dipp
             requires(!std::is_abstract_v<Ty>)
         constexpr shared_service_descriptor(ArgsTy&&... args) :
             base_class(
-                [args =
-                     std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable -> base_class::value_type
+                [args = std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable ->
+                typename base_class::value_type
                 {
                     if constexpr (std::tuple_size_v<typename DepsTy::types> == 0)
                     {
@@ -194,8 +188,7 @@ namespace dipp
                     else
                     {
                         return std::apply(
-                            [args = std::move(args)](auto&&... args)
-                            { return std::make_shared<Ty>(std::forward<decltype(args)>(args)...); },
+                            [](auto&&... args) { return std::make_shared<Ty>(std::forward<decltype(args)>(args)...); },
                             std::tuple_cat(get_tuple_from_scope<ScopeTy, DepsTy>(scope), std::move(args)));
                     }
                 })
@@ -213,7 +206,7 @@ namespace dipp
         using base_class = functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>;
 
         template<typename FnTy>
-            requires std::invocable<FnTy, ScopeTy&>
+            requires std::is_invocable_v<FnTy, ScopeTy&>
         constexpr local_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
             base_class(std::move(functor))
         {
@@ -223,8 +216,8 @@ namespace dipp
             requires(!std::is_abstract_v<Ty>)
         constexpr local_service_descriptor(ArgsTy&&... args) :
             base_class(
-                [args =
-                     std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable -> base_class::value_type
+                [args = std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable ->
+                typename base_class::value_type
                 {
                     if constexpr (std::tuple_size_v<typename DepsTy::types> == 0)
                     {
@@ -234,8 +227,7 @@ namespace dipp
                     else
                     {
                         return std::apply(
-                            [args = std::move(args)](auto&&... args)
-                            { return Ty(std::forward<decltype(args)>(args)...); },
+                            [](auto&&... args) { return Ty(std::forward<decltype(args)>(args)...); },
                             std::tuple_cat(get_tuple_from_scope<ScopeTy, DepsTy>(scope), std::move(args)));
                     }
                 })
