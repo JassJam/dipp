@@ -1,5 +1,9 @@
 
 target("dipp")
+    if is_config("exceptions", false) then
+        add_defines("DIPP_NO_EXCEPTIONS", {public = true})
+    end
+
     set_kind("headeronly")
 
     add_headerfiles(os.projectdir() .. "/include/dipp/*.hpp", {prefixdir = "dipp"})
