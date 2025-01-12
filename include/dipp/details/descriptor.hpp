@@ -136,8 +136,8 @@ namespace dipp
             requires(!std::is_abstract_v<Ty>)
         constexpr unique_service_descriptor(ArgsTy&&... args) :
             base_class(
-                [args =
-                     std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable -> base_class::value_type
+                [args = std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable ->
+                typename base_class::value_type
                 {
                     if constexpr (std::tuple_size_v<typename DepsTy::types> == 0)
                     {
@@ -176,8 +176,8 @@ namespace dipp
             requires(!std::is_abstract_v<Ty>)
         constexpr shared_service_descriptor(ArgsTy&&... args) :
             base_class(
-                [args =
-                     std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable -> base_class::value_type
+                [args = std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable ->
+                typename base_class::value_type
                 {
                     if constexpr (std::tuple_size_v<typename DepsTy::types> == 0)
                     {
@@ -216,8 +216,8 @@ namespace dipp
             requires(!std::is_abstract_v<Ty>)
         constexpr local_service_descriptor(ArgsTy&&... args) :
             base_class(
-                [args =
-                     std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable -> base_class::value_type
+                [args = std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable ->
+                typename base_class::value_type
                 {
                     if constexpr (std::tuple_size_v<typename DepsTy::types> == 0)
                     {
