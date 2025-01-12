@@ -19,11 +19,15 @@ struct Window
 
 // we define the service with the class, lifetime and optionally the scope and key identifier for unique services
 // the service will be injected as a singleton, meaning that it will be created once and shared across all consumers
-using WindowService = dipp::injected<Window, dipp::service_lifetime::scoped>;
+using WindowService = dipp::injected<Window, dipp::service_lifetime::singleton>;
 
 struct Engine
 {
-    WindowService window; // singleton window
+    Window& window; // singleton window
+    
+    Engine(std::reference_wrapper<Window> window) : window1(window)
+    {
+    }
 };
 
 // Similarly, the engine will be injected as a scoped service, meaning that it will be created once per scope
@@ -88,10 +92,13 @@ static_assert(dipp::base_injected_type<WindowService2>);
 
 struct Engine
 {
-    WindowService1 window1; // singleton window
-    WindowService2 window2; // singleton window
+    Window& window1; // singleton window
+    Window& window2; // singleton window
 
-    Engine(WindowService1 window1, WindowService2 window2) : window1(std::move(window1)), window2(std::move(window2))
+    Engine(std::reference_wrapper<Window> window1,
+           std::reference_wrapper<Window> window2) :
+           window1(window1),
+           window2(window2)
     {
     }
 };
