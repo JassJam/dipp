@@ -5,7 +5,7 @@
 
 namespace dipp
 {
-    template<service_descriptor_type DescTy, string_hash Key = string_hash<0>{}> class base_injected
+    template<service_descriptor_type DescTy, string_hash Key> class base_injected
     {
     public:
         using descriptor_type            = DescTy;
