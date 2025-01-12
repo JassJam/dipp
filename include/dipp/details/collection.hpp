@@ -11,22 +11,22 @@ namespace dipp
     public:
         template<base_injected_type InjectableTy> void add(typename InjectableTy::descriptor_type descriptor)
         {
-            m_Storage.add_service<typename InjectableTy::descriptor_type, InjectableTy::key>(std::move(descriptor));
+            m_Storage.template add_service<typename InjectableTy::descriptor_type, InjectableTy::key>(std::move(descriptor));
         }
 
         template<base_injected_type InjectableTy> void add()
         {
-            m_Storage.add_service<typename InjectableTy::descriptor_type, InjectableTy::key>();
+            m_Storage.template add_service<typename InjectableTy::descriptor_type, InjectableTy::key>();
         }
 
         template<service_descriptor_type DescTy, string_hash key = string_hash<0>{}> void add(DescTy descriptor)
         {
-            m_Storage.add_service<DescTy, key>(std::move(descriptor));
+            m_Storage.template add_service<DescTy, key>(std::move(descriptor));
         }
 
         template<service_descriptor_type DescTy, string_hash key = string_hash<0>{}> void add()
         {
-            m_Storage.add_service<DescTy, key>();
+            m_Storage.template add_service<DescTy, key>();
         }
 
     private:

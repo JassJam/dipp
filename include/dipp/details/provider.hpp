@@ -39,25 +39,25 @@ namespace dipp
     public:
         template<base_injected_type InjectableTy> [[nodiscard]] auto get() -> InjectableTy
         {
-            return root_scope().get<InjectableTy>();
+            return root_scope().template get<InjectableTy>();
         }
 
         template<service_descriptor_type DescTy, string_hash key = string_hash<0>{}>
         [[nodiscard]] auto get() -> typename DescTy::service_type
         {
-            return root_scope().get<DescTy, key>();
+            return root_scope().template get<DescTy, key>();
         }
 
     public:
         template<base_injected_type InjectableTy> [[nodiscard]] bool has() const noexcept
         {
-            return root_scope().has<InjectableTy>();
+            return root_scope().template has<InjectableTy>();
         }
 
         template<service_descriptor_type DescTy, string_hash key = string_hash<0>{}>
         [[nodiscard]] bool has() const noexcept
         {
-            return root_scope().has<DescTy, key>();
+            return root_scope().template has<DescTy, key>();
         }
 
     private:
