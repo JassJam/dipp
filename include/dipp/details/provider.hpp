@@ -43,7 +43,7 @@ namespace dipp
         }
 
         template<service_descriptor_type DescTy>
-        [[nodiscard]] auto get(const string_hash& key = {}) -> typename DescTy::service_type
+        [[nodiscard]] auto get(size_t key = {}) -> typename DescTy::service_type
         {
             return root_scope().template get<DescTy>(key);
         }
@@ -54,7 +54,7 @@ namespace dipp
             return root_scope().template has<InjectableTy>();
         }
 
-        template<service_descriptor_type DescTy> [[nodiscard]] bool has(const string_hash& key = {}) const noexcept
+        template<service_descriptor_type DescTy> [[nodiscard]] bool has(size_t key = {}) const noexcept
         {
             return root_scope().template has<DescTy>(key);
         }

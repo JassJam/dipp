@@ -20,12 +20,12 @@ namespace dipp
             m_Storage.template add_service<typename InjectableTy::descriptor_type>(InjectableTy::key);
         }
 
-        template<service_descriptor_type DescTy> void add(DescTy descriptor, const string_hash& key = {})
+        template<service_descriptor_type DescTy> void add(DescTy descriptor, size_t key = {})
         {
             m_Storage.template add_service<DescTy>(std::move(descriptor), key);
         }
 
-        template<service_descriptor_type DescTy> void add(const string_hash& key = {})
+        template<service_descriptor_type DescTy> void add(size_t key = {})
         {
             m_Storage.template add_service<DescTy>(key);
         }

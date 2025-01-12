@@ -61,7 +61,7 @@ int main()
     auto window = scope.get<WindowService>();
 
     // since the window is a singleton, the window from the scope should be the same as the window from the engine
-    assert(engine->window.ptr() == engine2->window.ptr());
+    assert(&engine->window == &engine2->window);
 
     // and the engine from the scope should be different from the engine from the root scope
     assert(engine.ptr() != engine2.ptr());
@@ -86,7 +86,7 @@ struct Window
 // we define the service with the class, lifetime and optionally the scope and key identifier for unique services
 // the service will be injected as a singleton, meaning that it will be created once and shared across all consumers
 using WindowService1 = dipp::injected<Window, dipp::service_lifetime::singleton>;
-using WindowService2 = dipp::injected<Window, dipp::service_lifetime::singleton, dipp::dependency<>, "UNIQUE">;
+using WindowService2 = dipp::injected<Window, dipp::service_lifetime::singleton, dipp::dependency<>, dipp::key("UNIQUE")>;
 static_assert(dipp::base_injected_type<WindowService1>);
 static_assert(dipp::base_injected_type<WindowService2>);
 
@@ -125,8 +125,8 @@ int mai2()
     auto engine = services.get<EngineService>();
 
     // get the window service from the engine
-    auto window1 = engine->window1;
-    auto window2 = engine->window2;
+    auto& window1 = engine->window1;
+    auto& window2 = engine->window2;
 
     // both window services shouldn't be the same
     assert(window1.ptr() != window2.ptr());
