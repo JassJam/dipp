@@ -17,41 +17,65 @@ namespace dipp
         scoped
     };
 
-    template<size_t N> struct string_hash
+    namespace details
     {
-    public:
-        constexpr string_hash(char (&str)[N]) noexcept
+
+        template<size_t N> struct string_literal
         {
-            for (size_t i = 0; i < N; ++i)
+            constexpr string_literal(const char (&str)[N]) noexcept
             {
-                m_Hash = m_Hash * 31 + str[i];
+                for (size_t i = 0; i < N; ++i)
+                {
+                    value[i] = str[i];
+                }
             }
-        }
-        [[nodiscard]] constexpr size_t size() const noexcept
-        {
-            return N;
-        }
-        [[nodiscard]] constexpr size_t hash() const noexcept
-        {
-            return m_Hash;
-        }
+            char value[N];
+        };
 
-    private:
-        size_t m_Hash = 0;
-    };
+        template<> struct string_literal<1>
+        {
+            constexpr string_literal(const char (&)[1]) noexcept
+            {
+            }
+            static constexpr char value[1] = { '\0' };
+        };
 
-    template<> struct string_hash<0>
+        template<> struct string_literal<0>
+        {
+            constexpr string_literal() noexcept = default;
+            static constexpr char value[1]      = { '\0' };
+        };
+
+    } // namespace details
+
+    template<details::string_literal Str> struct string_hash
     {
+    private:
+        static constexpr size_t compute_hash()
+        {
+            size_t hash = 0;
+            for (size_t i = 0; Str.value[i] != '\0'; ++i)
+            {
+                hash = hash * 31 + Str.value[i];
+            }
+            return hash;
+        }
+
     public:
-        [[nodiscard]] constexpr size_t size() const noexcept
-        {
-            return 0;
-        }
-        [[nodiscard]] constexpr size_t hash() const noexcept
-        {
-            return 0;
-        }
+        static constexpr size_t value = compute_hash();
     };
+
+    template<> struct string_hash<details::string_literal{ "" }>
+    {
+        static constexpr size_t value = 0;
+    };
+
+    template<> struct string_hash<details::string_literal<0>{}>
+    {
+        static constexpr size_t value = 0;
+    };
+
+    using default_string_hash = string_hash<details::string_literal<0>{}>;
 
     //
 
