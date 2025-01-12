@@ -1,6 +1,7 @@
 
 -- in lua, iterate over the folders in the directory
 
+add_requires("benchmark")
 add_requires("kangaru")
 add_requires("fruit")
 

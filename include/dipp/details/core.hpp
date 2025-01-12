@@ -81,15 +81,21 @@ namespace dipp
         using return_type = RetTy;
     };
 
+    template<typename FnTy> struct function_descriptor<std::function<FnTy>> : function_descriptor<FnTy>
+    {
+    };
+
+#if _HAS_CXX23
     template<typename RetTy, typename... ArgsTy> struct function_descriptor<std::move_only_function<RetTy(ArgsTy...)>>
     {
         using args_types  = std::tuple<ArgsTy...>;
         using return_type = RetTy;
     };
 
-    template<typename FnTy> struct function_descriptor<std::function<FnTy>> : function_descriptor<FnTy>
+    template<typename FnTy> struct function_descriptor<std::move_only_function<FnTy>> : function_descriptor<FnTy>
     {
     };
+#endif
 
     //
 
