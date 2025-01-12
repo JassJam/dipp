@@ -94,7 +94,7 @@ namespace dipp
     concept base_injected_type = requires(Ty t) {
         typename Ty::descriptor_type;
         typename Ty::value_type;
-        typename Ty::string_hash_type;
+        { Ty::key } -> convertible_to<string_hash>;
 
         typename Ty::reference_type;
         typename Ty::const_reference_type;

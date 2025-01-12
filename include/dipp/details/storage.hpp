@@ -12,28 +12,29 @@ namespace dipp
         using policy_type = PolicyTy;
 
     public:
-        template<service_descriptor_type DescTy, string_hash Key> void add_service()
+        template<service_descriptor_type DescTy> void add_service(const string_hash& key)
         {
             using service_type = typename DescTy::service_type;
-            emplace_or_override(typeid(service_type).hash_code(), Key.value, { DescTy{} });
+            emplace_or_override(typeid(service_type).hash_code(), key.value, { DescTy{} });
         }
 
-        template<service_descriptor_type DescTy, string_hash Key> void add_service(DescTy descriptor)
+        template<service_descriptor_type DescTy> void add_service(DescTy descriptor, const string_hash& key)
         {
             using service_type = typename DescTy::service_type;
-            emplace_or_override(typeid(service_type).hash_code(), Key.value, { std::move(descriptor) });
+            emplace_or_override(typeid(service_type).hash_code(), key.value, { std::move(descriptor) });
         }
 
     public:
-        template<service_descriptor_type DescTy, string_hash Key, service_storage_memory_type SingletonMemTy,
+        template<service_descriptor_type DescTy, service_storage_memory_type SingletonMemTy,
                  service_storage_memory_type ScopedMemTy>
         [[nodiscard]] auto get_service(typename DescTy::scope_type& scope, SingletonMemTy& singleton_storage,
-                                       ScopedMemTy& scoped_storage) -> typename DescTy::service_type
+                                       ScopedMemTy& scoped_storage, const string_hash& key) ->
+            typename DescTy::service_type
         {
             using value_type   = typename DescTy::value_type;
             using service_type = typename DescTy::service_type;
 
-            auto handle = policy_type::make_key(typeid(service_type).hash_code(), Key.value);
+            auto handle = policy_type::make_key(typeid(service_type).hash_code(), key.value);
             auto it     = m_Services.find(handle);
 
             if (it == m_Services.end()) [[unlikely]]
@@ -93,12 +94,12 @@ namespace dipp
         }
 
     public:
-        template<service_descriptor_type DescTy, string_hash Key> [[nodiscard]] bool has_service() const noexcept
+        template<service_descriptor_type DescTy> [[nodiscard]] bool has_service(const string_hash& key) const noexcept
         {
             using value_type   = typename DescTy::value_type;
             using service_type = typename DescTy::service_type;
 
-            auto handle = policy_type::make_key(typeid(service_type).hash_code(), Key.value);
+            auto handle = policy_type::make_key(typeid(service_type).hash_code(), key.value);
             return m_Services.contains(handle);
         }
 

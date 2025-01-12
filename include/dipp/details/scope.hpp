@@ -23,26 +23,27 @@ namespace dipp
     public:
         template<base_injected_type InjectableTy> [[nodiscard]] auto get() -> InjectableTy
         {
-            return m_Storage->template get_service<typename InjectableTy::descriptor_type, InjectableTy::key>(
-                *this, *m_SingletonStorage, m_LocalStorage);
+            using descriptor_type = typename InjectableTy::descriptor_type;
+            return m_Storage->template get_service<descriptor_type>(
+                *this, *m_SingletonStorage, m_LocalStorage, InjectableTy::key);
         }
 
-        template<service_descriptor_type DescTy, string_hash key = string_hash{}>
-        [[nodiscard]] auto get() -> typename DescTy::service_type
+        template<service_descriptor_type DescTy>
+        [[nodiscard]] auto get(const string_hash& key = {}) -> typename DescTy::service_type
         {
-            return m_Storage->template get_service<DescTy, key>(*this, *m_SingletonStorage, m_LocalStorage);
+            return m_Storage->template get_service<DescTy>(*this, *m_SingletonStorage, m_LocalStorage, key);
         }
 
     public:
         template<base_injected_type InjectableTy> [[nodiscard]] bool has() const noexcept
         {
-            return m_Storage->template has_service<typename InjectableTy::descriptor_type, InjectableTy::key>();
+            using descriptor_type = typename InjectableTy::descriptor_type;
+            return m_Storage->template has_service<descriptor_type>(InjectableTy::key);
         }
 
-        template<service_descriptor_type DescTy, string_hash key = string_hash{}>
-        [[nodiscard]] bool has() const noexcept
+        template<service_descriptor_type DescTy> [[nodiscard]] bool has(const string_hash& key = {}) const noexcept
         {
-            return m_Storage->template has_service<DescTy, key>();
+            return m_Storage->template has_service<DescTy>(key);
         }
 
     private:
