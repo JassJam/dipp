@@ -29,7 +29,7 @@ namespace dipp
         static constexpr service_lifetime lifetime = Lifetime;
 
         template<typename FnTy>
-            requires std::invocable<FnTy, scope_type&>
+            requires std::is_invocable_v<FnTy, scope_type&>
         constexpr functor_service_descriptor(FnTy functor) noexcept(
             std::is_nothrow_move_constructible_v<functor_type>) : m_Functor(std::move(functor))
         {
@@ -126,7 +126,7 @@ namespace dipp
         using base_class = functor_service_descriptor<std::unique_ptr<Ty>, Lifetime, ScopeTy, DepsTy>;
 
         template<typename FnTy>
-            requires std::invocable<FnTy, ScopeTy&>
+            requires std::is_invocable_v<FnTy, ScopeTy&>
         constexpr unique_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
             base_class(std::move(functor))
         {
@@ -166,7 +166,7 @@ namespace dipp
         using base_class = functor_service_descriptor<std::shared_ptr<Ty>, Lifetime, ScopeTy, DepsTy>;
 
         template<typename FnTy>
-            requires std::invocable<FnTy, ScopeTy&>
+            requires std::is_invocable_v<FnTy, ScopeTy&>
         constexpr shared_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
             base_class(std::move(functor))
         {
@@ -206,7 +206,7 @@ namespace dipp
         using base_class = functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>;
 
         template<typename FnTy>
-            requires std::invocable<FnTy, ScopeTy&>
+            requires std::is_invocable_v<FnTy, ScopeTy&>
         constexpr local_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
             base_class(std::move(functor))
         {
