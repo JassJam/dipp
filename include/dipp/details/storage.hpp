@@ -15,13 +15,13 @@ namespace dipp
         template<service_descriptor_type DescTy, string_hash Key> void add_service()
         {
             using service_type = typename DescTy::service_type;
-            emplace_or_override(typeid(service_type).hash_code(), Key.hash(), { DescTy{} });
+            emplace_or_override(typeid(service_type).hash_code(), Key.value, { DescTy{} });
         }
 
         template<service_descriptor_type DescTy, string_hash Key> void add_service(DescTy descriptor)
         {
             using service_type = typename DescTy::service_type;
-            emplace_or_override(typeid(service_type).hash_code(), Key.hash(), { std::move(descriptor) });
+            emplace_or_override(typeid(service_type).hash_code(), Key.value, { std::move(descriptor) });
         }
 
     public:
@@ -33,7 +33,7 @@ namespace dipp
             using value_type   = typename DescTy::value_type;
             using service_type = typename DescTy::service_type;
 
-            auto handle = policy_type::make_key(typeid(service_type).hash_code(), Key.hash());
+            auto handle = policy_type::make_key(typeid(service_type).hash_code(), Key.value);
             auto it     = m_Services.find(handle);
 
             if (it == m_Services.end()) [[unlikely]]
@@ -98,7 +98,7 @@ namespace dipp
             using value_type   = typename DescTy::value_type;
             using service_type = typename DescTy::service_type;
 
-            auto handle = policy_type::make_key(typeid(service_type).hash_code(), Key.hash());
+            auto handle = policy_type::make_key(typeid(service_type).hash_code(), Key.value);
             return m_Services.contains(handle);
         }
 
