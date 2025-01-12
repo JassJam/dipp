@@ -17,65 +17,31 @@ namespace dipp
         scoped
     };
 
-    namespace details
+    struct string_hash
     {
-
-        template<size_t N> struct string_literal
+        constexpr string_hash() noexcept : value(0)
         {
-            constexpr string_literal(const char (&str)[N]) noexcept
-            {
-                for (size_t i = 0; i < N; ++i)
-                {
-                    value[i] = str[i];
-                }
-            }
-            char value[N];
-        };
+        }
 
-        template<> struct string_literal<1>
+        constexpr string_hash(std::string_view str) : value(compute_hash(str))
         {
-            constexpr string_literal(const char (&)[1]) noexcept
-            {
-            }
-            static constexpr char value[1] = { '\0' };
-        };
+        }
 
-        template<> struct string_literal<0>
-        {
-            constexpr string_literal() noexcept = default;
-            static constexpr char value[1]      = { '\0' };
-        };
+        size_t value;
 
-    } // namespace details
-
-    template<details::string_literal Str> struct string_hash
-    {
     private:
-        static constexpr size_t compute_hash()
+        static constexpr size_t compute_hash(std::string_view str) noexcept
         {
             size_t hash = 0;
-            for (size_t i = 0; Str.value[i] != '\0'; ++i)
+            for (char c : str)
             {
-                hash = hash * 31 + Str.value[i];
+                hash = hash * 31 + static_cast<size_t>(c);
             }
             return hash;
         }
 
     public:
-        static constexpr size_t value = compute_hash();
     };
-
-    template<> struct string_hash<details::string_literal{ "" }>
-    {
-        static constexpr size_t value = 0;
-    };
-
-    template<> struct string_hash<details::string_literal<0>{}>
-    {
-        static constexpr size_t value = 0;
-    };
-
-    using default_string_hash = string_hash<details::string_literal<0>{}>;
 
     //
 
