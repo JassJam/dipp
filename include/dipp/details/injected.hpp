@@ -97,25 +97,25 @@ namespace dipp
     //
 
     // clang-format off
-    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>, string_hash Key = string_hash<0>{}, service_scope_type ScopeTy = default_service_scope>
+    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>, string_hash Key = default_string_hash{}, service_scope_type ScopeTy = default_service_scope>
     using injected_functor = base_injected<functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, string_hash Key = string_hash<0>{}, service_scope_type ScopeTy = default_service_scope>
+    template<typename Ty, service_lifetime Lifetime, string_hash Key = default_string_hash{}, service_scope_type ScopeTy = default_service_scope>
     using injected_extern = base_injected<extern_service_descriptor<Ty, Lifetime, ScopeTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, string_hash Key = string_hash<0>{}, service_scope_type ScopeTy = default_service_scope>
+    template<typename Ty, service_lifetime Lifetime, string_hash Key = default_string_hash{}, service_scope_type ScopeTy = default_service_scope>
     using injected_const_extern = base_injected<const_extern_service_descriptor<Ty, Lifetime, ScopeTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, string_hash Key = string_hash<0>{}, service_scope_type ScopeTy = default_service_scope>
+    template<typename Ty, service_lifetime Lifetime, string_hash Key = default_string_hash{}, service_scope_type ScopeTy = default_service_scope>
     using injected_extern_shared = base_injected<extern_shared_service_descriptor<Ty, Lifetime, ScopeTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>, string_hash Key = string_hash<0>{}, service_scope_type ScopeTy = default_service_scope>
+    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>, string_hash Key = default_string_hash{}, service_scope_type ScopeTy = default_service_scope>
     using injected_unique = base_injected<unique_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>, string_hash Key = string_hash<0>{}, service_scope_type ScopeTy = default_service_scope>
+    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>, string_hash Key = default_string_hash{}, service_scope_type ScopeTy = default_service_scope>
     using injected_shared = base_injected<shared_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>, string_hash Key = string_hash<0>{}, service_scope_type ScopeTy = default_service_scope>
+    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>, string_hash Key = default_string_hash{}, service_scope_type ScopeTy = default_service_scope>
     using injected = base_injected<local_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
     // clang-format on
 } // namespace dipp
