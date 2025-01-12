@@ -1,5 +1,11 @@
-
--- in lua, iterate over the folders in the directory
+add_requires("boost 1.86.0", {
+    debug = is_mode("debug"),
+    configs = {
+        cmake = false,
+        filesystem = true,
+        test = true
+    }
+})
 
 -- opts:
 --  opts.name: the project test name
@@ -9,6 +15,7 @@ local function add_test(opts)
     target(opts.name)
         set_group("tests")
         set_kind("binary")
+
         add_deps("dipp")
         add_packages("boost")
 
