@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <exception>
 #include <utility>
 
 namespace dipp
