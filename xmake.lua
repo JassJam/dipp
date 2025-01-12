@@ -7,18 +7,13 @@ option("benchmark")
 option_end()
 
 add_rules("mode.debug", "mode.release")
-set_runtimes(is_mode("debug") and "MDd" or "MD")
 
 --
 
-set_languages("c++23")
+set_languages("c++20")
 
 add_extrafiles(".clang-format")
 add_extrafiles(".clang-tidy")
-
-if is_mode("debug") or is_mode("check") then
-    add_defines("IMAGEPP_DEBUG")
-end
 
 includes("project/project.lua")
 
