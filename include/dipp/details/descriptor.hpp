@@ -46,14 +46,14 @@ namespace dipp
 
     //
 
-    template<typename Ty, service_lifetime Lifetime, service_scope_type ScopeTy> class extern_service_descriptor
+    template<typename Ty, service_scope_type ScopeTy> class extern_service_descriptor
     {
     public:
         using value_type   = std::reference_wrapper<Ty>;
         using service_type = std::reference_wrapper<Ty>;
         using scope_type   = ScopeTy;
 
-        static constexpr service_lifetime lifetime = Lifetime;
+        static constexpr service_lifetime lifetime = service_lifetime::singleton;
 
         constexpr extern_service_descriptor(Ty& service) : m_Service(service)
         {
@@ -70,14 +70,14 @@ namespace dipp
 
     //
 
-    template<typename Ty, service_lifetime Lifetime, service_scope_type ScopeTy> class const_extern_service_descriptor
+    template<typename Ty, service_scope_type ScopeTy> class const_extern_service_descriptor
     {
     public:
         using value_type   = std::reference_wrapper<const Ty>;
         using service_type = std::reference_wrapper<const Ty>;
         using scope_type   = ScopeTy;
 
-        static constexpr service_lifetime lifetime = Lifetime;
+        static constexpr service_lifetime lifetime = service_lifetime::singleton;
 
         constexpr const_extern_service_descriptor(const Ty& service) : m_Service(service)
         {
@@ -94,14 +94,14 @@ namespace dipp
 
     //
 
-    template<typename Ty, service_lifetime Lifetime, service_scope_type ScopeTy> class extern_shared_service_descriptor
+    template<typename Ty, service_scope_type ScopeTy> class extern_shared_service_descriptor
     {
     public:
         using value_type   = std::shared_ptr<Ty>;
         using service_type = std::shared_ptr<Ty>;
         using scope_type   = ScopeTy;
 
-        static constexpr service_lifetime lifetime = Lifetime;
+        static constexpr service_lifetime lifetime = service_lifetime::singleton;
 
         constexpr extern_shared_service_descriptor(value_type service) : m_Service(service)
         {
