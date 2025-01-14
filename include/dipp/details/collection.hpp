@@ -53,25 +53,27 @@ namespace dipp
         }
 
     public:
-        template<base_injected_type InjectableTy> void has(typename InjectableTy::descriptor_type descriptor)
+        template<base_injected_type InjectableTy>
+        [[nodiscard]] bool has(typename InjectableTy::descriptor_type descriptor) const noexcept
         {
-            m_Storage.template has_service<typename InjectableTy::descriptor_type>(
+            return m_Storage.template has_service<typename InjectableTy::descriptor_type>(
                 std::move(descriptor), InjectableTy::key);
         }
 
-        template<base_injected_type InjectableTy> void has()
+        template<base_injected_type InjectableTy> [[nodiscard]] bool has() const noexcept
         {
-            m_Storage.template has_service<typename InjectableTy::descriptor_type>(InjectableTy::key);
+            return m_Storage.template has_service<typename InjectableTy::descriptor_type>(InjectableTy::key);
         }
 
-        template<service_descriptor_type DescTy> void has(DescTy descriptor, size_t key = {})
+        template<service_descriptor_type DescTy>
+        [[nodiscard]] bool has(DescTy descriptor, size_t key = {}) const noexcept
         {
-            m_Storage.template has_service<DescTy>(std::move(descriptor), key);
+            return m_Storage.template has_service<DescTy>(std::move(descriptor), key);
         }
 
-        template<service_descriptor_type DescTy> void has(size_t key = {})
+        template<service_descriptor_type DescTy> [[nodiscard]] bool has(size_t key = {}) const noexcept
         {
-            m_Storage.template has_service<DescTy>(key);
+            return m_Storage.template has_service<DescTy>(key);
         }
 
     private:
