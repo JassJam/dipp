@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(TransientReference_Test)
 
 BOOST_AUTO_TEST_CASE(ExternReference_Test)
 {
-    using scene_service = dipp::injected_extern<Scene, dipp::service_lifetime::singleton>;
+    using scene_service = dipp::injected_extern<Scene>;
 
     using world_service =
         dipp::injected<World, dipp::service_lifetime::scoped, dipp::dependency<scene_service, CameraService>>;

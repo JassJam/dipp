@@ -27,8 +27,7 @@ BOOST_AUTO_TEST_CASE(IncompatibleServiceDescriptorsException_Test)
     using actual_descriptor =
         dipp::local_service_descriptor<Class, dipp::service_lifetime::singleton, dipp::default_service_scope>;
 
-    using wrong_descriptor =
-        dipp::extern_service_descriptor<Class, dipp::service_lifetime::singleton, dipp::default_service_scope>;
+    using wrong_descriptor = dipp::extern_service_descriptor<Class, dipp::default_service_scope>;
 
     dipp::default_service_collection collection;
 

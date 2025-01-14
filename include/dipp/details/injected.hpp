@@ -99,14 +99,14 @@ namespace dipp
     template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>, size_t Key = size_t{}, service_scope_type ScopeTy = default_service_scope>
     using injected_functor = base_injected<functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, size_t Key = size_t{}, service_scope_type ScopeTy = default_service_scope>
-    using injected_extern = base_injected<extern_service_descriptor<Ty, Lifetime, ScopeTy>, Key>;
+    template<typename Ty, size_t Key = size_t{}, service_scope_type ScopeTy = default_service_scope>
+    using injected_extern = base_injected<extern_service_descriptor<Ty, ScopeTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, size_t Key = size_t{}, service_scope_type ScopeTy = default_service_scope>
-    using injected_const_extern = base_injected<const_extern_service_descriptor<Ty, Lifetime, ScopeTy>, Key>;
+    template<typename Ty, size_t Key = size_t{}, service_scope_type ScopeTy = default_service_scope>
+    using injected_const_extern = base_injected<const_extern_service_descriptor<Ty, ScopeTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, size_t Key = size_t{}, service_scope_type ScopeTy = default_service_scope>
-    using injected_extern_shared = base_injected<extern_shared_service_descriptor<Ty, Lifetime, ScopeTy>, Key>;
+    template<typename Ty, size_t Key = size_t{}, service_scope_type ScopeTy = default_service_scope>
+    using injected_extern_shared = base_injected<extern_shared_service_descriptor<Ty, ScopeTy>, Key>;
 
     template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>, size_t Key = size_t{}, service_scope_type ScopeTy = default_service_scope>
     using injected_unique = base_injected<unique_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
