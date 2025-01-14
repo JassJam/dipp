@@ -9,41 +9,25 @@ namespace dipp
 
     template<typename Ty>
     concept service_policy_service_map_type = requires(Ty t) {
-        typename Ty::service_key_type;
-        typename Ty::service_info;
-
-        {
-            Ty::make_key(std::declval<size_t>(), std::declval<size_t>())
-        } -> convertible_to<typename Ty::service_key_type>;
-
-        t.find(std::declval<typename Ty::service_key_type>());
-        t.emplace(std::declval<typename Ty::service_key_type>(), std::declval<typename Ty::service_info>());
+        t.find(std::declval<type_key_pair>());
+        t.emplace(std::declval<type_key_pair>(), std::declval<typename Ty::service_info>());
     };
 
     template<typename Ty>
     concept service_policy_instance_map_type = requires(Ty t) {
-        typename Ty::instance_key_type;
-        typename Ty::instance_info;
-
-        {
-            Ty::make_key(std::declval<size_t>(), std::declval<size_t>())
-        } -> convertible_to<typename Ty::instance_key_type>;
-
-        t.find(std::declval<typename Ty::instance_key_type>());
-        t.emplace(std::declval<typename Ty::instance_key_type>(), std::declval<typename Ty::instance_info>());
+        t.find(std::declval<type_key_pair>());
+        t.emplace(std::declval<type_key_pair>(), std::declval<typename Ty::instance_info>());
     };
 
     template<typename Ty>
     concept service_policy_type = requires(Ty t) {
         typename Ty::service_info;
-        typename Ty::service_key_type;
         service_policy_service_map_type<typename Ty::service_map_type>;
     };
 
     template<typename Ty>
     concept instance_policy_type = requires(Ty t) {
         typename Ty::instance_info;
-        typename Ty::instance_key_type;
         service_policy_instance_map_type<typename Ty::instance_map_type>;
     };
 
@@ -79,12 +63,9 @@ namespace dipp
     template<typename Ty>
     concept service_storage_memory_type = requires(Ty t) {
         service_policy_type<typename Ty::policy_type>;
+        { t.find(std::declval<type_key_pair>()) } -> std::same_as<typename Ty::policy_type::instance_info*>;
         {
-            t.find(std::declval<typename Ty::policy_type::instance_key_type>())
-        } -> std::same_as<typename Ty::policy_type::instance_info*>;
-        {
-            t.emplace(std::declval<typename Ty::policy_type::instance_key_type>(),
-                      std::declval<typename Ty::policy_type::instance_info>())
+            t.emplace(std::declval<type_key_pair>(), std::declval<typename Ty::policy_type::instance_info>())
         } -> std::same_as<typename Ty::policy_type::instance_info*>;
     };
 
