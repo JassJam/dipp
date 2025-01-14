@@ -14,13 +14,7 @@ namespace dipp
             std::any Descriptor;
         };
 
-        using service_key_type = std::pair<size_t, size_t>;
-        using service_map_type = std::map<service_key_type, service_info>;
-
-        [[nodiscard]] static constexpr auto make_key(size_t type, size_t key) noexcept
-        {
-            return std::make_pair(type, key);
-        }
+        using service_map_type = std::map<type_key_pair, service_info>;
     };
     static_assert(service_policy_type<default_service_policy>, "default_service_policy is not a service_policy_type");
 
@@ -31,13 +25,7 @@ namespace dipp
             std::any Instance;
         };
 
-        using instance_key_type = std::pair<size_t, size_t>;
-        using instance_map_type = std::map<instance_key_type, instance_info>;
-
-        [[nodiscard]] static constexpr auto make_key(size_t type, size_t key) noexcept
-        {
-            return std::make_pair(type, key);
-        }
+        using instance_map_type = std::map<type_key_pair, instance_info>;
     };
     static_assert(instance_policy_type<default_instance_policy>,
                   "default_instance_policy is not a instance_policy_type");

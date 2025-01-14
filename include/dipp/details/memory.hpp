@@ -12,14 +12,13 @@ namespace dipp
         using policy_type = PolicyTy;
 
     public:
-        auto find(const typename policy_type::instance_key_type& handle)
+        auto find(const type_key_pair& handle)
         {
             auto it = m_Instances.find(handle);
             return it != m_Instances.end() ? &it->second : nullptr;
         }
 
-        auto emplace(const typename policy_type::instance_key_type& handle,
-                     typename policy_type::instance_info            instance)
+        auto emplace(const type_key_pair& handle, typename policy_type::instance_info instance)
         {
             auto [iter, success] = m_Instances.emplace(handle, std::move(instance));
             return success ? &iter->second : nullptr;

@@ -30,6 +30,50 @@ namespace dipp
             m_Storage.template add_service<DescTy>(key);
         }
 
+    public:
+        template<base_injected_type InjectableTy> bool emplace(typename InjectableTy::descriptor_type descriptor)
+        {
+            return m_Storage.template emplace_service<typename InjectableTy::descriptor_type>(
+                std::move(descriptor), InjectableTy::key);
+        }
+
+        template<base_injected_type InjectableTy> bool emplace()
+        {
+            return m_Storage.template emplace_service<typename InjectableTy::descriptor_type>(InjectableTy::key);
+        }
+
+        template<service_descriptor_type DescTy> bool emplace(DescTy descriptor, size_t key = {})
+        {
+            return m_Storage.template emplace_service<DescTy>(std::move(descriptor), key);
+        }
+
+        template<service_descriptor_type DescTy> bool emplace(size_t key = {})
+        {
+            return m_Storage.template emplace_service<DescTy>(key);
+        }
+
+    public:
+        template<base_injected_type InjectableTy> void has(typename InjectableTy::descriptor_type descriptor)
+        {
+            m_Storage.template has_service<typename InjectableTy::descriptor_type>(
+                std::move(descriptor), InjectableTy::key);
+        }
+
+        template<base_injected_type InjectableTy> void has()
+        {
+            m_Storage.template has_service<typename InjectableTy::descriptor_type>(InjectableTy::key);
+        }
+
+        template<service_descriptor_type DescTy> void has(DescTy descriptor, size_t key = {})
+        {
+            m_Storage.template has_service<DescTy>(std::move(descriptor), key);
+        }
+
+        template<service_descriptor_type DescTy> void has(size_t key = {})
+        {
+            m_Storage.template has_service<DescTy>(key);
+        }
+
     private:
         service_storage<StoragePolicyTy> m_Storage;
     };
