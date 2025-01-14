@@ -9,12 +9,12 @@ namespace dipp
     namespace details
     {
 #if _HAS_CXX23
-        [[noreturn]] void unreachable()
+        [[noreturn]] inline void unreachable()
         {
             std::unreachable();
         }
 #else
-        [[noreturn]] void unreachable()
+        [[noreturn]] inline void unreachable()
         {
             std::terminate();
         }
