@@ -141,6 +141,7 @@ namespace dipp
                 {
                     if constexpr (std::tuple_size_v<typename DepsTy::types> == 0)
                     {
+                        (void)scope;
                         return std::apply([](auto&&... args)
                                           { return std::make_unique<Ty>(std::forward<decltype(args)>(args)...); },
                                           std::move(args));
@@ -181,6 +182,7 @@ namespace dipp
                 {
                     if constexpr (std::tuple_size_v<typename DepsTy::types> == 0)
                     {
+                        (void)scope;
                         return std::apply([](auto&&... args)
                                           { return std::make_shared<Ty>(std::forward<decltype(args)>(args)...); },
                                           std::move(args));
@@ -221,6 +223,7 @@ namespace dipp
                 {
                     if constexpr (std::tuple_size_v<typename DepsTy::types> == 0)
                     {
+                        (void)scope;
                         return std::apply(
                             [](auto&&... args) { return Ty(std::forward<decltype(args)>(args)...); }, std::move(args));
                     }
