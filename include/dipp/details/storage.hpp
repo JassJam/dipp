@@ -31,14 +31,30 @@ namespace dipp
         {
             auto service_type = typeid(typename DescTy::service_type).hash_code();
 
-            return emplace(service_type, key, { DescTy{} });
+            auto service_handle = make_type_key(service_type, hash);
+            auto iter           = m_Services.find(service_handle);
+            if (iter != m_Services.end())
+            {
+                return false;
+            }
+
+            m_Services.emplace(service_handle, { DescTy{} });
+            return true;
         }
 
         template<service_descriptor_type DescTy> bool emplace_service(DescTy descriptor, size_t key)
         {
             auto service_type = typeid(typename DescTy::service_type).hash_code();
 
-            return emplace(service_type, key, { std::move(descriptor) });
+            auto service_handle = make_type_key(service_type, hash);
+            auto iter           = m_Services.find(service_handle);
+            if (iter != m_Services.end())
+            {
+                return false;
+            }
+
+            m_Services.emplace(service_handle, { std::move(descriptor) });
+            return true;
         }
 
     public:
@@ -133,13 +149,6 @@ namespace dipp
             {
                 m_Services.emplace(service_handle, std::move(info));
             }
-        }
-
-        bool emplace(size_t service_type, size_t hash, typename policy_type::service_info info)
-        {
-            auto service_handle = make_type_key(service_type, hash);
-            auto iter           = m_Services.find(service_handle);
-            return iter == m_Services.end();
         }
 
     private:
