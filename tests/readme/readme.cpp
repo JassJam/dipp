@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(SingletonAndScoped_Test)
 
     // add the services to the collection
     collection.add<WindowService>();
-    collection.emplace<EngineService>();
+    collection.add<EngineService>();
 
     // create a service provider with the collection
     dipp::default_service_provider services(std::move(collection));
