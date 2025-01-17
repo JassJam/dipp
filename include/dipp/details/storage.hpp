@@ -29,18 +29,16 @@ namespace dipp
     public:
         template<service_descriptor_type DescTy> bool emplace_service(size_t key)
         {
-            auto descriptor_type = typeid(DescTy).hash_code();
-            auto service_type    = typeid(typename DescTy::service_type).hash_code();
+            auto service_type = typeid(typename DescTy::service_type).hash_code();
 
-            return emplace(descriptor_type, service_type, key, { DescTy{} });
+            return emplace(service_type, key, { DescTy{} });
         }
 
         template<service_descriptor_type DescTy> bool emplace_service(DescTy descriptor, size_t key)
         {
-            auto descriptor_type = typeid(DescTy).hash_code();
-            auto service_type    = typeid(typename DescTy::service_type).hash_code();
+            auto service_type = typeid(typename DescTy::service_type).hash_code();
 
-            return emplace(descriptor_type, service_type, key, { std::move(descriptor) });
+            return emplace(service_type, key, { std::move(descriptor) });
         }
 
     public:
