@@ -14,18 +14,16 @@ namespace dipp
     public:
         template<service_descriptor_type DescTy> void add_service(size_t key)
         {
-            auto descriptor_type = typeid(DescTy).hash_code();
-            auto service_type    = typeid(typename DescTy::service_type).hash_code();
+            auto service_type = typeid(typename DescTy::service_type).hash_code();
 
-            emplace_or_override(descriptor_type, service_type, key, { DescTy{} });
+            emplace_or_override(service_type, key, { DescTy{} });
         }
 
         template<service_descriptor_type DescTy> void add_service(DescTy descriptor, size_t key)
         {
-            auto descriptor_type = typeid(DescTy).hash_code();
-            auto service_type    = typeid(typename DescTy::service_type).hash_code();
+            auto service_type = typeid(typename DescTy::service_type).hash_code();
 
-            emplace_or_override(descriptor_type, service_type, key, { std::move(descriptor) });
+            emplace_or_override(service_type, key, { std::move(descriptor) });
         }
 
     public:
@@ -124,8 +122,7 @@ namespace dipp
         }
 
     private:
-        void emplace_or_override(size_t descriptor_type, size_t service_type, size_t hash,
-                                 typename policy_type::service_info info)
+        void emplace_or_override(size_t service_type, size_t hash, typename policy_type::service_info info)
         {
             auto service_handle = make_type_key(service_type, hash);
             auto iter           = m_Services.find(service_handle);
@@ -140,7 +137,7 @@ namespace dipp
             }
         }
 
-        bool emplace(size_t descriptor_type, size_t service_type, size_t hash, typename policy_type::service_info info)
+        bool emplace(size_t service_type, size_t hash, typename policy_type::service_info info)
         {
             auto service_handle = make_type_key(service_type, hash);
             auto iter           = m_Services.find(service_handle);
