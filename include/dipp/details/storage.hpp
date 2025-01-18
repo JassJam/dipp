@@ -31,7 +31,7 @@ namespace dipp
         {
             auto service_type = typeid(typename DescTy::service_type).hash_code();
 
-            auto service_handle = make_type_key(service_type, hash);
+            auto service_handle = make_type_key(service_type, key);
             auto iter           = m_Services.find(service_handle);
             if (iter != m_Services.end())
             {
@@ -46,7 +46,7 @@ namespace dipp
         {
             auto service_type = typeid(typename DescTy::service_type).hash_code();
 
-            auto service_handle = make_type_key(service_type, hash);
+            auto service_handle = make_type_key(service_type, key);
             auto iter           = m_Services.find(service_handle);
             if (iter != m_Services.end())
             {
