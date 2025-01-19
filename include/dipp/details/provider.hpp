@@ -20,6 +20,27 @@ namespace dipp
         {
         }
 
+        service_provider(service_provider&& services) :
+            m_Storage(std::move(services.m_Storage)),
+            m_RootScope(&m_Storage, &m_SingletonStorage, std::move(services.m_RootScope))
+        {
+        }
+
+        service_provider& operator=(service_provider&& services)
+        {
+            if (this != &services)
+            {
+                m_Storage   = std::move(services.m_Storage);
+                m_RootScope = scope_type(&m_Storage, &m_SingletonStorage, std::move(services.m_RootScope));
+            }
+            return *this;
+        }
+
+        service_provider(const service_provider&)            = delete;
+        service_provider& operator=(const service_provider&) = delete;
+
+        ~service_provider() = default;
+
     public:
         [[nodiscard]] auto create_scope()
         {

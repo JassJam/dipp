@@ -20,6 +20,19 @@ namespace dipp
         {
         }
 
+        service_scope(storage_type* storage, singleton_storage_type* singleton_storage, service_scope&& scope) :
+            m_Storage(storage), m_SingletonStorage(singleton_storage), m_LocalStorage(std::move(scope.m_LocalStorage))
+        {
+        }
+
+        service_scope(const service_scope&)            = delete;
+        service_scope& operator=(const service_scope&) = delete;
+
+        service_scope(service_scope&&)            = delete;
+        service_scope& operator=(service_scope&&) = delete;
+
+        ~service_scope() = default;
+
     public:
         template<base_injected_type InjectableTy> [[nodiscard]] auto get() -> InjectableTy
         {
