@@ -38,7 +38,7 @@ namespace dipp
                 return false;
             }
 
-            m_Services.emplace(service_handle, { DescTy{} });
+            m_Services.emplace(service_handle, DescTy{});
             return true;
         }
 
@@ -53,7 +53,7 @@ namespace dipp
                 return false;
             }
 
-            m_Services.emplace(service_handle, { std::move(descriptor) });
+            m_Services.emplace(service_handle, std::move(descriptor));
             return true;
         }
 
