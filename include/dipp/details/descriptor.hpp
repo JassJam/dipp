@@ -22,9 +22,13 @@ namespace dipp
     class functor_service_descriptor : public base_service_descriptor<Ty, Lifetime, DepsTy>
     {
     public:
-        using value_type   = Ty;
-        using scope_type   = ScopeTy;
+        using value_type = Ty;
+        using scope_type = ScopeTy;
+#if _HAS_CXX23
+        using functor_type = std::move_only_function<value_type(scope_type& scope)>;
+#else
         using functor_type = std::function<value_type(scope_type& scope)>;
+#endif
 
         static constexpr service_lifetime lifetime = Lifetime;
 

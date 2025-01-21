@@ -3,6 +3,7 @@
 #include "core.hpp"
 #include "memory.hpp"
 #include "exception.hpp"
+#include "move_only_any.hpp"
 
 namespace dipp
 {
@@ -14,16 +15,20 @@ namespace dipp
     public:
         template<service_descriptor_type DescTy> void add_service(size_t key)
         {
-            auto service_type = typeid(typename DescTy::service_type).hash_code();
+            auto service_type   = typeid(typename DescTy::service_type).hash_code();
+            auto service_handle = make_type_key(service_type, key);
 
-            emplace_or_override(service_type, key, { DescTy{} });
+            m_Services.erase(service_handle);
+            m_Services.emplace(service_handle, DescTy{});
         }
 
         template<service_descriptor_type DescTy> void add_service(DescTy descriptor, size_t key)
         {
-            auto service_type = typeid(typename DescTy::service_type).hash_code();
+            auto service_type   = typeid(typename DescTy::service_type).hash_code();
+            auto service_handle = make_type_key(service_type, key);
 
-            emplace_or_override(service_type, key, { std::move(descriptor) });
+            m_Services.erase(service_handle);
+            m_Services.emplace(service_handle, std::move(descriptor));
         }
 
     public:
@@ -81,7 +86,7 @@ namespace dipp
 
                 if (instance_iter == nullptr)
                 {
-                    auto descriptor = std::any_cast<DescTy>(&info.Descriptor);
+                    auto descriptor = info.cast<DescTy>();
                     if (!descriptor) [[unlikely]]
                     {
                         details::fail<incompatible_service_descriptor, service_type>();
@@ -90,7 +95,7 @@ namespace dipp
                     instance_iter = singleton_storage.emplace(handle, { descriptor->load(scope) });
                 }
 
-                return service_type{ std::any_cast<value_type&>(instance_iter->Instance) };
+                return service_type{ *instance_iter->cast<value_type>() };
             }
             else if constexpr (DescTy::lifetime == service_lifetime::scoped)
             {
@@ -98,7 +103,7 @@ namespace dipp
 
                 if (instance_iter == nullptr)
                 {
-                    auto descriptor = std::any_cast<DescTy>(&info.Descriptor);
+                    auto descriptor = info.cast<DescTy>();
                     if (!descriptor) [[unlikely]]
                     {
                         details::fail<incompatible_service_descriptor, service_type>();
@@ -107,11 +112,11 @@ namespace dipp
                     instance_iter = scoped_storage.emplace(handle, { descriptor->load(scope) });
                 }
 
-                return service_type{ std::any_cast<value_type&>(instance_iter->Instance) };
+                return service_type{ *instance_iter->cast<value_type>() };
             }
             else if constexpr (DescTy::lifetime == service_lifetime::transient)
             {
-                auto descriptor = std::any_cast<DescTy>(&info.Descriptor);
+                auto descriptor = info.cast<DescTy>();
                 if (!descriptor) [[unlikely]]
                 {
                     details::fail<incompatible_service_descriptor, service_type>();
@@ -133,22 +138,6 @@ namespace dipp
 
             auto handle = make_type_key(typeid(service_type).hash_code(), key);
             return m_Services.find(handle) != m_Services.end();
-        }
-
-    private:
-        void emplace_or_override(size_t service_type, size_t hash, typename policy_type::service_info info)
-        {
-            auto service_handle = make_type_key(service_type, hash);
-            auto iter           = m_Services.find(service_handle);
-
-            if (iter != m_Services.end())
-            {
-                iter->second = std::move(info);
-            }
-            else
-            {
-                m_Services.emplace(service_handle, std::move(info));
-            }
         }
 
     private:
