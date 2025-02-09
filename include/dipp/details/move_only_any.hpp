@@ -17,7 +17,7 @@ namespace dipp
     class move_only_any
     {
     private:
-        static constexpr unsigned long long SMALL_BUFFER_SIZE = 32u;
+        static constexpr unsigned long long SMALL_BUFFER_SIZE = 32ull;
 
         struct small_storage_rtti
         {
@@ -92,8 +92,8 @@ namespace dipp
             alignof(Ty) <= alignof(std::max_align_t) && sizeof(Ty) <= SMALL_BUFFER_SIZE;
 
         template<typename Ty>
-        static constexpr bool is_small = std::is_nothrow_move_constructible_v<Ty> &&
-                                         alignof(Ty) <= alignof(std::max_align_t) && sizeof(Ty) <= SMALL_BUFFER_SIZE;
+        static constexpr bool is_small = std::is_move_constructible_v<Ty> && alignof(Ty) <= alignof(std::max_align_t) &&
+                                         sizeof(Ty) <= SMALL_BUFFER_SIZE;
 
         template<typename Ty> static constexpr bool is_large = !is_trivial<Ty> && !is_small<Ty>;
 
@@ -106,7 +106,7 @@ namespace dipp
         constexpr move_only_any(move_only_any&& other) noexcept
         {
             m_Storage.type_info = other.m_Storage.type_info;
-            m_Storage.type = other.m_Storage.type;
+            m_Storage.type      = other.m_Storage.type;
             switch (m_Storage.type)
             {
             case any_storage_type::trivial_type:
@@ -130,9 +130,49 @@ namespace dipp
             emplace_impl<Ty>(std::forward<Ty>(value));
         }
 
+        constexpr move_only_any& operator=(move_only_any&& other) noexcept
+        {
+            if (this != &other)
+            {
+                reset();
+                m_Storage.type_info = other.m_Storage.type_info;
+                m_Storage.type      = other.m_Storage.type;
+                switch (m_Storage.type)
+                {
+                case any_storage_type::trivial_type:
+                    std::memcpy(&m_Storage.u.trivial_type, &other.m_Storage.u.trivial_type, sizeof(trivial_storage));
+                    break;
+                case any_storage_type::small_type:
+                    m_Storage.u.small_type.rtti = other.m_Storage.u.small_type.rtti;
+                    m_Storage.u.small_type.rtti.move(
+                        &m_Storage.u.small_type.buffer, &other.m_Storage.u.small_type.buffer);
+                    other.m_Storage.u.small_type.rtti.destruct(&other.m_Storage.u.small_type.buffer);
+                    break;
+                case any_storage_type::large_type:
+                    m_Storage.u.large_type.rtti = other.m_Storage.u.large_type.rtti;
+                    m_Storage.u.large_type.data = std::exchange(other.m_Storage.u.large_type.data, nullptr);
+                    break;
+                }
+                other.m_Storage.type = any_storage_type::null;
+            }
+            return *this;
+        }
+
         constexpr ~move_only_any()
         {
             reset();
+        }
+
+        [[nodiscard]] static move_only_any make_empty() noexcept
+        {
+            return move_only_any{};
+        }
+
+        template<typename Ty, typename... Args> [[nodiscard]] static move_only_any make(Args&&... args)
+        {
+            move_only_any any;
+            any.emplace<Ty>(std::forward<Args>(args)...);
+            return any;
         }
 
     public:
