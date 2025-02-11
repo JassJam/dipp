@@ -241,7 +241,7 @@ namespace dipp
             m_Storage.type_info = &typeid(Ty);
             if constexpr (is_trivial<Ty>)
             {
-                auto obj = std::bit_cast<Ty*>(&m_Storage.u.trivial_type.buffer);
+                auto obj = std::bit_cast<std::add_pointer_t<Ty>>(&m_Storage.u.trivial_type.buffer);
                 construct(obj, std::forward<Args>(args)...);
 
                 m_Storage.type = any_storage_type::trivial_type;
@@ -250,7 +250,7 @@ namespace dipp
             }
             else if constexpr (is_small<Ty>)
             {
-                auto obj = std::bit_cast<Ty*>(&m_Storage.u.small_type.buffer);
+                auto obj = std::bit_cast<std::add_pointer_t<Ty>>(&m_Storage.u.small_type.buffer);
                 construct(obj, std::forward<Args>(args)...);
 
                 m_Storage.type = any_storage_type::small_type;
