@@ -122,7 +122,7 @@ namespace dipp
                     details::fail<incompatible_service_descriptor, service_type>();
                 }
 
-                return service_type{ descriptor->load(scope) };
+                return service_type{ std::move(*descriptor->load(scope).cast<value_type>()) };
             }
             else
             {

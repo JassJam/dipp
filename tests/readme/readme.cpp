@@ -2,6 +2,7 @@
 
 #include <boost/test/included/unit_test.hpp>
 #include <dipp/dipp.hpp>
+#include <mutex>
 
 BOOST_AUTO_TEST_SUITE(ReadMe_Test)
 
@@ -10,6 +11,7 @@ BOOST_AUTO_TEST_SUITE(ReadMe_Test)
 // We define a normal class with our logic
 struct Window
 {
+    std::mutex x;
 };
 
 struct Engine

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core.hpp"
+#include "move_only_any.hpp"
 
 namespace dipp
 {
@@ -57,7 +58,7 @@ namespace dipp
         typename Ty::service_type;
 
         { Ty::lifetime } -> convertible_to<service_lifetime>;
-        { t.load(std::declval<typename Ty::scope_type&>()) } -> std::same_as<typename Ty::value_type>;
+        { t.load(std::declval<typename Ty::scope_type&>()) } -> std::same_as<move_only_any>;
     };
 
     template<typename Ty>

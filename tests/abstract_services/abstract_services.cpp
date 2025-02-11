@@ -35,8 +35,6 @@ public:
 
 //
 
-//
-
 using CameraService = dipp::injected_unique<ICamera, dipp::service_lifetime::transient>;
 
 using PerspectiveCameraService  = dipp::injected_unique<PerspectiveCamera, dipp::service_lifetime::transient>;
@@ -48,7 +46,8 @@ BOOST_AUTO_TEST_CASE(PerspectiveCamera_Test)
 {
     dipp::default_service_collection collection;
 
-    collection.add<CameraService>([](auto&) { return std::make_unique<PerspectiveCamera>(); });
+    collection.add<CameraService>([](auto&) -> std::unique_ptr<ICamera>
+                                  { return std::make_unique<PerspectiveCamera>(); });
     collection.add<PerspectiveCameraService>();
 
     dipp::default_service_provider services(std::move(collection));
@@ -69,7 +68,8 @@ BOOST_AUTO_TEST_CASE(OrthographicCamera_Test)
 {
     dipp::default_service_collection collection;
 
-    collection.add<CameraService>([](auto&) { return std::make_unique<OrthographicCamera>(); });
+    collection.add<CameraService>([](auto&) -> std::unique_ptr<ICamera>
+                                  { return std::make_unique<OrthographicCamera>(); });
     collection.add<OrthographicCameraService>();
 
     dipp::default_service_provider services(std::move(collection));
