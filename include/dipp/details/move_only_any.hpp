@@ -285,6 +285,14 @@ namespace dipp
     private:
         storage m_Storage;
     };
+
+    /// <summary>
+    /// Create a move_only_any object with the given type and arguments
+    /// </summary>
+    template<typename Ty, typename... ArgsTy> [[nodiscard]] constexpr move_only_any make_any(ArgsTy&&... args)
+    {
+        return move_only_any::make<Ty>(std::forward<ArgsTy>(args)...);
+    }
 } // namespace dipp
 
 namespace std

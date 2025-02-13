@@ -8,6 +8,8 @@ namespace dipp
     template<class From, class To>
     concept convertible_to = std::is_convertible_v<From, To> && requires { static_cast<To>(std::declval<From>()); };
 
+    //
+
     template<typename Ty>
     concept service_policy_service_map_type = requires(Ty t) {
         t.find(std::declval<type_key_pair>());
@@ -15,21 +17,12 @@ namespace dipp
     };
 
     template<typename Ty>
-    concept service_policy_instance_map_type = requires(Ty t) {
-        t.find(std::declval<type_key_pair>());
-        t.emplace(std::declval<type_key_pair>(), std::declval<typename Ty::instance_info>());
-    };
+    concept service_policy_instance_map_type = requires(Ty t) { t.find(std::declval<type_key_pair>()); };
 
     template<typename Ty>
     concept service_policy_type = requires(Ty t) {
         typename Ty::service_info;
         service_policy_service_map_type<typename Ty::service_map_type>;
-    };
-
-    template<typename Ty>
-    concept instance_policy_type = requires(Ty t) {
-        typename Ty::instance_info;
-        service_policy_instance_map_type<typename Ty::instance_map_type>;
     };
 
     //
@@ -63,11 +56,8 @@ namespace dipp
 
     template<typename Ty>
     concept service_storage_memory_type = requires(Ty t) {
-        service_policy_type<typename Ty::policy_type>;
-        { t.find(std::declval<type_key_pair>()) } -> std::same_as<typename Ty::policy_type::instance_info*>;
-        {
-            t.emplace(std::declval<type_key_pair>(), std::declval<typename Ty::policy_type::instance_info>())
-        } -> std::same_as<typename Ty::policy_type::instance_info*>;
+        typename Ty::instance_info;
+        service_policy_instance_map_type<typename Ty::instance_map_type>;
     };
 
     //

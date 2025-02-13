@@ -6,7 +6,8 @@ namespace dipp
 {
     template<service_policy_type StoragePolicyTy> class service_collection
     {
-        template<service_policy_type, instance_policy_type, instance_policy_type> friend class service_provider;
+        template<service_policy_type, service_storage_memory_type, service_storage_memory_type>
+        friend class service_provider;
 
     public:
         template<base_injected_type InjectableTy> void add(typename InjectableTy::descriptor_type descriptor)

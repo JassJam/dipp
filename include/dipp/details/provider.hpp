@@ -4,12 +4,12 @@
 
 namespace dipp
 {
-    template<service_policy_type StoragePolicyTy, instance_policy_type SingletonPolicyTy,
-             instance_policy_type ScopedPolicyTy>
+    template<service_policy_type StoragePolicyTy, service_storage_memory_type SingletonPolicyTy,
+             service_storage_memory_type ScopedPolicyTy>
     class service_provider
     {
     public:
-        using singleton_memory_type = service_storage_memory<SingletonPolicyTy>;
+        using singleton_memory_type = SingletonPolicyTy;
         using storage_type          = service_storage<StoragePolicyTy>;
         using scope_type            = service_scope<StoragePolicyTy, SingletonPolicyTy, ScopedPolicyTy>;
         using collection_type       = service_collection<StoragePolicyTy>;
@@ -86,8 +86,8 @@ namespace dipp
         scope_type            m_RootScope;
     };
 
-    using default_service_provider =
-        service_provider<default_service_policy, default_instance_policy, default_instance_policy>;
+    using default_service_provider = service_provider<default_service_policy, default_service_storage_memory_type,
+                                                      default_service_storage_memory_type>;
 
     static_assert(service_provider_type<default_service_provider>,
                   "default_service_provider is not a service_provider");

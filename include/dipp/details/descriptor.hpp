@@ -5,6 +5,12 @@
 
 namespace dipp
 {
+    template<typename Ty, typename FnTy, service_scope_type ScopeTy>
+    static constexpr bool                   is_service_create_function_type_v =
+        std::is_invocable_v<FnTy, ScopeTy&> std::is_same_v<std::invoke_result_t<FnTy, ScopeTy&>, move_only_any>;
+
+    //
+
     template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy> class base_service_descriptor
     {
     public:
@@ -14,7 +20,7 @@ namespace dipp
 
         using dependency_types = typename DepsTy::types;
 
-    protected:
+    public:
         template<typename ScopeTy, typename TupleTy>
         [[nodiscard]] static auto GetCombinedArgs(ScopeTy& scope, TupleTy&& args)
         {
@@ -54,9 +60,9 @@ namespace dipp
         static constexpr service_lifetime lifetime = Lifetime;
 
         template<typename FnTy>
-            requires std::is_invocable_v<FnTy, scope_type&>
-        constexpr functor_service_descriptor(FnTy functor) noexcept(
-            std::is_nothrow_move_constructible_v<functor_type>) : m_Functor(std::move(functor))
+            requires is_service_create_function_type_v<Ty, FnTy, ScopeTy>
+        constexpr functor_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
+            m_Functor(std::move(functor))
         {
         }
 
@@ -154,8 +160,7 @@ namespace dipp
         using base_class::ApplyFactory;
 
         template<typename FnTy>
-            requires(std::is_invocable_v<FnTy, ScopeTy&> &&
-                     std::is_same_v<std::invoke_result_t<FnTy, ScopeTy&>, value_type>)
+            requires is_service_create_function_type_v<value_type, FnTy, ScopeTy>
         constexpr unique_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
             base_class(std::move(functor))
         {
@@ -169,12 +174,10 @@ namespace dipp
                 {
                     return ApplyFactory(
                         scope,
-                        [](auto&&... args)
+                        [](auto&&... args) mutable
                         {
-                            move_only_any result;
-                            result.emplace<std::unique_ptr<Ty>>(
+                            return make_any<std::unique_ptr<Ty>>(
                                 std::make_unique<Ty>(std::forward<decltype(args)>(args)...));
-                            return result;
                         },
                         std::move(args));
                 })
@@ -195,8 +198,7 @@ namespace dipp
         using base_class::ApplyFactory;
 
         template<typename FnTy>
-            requires(std::is_invocable_v<FnTy, ScopeTy&> &&
-                     std::is_same_v<std::invoke_result_t<FnTy, ScopeTy&>, value_type>)
+            requires is_service_create_function_type_v<value_type, FnTy, ScopeTy>
         constexpr shared_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
             base_class(std::move(functor))
         {
@@ -210,12 +212,10 @@ namespace dipp
                 {
                     return ApplyFactory(
                         scope,
-                        [](auto&&... args)
+                        [](auto&&... args) mutable
                         {
-                            move_only_any result;
-                            result.emplace<std::shared_ptr<Ty>>(
+                            return make_any<std::shared_ptr<Ty>>(
                                 std::make_shared<Ty>(std::forward<decltype(args)>(args)...));
-                            return result;
                         },
                         std::move(args));
                 })
@@ -236,8 +236,7 @@ namespace dipp
         using base_class::ApplyFactory;
 
         template<typename FnTy>
-            requires(std::is_invocable_v<FnTy, ScopeTy&> &&
-                     std::is_same_v<std::invoke_result_t<FnTy, ScopeTy&>, value_type>)
+            requires is_service_create_function_type_v<value_type, FnTy, ScopeTy>
         constexpr local_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
             base_class(std::move(functor))
         {
@@ -250,14 +249,8 @@ namespace dipp
                 [args = std::forward_as_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable
                 {
                     return ApplyFactory(
-                        scope,
-                        [](auto&&... args)
-                        {
-                            move_only_any result;
-                            result.emplace<Ty>(std::forward<decltype(args)>(args)...);
-                            return result;
-                        },
-                        std::move(args));
+                        scope, [](auto&&... args) mutable
+                        { return make_any<Ty>(std::forward<decltype(args)>(args)...); }, std::move(args));
                 })
         {
         }
