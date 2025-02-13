@@ -1,18 +1,18 @@
 #pragma once
 
 #include "storage.hpp"
-#include "memory.hpp"
+#include "policy.hpp"
 
 namespace dipp
 {
-    template<service_policy_type StoragePolicyTy, instance_policy_type SingletonPolicyTy,
-             instance_policy_type ScopedPolicyTy>
+    template<service_policy_type StoragePolicyTy, service_storage_memory_type SingletonPolicyTy,
+             service_storage_memory_type ScopedPolicyTy>
     class service_scope
     {
     public:
         using storage_type           = service_storage<StoragePolicyTy>;
-        using singleton_storage_type = service_storage_memory<SingletonPolicyTy>;
-        using scoped_storage_type    = service_storage_memory<ScopedPolicyTy>;
+        using singleton_storage_type = SingletonPolicyTy;
+        using scoped_storage_type    = ScopedPolicyTy;
 
     public:
         service_scope(storage_type* storage, singleton_storage_type* singleton_storage) :
@@ -66,7 +66,7 @@ namespace dipp
     };
 
     using default_service_scope =
-        service_scope<default_service_policy, default_instance_policy, default_instance_policy>;
+        service_scope<default_service_policy, default_service_storage_memory_type, default_service_storage_memory_type>;
 
     static_assert(service_scope_type<default_service_scope>, "default_service_scope is not a service_scope_type");
 } // namespace dipp
