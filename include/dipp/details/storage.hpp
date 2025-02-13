@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core.hpp"
-#include "memory.hpp"
+#include "policy.hpp"
 #include "exception.hpp"
 #include "move_only_any.hpp"
 
@@ -92,7 +92,7 @@ namespace dipp
                         details::fail<incompatible_service_descriptor, service_type>();
                     }
 
-                    instance_iter = singleton_storage.emplace(handle, { descriptor->load(scope) });
+                    instance_iter = singleton_storage.emplace(handle, *descriptor, scope);
                 }
 
                 return service_type{ *instance_iter->cast<value_type>() };
@@ -109,7 +109,7 @@ namespace dipp
                         details::fail<incompatible_service_descriptor, service_type>();
                     }
 
-                    instance_iter = scoped_storage.emplace(handle, { descriptor->load(scope) });
+                    instance_iter = scoped_storage.emplace(handle, *descriptor, scope);
                 }
 
                 return service_type{ *instance_iter->cast<value_type>() };
