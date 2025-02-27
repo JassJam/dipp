@@ -26,7 +26,7 @@ namespace dipp
         {
             if constexpr (std::tuple_size_v<typename DepsTy::types> == 0)
             {
-                (void)scope; // Suppress unused parameter warning
+                (void)scope;
                 return std::forward<TupleTy>(args);
             }
             else
@@ -168,19 +168,23 @@ namespace dipp
 
         template<typename... ArgsTy>
             requires(!std::is_abstract_v<Ty>)
-        constexpr unique_service_descriptor(ArgsTy&&... args) :
+        constexpr unique_service_descriptor(std::in_place_t, ArgsTy&&... args) :
             base_class(
                 [args = std::forward_as_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable
                 {
-                    return ApplyFactory(
+                    return base_class::ApplyFactory(
                         scope,
-                        [](auto&&... args) mutable
+                        [](auto&&... params) mutable
                         {
                             return make_any<std::unique_ptr<Ty>>(
-                                std::make_unique<Ty>(std::forward<decltype(args)>(args)...));
+                                std::make_unique<Ty>(std::forward<decltype(params)>(params)...));
                         },
                         std::move(args));
                 })
+        {
+        }
+
+        constexpr unique_service_descriptor() : unique_service_descriptor(std::in_place)
         {
         }
     };
@@ -206,19 +210,23 @@ namespace dipp
 
         template<typename... ArgsTy>
             requires(!std::is_abstract_v<Ty>)
-        constexpr shared_service_descriptor(ArgsTy&&... args) :
+        constexpr shared_service_descriptor(std::in_place_t, ArgsTy&&... args) :
             base_class(
                 [args = std::forward_as_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable
                 {
-                    return ApplyFactory(
+                    return base_class::ApplyFactory(
                         scope,
-                        [](auto&&... args) mutable
+                        [](auto&&... params) mutable
                         {
                             return make_any<std::shared_ptr<Ty>>(
-                                std::make_shared<Ty>(std::forward<decltype(args)>(args)...));
+                                std::make_shared<Ty>(std::forward<decltype(params)>(params)...));
                         },
                         std::move(args));
                 })
+        {
+        }
+
+        constexpr shared_service_descriptor() : shared_service_descriptor(std::in_place)
         {
         }
     };
@@ -244,14 +252,18 @@ namespace dipp
 
         template<typename... ArgsTy>
             requires(!std::is_abstract_v<Ty>)
-        constexpr local_service_descriptor(ArgsTy&&... args) :
+        constexpr local_service_descriptor(std::in_place_t, ArgsTy&&... args) :
             base_class(
                 [args = std::forward_as_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable
                 {
-                    return ApplyFactory(
-                        scope, [](auto&&... args) mutable
-                        { return make_any<Ty>(std::forward<decltype(args)>(args)...); }, std::move(args));
+                    return base_class::ApplyFactory(
+                        scope, [](auto&&... params) mutable
+                        { return dipp::make_any<Ty>(std::forward<decltype(params)>(params)...); }, std::move(args));
                 })
+        {
+        }
+
+        constexpr local_service_descriptor() : local_service_descriptor(std::in_place)
         {
         }
     };
