@@ -15,12 +15,13 @@ namespace dipp
         using collection_type       = service_collection<StoragePolicyTy>;
 
     public:
-        service_provider(collection_type collection) :
+        explicit service_provider(collection_type collection) noexcept(
+            std::is_nothrow_move_constructible_v<storage_type>) :
             m_Storage(std::move(collection.m_Storage)), m_RootScope(&m_Storage, &m_SingletonStorage)
         {
         }
 
-        service_provider(service_provider&& services) :
+        service_provider(service_provider&& services) noexcept :
             m_Storage(std::move(services.m_Storage)),
             m_RootScope(&m_Storage, &m_SingletonStorage, std::move(services.m_RootScope))
         {
@@ -42,6 +43,11 @@ namespace dipp
         ~service_provider() = default;
 
     public:
+        [[nodiscard]] auto collection() const noexcept(noexcept(collection_type{ m_Storage }))
+        {
+            return collection_type{ m_Storage };
+        }
+
         [[nodiscard]] auto create_scope()
         {
             return scope_type(&m_Storage, &m_SingletonStorage);
