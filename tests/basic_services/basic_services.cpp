@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(TransientReference_Test)
 
 BOOST_AUTO_TEST_CASE(ExternReference_Test)
 {
-    using scene_service = dipp::injected_extern<Scene>;
+    using scene_service = dipp::injected<std::reference_wrapper<Scene>, dipp::service_lifetime::singleton>;
 
     using world_service =
         dipp::injected<World, dipp::service_lifetime::scoped, dipp::dependency<scene_service, CameraService>>;
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(ExternReference_Test)
     dipp::default_service_collection collection;
 
     collection.add<CameraService>();
-    collection.add<scene_service>(scene);
+    collection.add<scene_service>([&scene](auto&) -> std::reference_wrapper<Scene> { return scene; });
     collection.add<world_service>();
 
     dipp::default_service_provider services(std::move(collection));
