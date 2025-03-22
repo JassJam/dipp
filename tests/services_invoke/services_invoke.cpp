@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(BasicInvoke_Test)
 
     dipp::default_service_collection collection;
 
-    collection.add<WindowService>([windowB](auto&) { return windowB; });
+    collection.add(WindowService::descriptor_type([windowB](auto&) { return windowB; }));
 
     dipp::default_service_provider services(std::move(collection));
 

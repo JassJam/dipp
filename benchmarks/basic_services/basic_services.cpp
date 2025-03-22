@@ -130,8 +130,8 @@ struct DippLoggerServiceConfig
 {
     static void setup(dipp::default_service_collection& collection)
     {
-        collection.add<DippLoggerService>([](auto&) -> std::shared_ptr<ILogger>
-                                          { return std::make_shared<ConsoleLogger>(); });
+        collection.add(DippLoggerService::descriptor_type([](auto&) -> std::shared_ptr<ILogger>
+                                                          { return std::make_shared<ConsoleLogger>(); }));
     }
 };
 
@@ -140,8 +140,8 @@ struct DippDatabaseServiceConfig
 {
     static void setup(dipp::default_service_collection& collection)
     {
-        collection.add<DippDatabaseService>([](auto&) -> std::shared_ptr<IDatabase>
-                                            { return std::make_shared<SQLDatabase>(); });
+        collection.add(DippDatabaseService::descriptor_type([](auto&) -> std::shared_ptr<IDatabase>
+                                                            { return std::make_shared<SQLDatabase>(); }));
     }
 };
 
@@ -150,12 +150,12 @@ struct DippUserServiceServiceConfig
 {
     static void setup(dipp::default_service_collection& collection)
     {
-        collection.add<DippUserServiceService>(
+        collection.add(DippUserServiceService::descriptor_type(
             [](auto& services) -> std::shared_ptr<IUserService>
             {
                 return std::make_shared<UserService>(
                     *services.get<DippLoggerService>(), *services.get<DippDatabaseService>());
-            });
+            }));
     }
 };
 

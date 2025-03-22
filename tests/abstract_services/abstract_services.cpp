@@ -46,8 +46,11 @@ BOOST_AUTO_TEST_CASE(PerspectiveCamera_Test)
 {
     dipp::default_service_collection collection;
 
-    collection.add<CameraService>([](auto&) -> std::unique_ptr<ICamera>
-                                  { return std::make_unique<PerspectiveCamera>(); });
+    using ff = CameraService::descriptor_type;
+
+    collection.add(CameraService::descriptor_type([](auto&) -> std::unique_ptr<ICamera>
+                                                  { return std::make_unique<PerspectiveCamera>(); }));
+
     collection.add<PerspectiveCameraService>();
 
     dipp::default_service_provider services(std::move(collection));
@@ -68,8 +71,9 @@ BOOST_AUTO_TEST_CASE(OrthographicCamera_Test)
 {
     dipp::default_service_collection collection;
 
-    collection.add<CameraService>([](auto&) -> std::unique_ptr<ICamera>
-                                  { return std::make_unique<OrthographicCamera>(); });
+    collection.add(CameraService::descriptor_type([](auto&) -> std::unique_ptr<ICamera>
+                                                  { return std::make_unique<OrthographicCamera>(); }));
+
     collection.add<OrthographicCameraService>();
 
     dipp::default_service_provider services(std::move(collection));

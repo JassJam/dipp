@@ -5,12 +5,6 @@
 
 namespace dipp
 {
-    template<typename Ty, typename FnTy, service_scope_type ScopeTy>
-    static constexpr bool                   is_service_create_function_type_v =
-        std::is_invocable_v<FnTy, ScopeTy&> std::is_same_v<std::invoke_result_t<FnTy, ScopeTy&>, move_only_any>;
-
-    //
-
     template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy> class base_service_descriptor
     {
     public:
@@ -59,10 +53,8 @@ namespace dipp
 
         static constexpr service_lifetime lifetime = Lifetime;
 
-        template<typename FnTy>
-            requires is_service_create_function_type_v<Ty, FnTy, ScopeTy>
-        constexpr functor_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
-            m_Functor(std::move(functor))
+        constexpr functor_service_descriptor(functor_type functor) noexcept(
+            std::is_nothrow_move_constructible_v<functor_type>) : m_Functor(std::move(functor))
         {
         }
 
@@ -82,15 +74,14 @@ namespace dipp
     class unique_service_descriptor : public functor_service_descriptor<std::unique_ptr<Ty>, Lifetime, ScopeTy, DepsTy>
     {
     public:
-        using base_class = functor_service_descriptor<std::unique_ptr<Ty>, Lifetime, ScopeTy, DepsTy>;
-        using value_type = typename base_class::value_type;
+        using base_class   = functor_service_descriptor<std::unique_ptr<Ty>, Lifetime, ScopeTy, DepsTy>;
+        using value_type   = typename base_class::value_type;
+        using functor_type = typename base_class::functor_type;
 
         using base_class::ApplyFactory;
 
-        template<typename FnTy>
-            requires is_service_create_function_type_v<value_type, FnTy, ScopeTy>
-        constexpr unique_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
-            base_class(std::move(functor))
+        explicit constexpr unique_service_descriptor(functor_type functor) noexcept(
+            std::is_nothrow_move_constructible_v<functor_type>) : base_class(std::move(functor))
         {
         }
 
@@ -124,15 +115,14 @@ namespace dipp
     class shared_service_descriptor : public functor_service_descriptor<std::shared_ptr<Ty>, Lifetime, ScopeTy, DepsTy>
     {
     public:
-        using base_class = functor_service_descriptor<std::shared_ptr<Ty>, Lifetime, ScopeTy, DepsTy>;
-        using value_type = typename base_class::value_type;
+        using base_class   = functor_service_descriptor<std::shared_ptr<Ty>, Lifetime, ScopeTy, DepsTy>;
+        using value_type   = typename base_class::value_type;
+        using functor_type = typename base_class::functor_type;
 
         using base_class::ApplyFactory;
 
-        template<typename FnTy>
-            requires is_service_create_function_type_v<value_type, FnTy, ScopeTy>
-        constexpr shared_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
-            base_class(std::move(functor))
+        constexpr shared_service_descriptor(functor_type functor) noexcept(
+            std::is_nothrow_move_constructible_v<functor_type>) : base_class(std::move(functor))
         {
         }
 
@@ -166,15 +156,14 @@ namespace dipp
     class local_service_descriptor : public functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>
     {
     public:
-        using base_class = functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>;
-        using value_type = typename base_class::value_type;
+        using base_class   = functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>;
+        using value_type   = typename base_class::value_type;
+        using functor_type = typename base_class::functor_type;
 
         using base_class::ApplyFactory;
 
-        template<typename FnTy>
-            requires is_service_create_function_type_v<value_type, FnTy, ScopeTy>
-        constexpr local_service_descriptor(FnTy functor) noexcept(std::is_nothrow_move_constructible_v<FnTy>) :
-            base_class(std::move(functor))
+        constexpr local_service_descriptor(functor_type functor) noexcept(
+            std::is_nothrow_move_constructible_v<functor_type>) : base_class(std::move(functor))
         {
         }
 
