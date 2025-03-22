@@ -9,6 +9,10 @@ struct Class
 {
 };
 
+struct OtherClass
+{
+};
+
 BOOST_AUTO_TEST_CASE(ServiceNotFoundException_Test)
 {
 #ifndef DIPP_NO_EXCEPTIONS
@@ -21,13 +25,15 @@ BOOST_AUTO_TEST_CASE(ServiceNotFoundException_Test)
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(IncompatibleServiceDescriptorsException_Test)
+BOOST_AUTO_TEST_CASE(ServiceNotFoundException_WrongType_Test)
 {
 #ifndef DIPP_NO_EXCEPTIONS
     using actual_descriptor =
         dipp::local_service_descriptor<Class, dipp::service_lifetime::singleton, dipp::default_service_scope>;
 
-    using wrong_descriptor = dipp::extern_service_descriptor<Class, dipp::default_service_scope>;
+    using wrong_descriptor =
+        dipp::local_service_descriptor<std::reference_wrapper<Class>, dipp::service_lifetime::singleton,
+                                       dipp::default_service_scope>;
 
     dipp::default_service_collection collection;
 
@@ -36,7 +42,7 @@ BOOST_AUTO_TEST_CASE(IncompatibleServiceDescriptorsException_Test)
     dipp::default_service_provider services(std::move(collection));
 
     BOOST_CHECK_EQUAL(services.has<actual_descriptor>(), true);
-    BOOST_CHECK_THROW((void)services.get<wrong_descriptor>(), dipp::incompatible_service_descriptor);
+    BOOST_CHECK_THROW((void)services.get<wrong_descriptor>(), dipp::service_not_found);
 #endif
 }
 
