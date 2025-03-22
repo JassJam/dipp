@@ -28,8 +28,8 @@ namespace dipp
         service_scope(const service_scope&)            = delete;
         service_scope& operator=(const service_scope&) = delete;
 
-        service_scope(service_scope&&)            = delete;
-        service_scope& operator=(service_scope&&) = delete;
+        service_scope(service_scope&&)            = default;
+        service_scope& operator=(service_scope&&) = default;
 
         ~service_scope() = default;
 
