@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(ExternReference_Test)
     dipp::default_service_collection collection;
 
     collection.add<CameraService>();
-    collection.add<scene_service>([&scene](auto&) -> std::reference_wrapper<Scene> { return scene; });
+    collection.add(scene_service::descriptor_type([&scene](auto&) -> std::reference_wrapper<Scene> { return scene; }));
     collection.add<world_service>();
 
     dipp::default_service_provider services(std::move(collection));
