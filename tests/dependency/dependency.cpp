@@ -117,14 +117,15 @@ BOOST_AUTO_TEST_CASE(Test_Lifetime_Dependency)
     {
         dipp::default_service_collection collection;
 
-        collection.add<ASingleton>([&a_destroyed](auto&) { return dipp::make_any<A>(&a_destroyed); });
+        collection.add(ASingleton::descriptor_type([&a_destroyed](auto&) { return dipp::make_any<A>(&a_destroyed); }));
 
-        collection.add<BSingleton>([&a_destroyed, &b_destroyed](auto& scope)
-                                   { return dipp::make_any<B>(scope.get<ASingleton>(), &b_destroyed); });
+        collection.add(
+            BSingleton::descriptor_type([&a_destroyed, &b_destroyed](auto& scope)
+                                        { return dipp::make_any<B>(scope.get<ASingleton>(), &b_destroyed); }));
 
-        collection.add<CSingleton>(
+        collection.add(CSingleton::descriptor_type(
             [&a_destroyed, &b_destroyed, &c_destroyed](auto& scope)
-            { return dipp::make_any<C>(scope.get<ASingleton>(), scope.get<BSingleton>(), &c_destroyed); });
+            { return dipp::make_any<C>(scope.get<ASingleton>(), scope.get<BSingleton>(), &c_destroyed); }));
 
         dipp::default_service_provider services(std::move(collection));
 
