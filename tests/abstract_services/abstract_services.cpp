@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(
     auto fetch_cameras = [&]()
     {
         std::vector<ICamera*> cameras;
-        services.for_each<CameraService>([&](CameraService cameraService)
+        services.for_each<singleton_service>([&](singleton_service cameraService)
                                          { cameras.push_back(cameraService.get().get()); });
         return cameras;
     };
@@ -160,6 +160,7 @@ BOOST_AUTO_TEST_CASE(
     auto second_cameras = fetch_cameras();
 
     // Then
+    BOOST_CHECK_EQUAL(first_cameras.size(), 3);
     BOOST_TEST(first_cameras == second_cameras, boost::test_tools::per_element());
 }
 
