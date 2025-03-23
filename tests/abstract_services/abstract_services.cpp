@@ -86,4 +86,81 @@ BOOST_DATA_TEST_CASE(GivenCamera_WhenAddingToCollection_ThenCameraIsCreated,
 
 //
 
+BOOST_AUTO_TEST_CASE(GivenCameraServices_WhenAddingToCollection_ThenCamerasAreCreated)
+{
+    // Given
+    dipp::default_service_collection collection;
+
+    collection.add(CameraService::descriptor_type(
+        [](auto&) -> std::unique_ptr<ICamera> { return std::make_unique<PerspectiveCamera>(); }));
+
+    collection.add(CameraService::descriptor_type(
+        [](auto&) -> std::unique_ptr<ICamera> { return std::make_unique<OrthographicCamera>(); }));
+
+    collection.add(CameraService::descriptor_type(
+        [](auto&) -> std::unique_ptr<ICamera> { return std::make_unique<OrthographicCamera>(); }));
+
+    // When
+    dipp::default_service_provider services(std::move(collection));
+
+    // Then
+    auto camera_count = services.count<CameraService>();
+    BOOST_CHECK_EQUAL(camera_count, 3);
+
+    services.for_each<CameraService>(
+        [&](CameraService cameraService)
+        {
+            auto& camera = cameraService.get();
+            BOOST_CHECK_NE(camera.get(), nullptr);
+
+            if (dynamic_cast<PerspectiveCamera*>(camera.get()))
+            {
+                BOOST_CHECK_EQUAL(camera->projection(), 1);
+            }
+            else if (dynamic_cast<OrthographicCamera*>(camera.get()))
+            {
+                BOOST_CHECK_EQUAL(camera->projection(), 2);
+            }
+            else
+            {
+                BOOST_CHECK(false);
+            }
+        });
+}
+
+BOOST_AUTO_TEST_CASE(
+    GivenSingletonCameraServices_WhenQueryingFromCollection_ThenCamerasStaysTheSame)
+{
+    using singleton_service = dipp::injected_unique<ICamera, dipp::service_lifetime::singleton>;
+
+    // Given
+    dipp::default_service_collection collection;
+
+    collection.add(singleton_service::descriptor_type(
+        [](auto&) -> std::unique_ptr<ICamera> { return std::make_unique<PerspectiveCamera>(); }));
+
+    collection.add(singleton_service::descriptor_type(
+        [](auto&) -> std::unique_ptr<ICamera> { return std::make_unique<OrthographicCamera>(); }));
+
+    collection.add(singleton_service::descriptor_type(
+        [](auto&) -> std::unique_ptr<ICamera> { return std::make_unique<OrthographicCamera>(); }));
+
+    // When
+    dipp::default_service_provider services(std::move(collection));
+
+    auto fetch_cameras = [&]()
+    {
+        std::vector<ICamera*> cameras;
+        services.for_each<CameraService>([&](CameraService cameraService)
+                                         { cameras.push_back(cameraService.get().get()); });
+        return cameras;
+    };
+
+    auto first_cameras = fetch_cameras();
+    auto second_cameras = fetch_cameras();
+
+    // Then
+    BOOST_TEST(first_cameras == second_cameras, boost::test_tools::per_element());
+}
+
 BOOST_AUTO_TEST_SUITE_END()
