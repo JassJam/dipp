@@ -59,6 +59,62 @@ namespace dipp
             return m_Storage->template has_service<DescTy>(key);
         }
 
+    public:
+        template<base_injected_type InjectableTy> [[nodiscard]] size_t count() const noexcept
+        {
+            using descriptor_type = typename InjectableTy::descriptor_type;
+            return m_Storage->template count<descriptor_type>(InjectableTy::key);
+        }
+
+        template<service_descriptor_type DescTy> [[nodiscard]] size_t count(size_t key = {}) const noexcept
+        {
+            using descriptor_type = DescTy;
+            return m_Storage->template count<descriptor_type>(key);
+        }
+
+    public:
+        template<base_injected_type InjectableTy> [[nodiscard]] size_t count_all() const noexcept
+        {
+            using descriptor_type = typename InjectableTy::descriptor_type;
+            return m_Storage->template count_all<descriptor_type>();
+        }
+
+        template<service_descriptor_type DescTy> [[nodiscard]] size_t count_all() const noexcept
+        {
+            using descriptor_type = DescTy;
+            return m_Storage->template count_all<descriptor_type>();
+        }
+
+    public:
+        template<base_injected_type InjectableTy, typename FuncTy> [[nodiscard]] void for_each(FuncTy&& func)
+        {
+            using descriptor_type = typename InjectableTy::descriptor_type;
+            m_Storage->template for_each<descriptor_type>(
+                std::forward<FuncTy>(func), *this, *m_SingletonStorage, m_LocalStorage, InjectableTy::key);
+        }
+
+        template<service_descriptor_type DescTy, typename FuncTy> void for_each(FuncTy&& func, size_t key = {})
+        {
+            using descriptor_type = DescTy;
+            m_Storage->template for_each<descriptor_type>(
+                std::forward<FuncTy>(func), *this, *m_SingletonStorage, m_LocalStorage, key);
+        }
+
+    public:
+        template<base_injected_type InjectableTy, typename FuncTy> [[nodiscard]] void for_each_all(FuncTy&& func)
+        {
+            using descriptor_type = typename InjectableTy::descriptor_type;
+            m_Storage->template for_each_all<descriptor_type>(
+                std::forward<FuncTy>(func), *this, *m_SingletonStorage, m_LocalStorage);
+        }
+
+        template<service_descriptor_type DescTy, typename FuncTy> void for_each_all(FuncTy&& func)
+        {
+            using descriptor_type = DescTy;
+            m_Storage->template for_each_all<descriptor_type>(
+                std::forward<FuncTy>(func), *this, *m_SingletonStorage, m_LocalStorage);
+        }
+
     private:
         storage_type*           m_Storage;
         singleton_storage_type* m_SingletonStorage;

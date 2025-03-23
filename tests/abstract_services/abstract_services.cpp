@@ -46,8 +46,6 @@ BOOST_AUTO_TEST_CASE(PerspectiveCamera_Test)
 {
     dipp::default_service_collection collection;
 
-    using ff = CameraService::descriptor_type;
-
     collection.add(CameraService::descriptor_type([](auto&) -> std::unique_ptr<ICamera>
                                                   { return std::make_unique<PerspectiveCamera>(); }));
 
@@ -88,6 +86,46 @@ BOOST_AUTO_TEST_CASE(OrthographicCamera_Test)
     BOOST_CHECK_EQUAL(camera2->projection(), 2);
 
     BOOST_CHECK_NE(camera1.get(), camera2.get());
+}
+
+BOOST_AUTO_TEST_CASE(IterateServices_Test)
+{
+    dipp::default_service_collection collection;
+
+    collection.add(CameraService::descriptor_type([](auto&) -> std::unique_ptr<ICamera>
+                                                  { return std::make_unique<PerspectiveCamera>(); }));
+
+    collection.add(CameraService::descriptor_type([](auto&) -> std::unique_ptr<ICamera>
+                                                  { return std::make_unique<OrthographicCamera>(); }));
+
+    collection.add(CameraService::descriptor_type([](auto&) -> std::unique_ptr<ICamera>
+                                                  { return std::make_unique<OrthographicCamera>(); }));
+
+    dipp::default_service_provider services(std::move(collection));
+
+    auto camera_count = services.count<CameraService>();
+
+    BOOST_CHECK_EQUAL(camera_count, 3);
+
+    services.for_each<CameraService>(
+        [&](CameraService cameraService)
+        {
+            auto& camera = cameraService.get();
+            BOOST_CHECK_NE(camera.get(), nullptr);
+
+            if (dynamic_cast<PerspectiveCamera*>(camera.get()))
+            {
+                BOOST_CHECK_EQUAL(camera->projection(), 1);
+            }
+            else if (dynamic_cast<OrthographicCamera*>(camera.get()))
+            {
+                BOOST_CHECK_EQUAL(camera->projection(), 2);
+            }
+            else
+            {
+                BOOST_CHECK(false);
+            }
+        });
 }
 
 BOOST_AUTO_TEST_SUITE_END()
