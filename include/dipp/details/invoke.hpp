@@ -6,7 +6,9 @@ namespace dipp
 {
     namespace details
     {
-        template<size_t I, typename Tuple1, typename Tuple2,
+        template<size_t I,
+                 typename Tuple1,
+                 typename Tuple2,
                  bool = (I < std::tuple_size_v<Tuple1> && I < std::tuple_size_v<Tuple2>)>
         struct tuple_index_of_first_not_equal_impl
         {
@@ -22,28 +24,36 @@ namespace dipp
             static constexpr int value = -1; // All elements are equal or end of tuple reached
         };
 
-        template<typename Tuple1, typename Tuple2> struct tuple_index_of_first_not_equal
+        template<typename Tuple1, typename Tuple2>
+        struct tuple_index_of_first_not_equal
         {
-            static constexpr int value = tuple_index_of_first_not_equal_impl<0, Tuple1, Tuple2>::value;
+            static constexpr int value =
+                tuple_index_of_first_not_equal_impl<0, Tuple1, Tuple2>::value;
         };
 
-        template<typename FnArgsTy, typename ScopeTy, typename FnTy, size_t... Is, typename... ArgsTy>
+        template<typename FnArgsTy,
+                 typename ScopeTy,
+                 typename FnTy,
+                 size_t... Is,
+                 typename... ArgsTy>
         auto invoke_impl(ScopeTy& scope, FnTy&& fn, std::index_sequence<Is...>, ArgsTy&&... args)
         {
-            return fn(scope.template get<std::tuple_element_t<Is, FnArgsTy>>()..., std::forward<ArgsTy>(args)...);
+            return fn(scope.template get<std::tuple_element_t<Is, FnArgsTy>>()...,
+                      std::forward<ArgsTy>(args)...);
         }
     } // namespace details
 
     /// <summary>
     /// Invoke the function with the given scope and arguments
-    /// The function will be invoked with injected arguments if there are any then the rest of the arguments provided
+    /// The function will be invoked with injected arguments if there are any then the rest of the
+    /// arguments provided
     /// </summary>
     template<typename ScopeTy, typename FnTy, typename... ArgsTy>
     auto invoke(ScopeTy& scope, FnTy&& fn, ArgsTy&&... args)
     {
         using arg_types = typename function_descriptor<FnTy>::args_types;
 
-        static constexpr size_t args_count      = sizeof...(ArgsTy);
+        static constexpr size_t args_count = sizeof...(ArgsTy);
         static constexpr size_t arg_types_count = std::tuple_size_v<arg_types>;
 
         // if arg_types count is zero, then we can directly call the function
@@ -69,8 +79,9 @@ namespace dipp
             }
             else
             {
-                return details::invoke_impl<arg_types>(scope, std::forward<FnTy>(fn),
-                                                       std::make_index_sequence<index + 1>{},
+                return details::invoke_impl<arg_types>(scope,
+                                                       std::forward<FnTy>(fn),
+                                                       std::make_index_sequence<index + 1> {},
                                                        std::forward<ArgsTy>(args)...);
             }
         }

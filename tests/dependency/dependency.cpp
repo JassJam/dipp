@@ -1,150 +1,154 @@
 #define BOOST_TEST_MODULE Test_Dependency
-
 #include <boost/test/included/unit_test.hpp>
 #include <dipp/dipp.hpp>
-#include <mutex>
 
-BOOST_AUTO_TEST_SUITE(Test_Dependency)
+BOOST_AUTO_TEST_SUITE(DependencyManagementTests)
 
-//
-
-struct A
+struct DependencyChain
 {
-    bool* a_destroyed = nullptr;
+    bool a_destroyed = false;
+    bool b_destroyed = false;
+    bool c_destroyed = false;
 
-    A(bool* a_destroyed) : a_destroyed(a_destroyed)
+    std::vector<int> values;
+
+    struct A
     {
-        *a_destroyed = false;
-    }
+        DependencyChain& chain;
 
-    A(const A&)            = delete;
-    A& operator=(const A&) = delete;
-
-    A(A&& o) : a_destroyed(o.a_destroyed)
-    {
-        o.a_destroyed = nullptr;
-    }
-
-    A& operator=(A&&) = delete;
-
-    ~A()
-    {
-        if (a_destroyed)
+        A(DependencyChain& chain)
+            : chain(chain)
         {
-            *a_destroyed = true;
+            chain.checkpoint(0);
         }
+
+        ~A()
+        {
+            chain.checkpoint(1);
+            chain.a_destroyed = true;
+        }
+    };
+
+    struct B
+    {
+        A& a;
+        DependencyChain& chain;
+
+        B(A& a, DependencyChain& chain)
+            : a(a)
+            , chain(chain)
+        {
+            chain.checkpoint(2);
+        }
+
+        ~B()
+        {
+            chain.checkpoint(3);
+            chain.b_destroyed = true;
+        }
+    };
+
+    struct C
+    {
+        A& a;
+        B& b;
+        DependencyChain& chain;
+
+        C(A& a, B& b, DependencyChain& chain)
+            : a(a)
+            , b(b)
+            , chain(chain)
+        {
+            chain.checkpoint(4);
+        }
+
+        ~C()
+        {
+            chain.checkpoint(5);
+            chain.c_destroyed = true;
+        }
+    };
+
+    using AService = dipp::injected<A, dipp::service_lifetime::singleton>;
+    using BService =
+        dipp::injected<B, dipp::service_lifetime::singleton, dipp::dependency<AService>>;
+    using CService =
+        dipp::injected<C, dipp::service_lifetime::singleton, dipp::dependency<AService, BService>>;
+
+public:
+    void checkpoint(int value)
+    {
+        values.push_back(value);
+    }
+
+    dipp::default_service_collection initialize_services()
+    {
+        dipp::default_service_collection services;
+
+        services.add(AService::descriptor_type([this](auto&) { return dipp::make_any<A>(*this); }));
+        services.add(BService::descriptor_type(
+            [this](auto& s) { return dipp::make_any<B>(s.get<AService>(), *this); }));
+        services.add(CService::descriptor_type(
+            [this](auto& s)
+            { return dipp::make_any<C>(s.get<AService>(), s.get<BService>(), *this); }));
+
+        return services;
     }
 };
 
-struct B
+BOOST_FIXTURE_TEST_CASE(
+    GivenSingletonDependencies_WhenServiceProviderDestroyed_ThenDestructionOrderCorrect,
+    DependencyChain)
 {
-    bool* b_destroyed = nullptr;
-    A&    a;
+    // Given
+    auto services = initialize_services();
 
-    B(A& a, bool* b_destroyed) : a(a), b_destroyed(b_destroyed)
+    // When
     {
-        *b_destroyed = false;
+        dipp::default_service_provider provider(std::move(services));
+        [[maybe_unused]] auto a = provider.get<AService>();
+        [[maybe_unused]] auto b = provider.get<BService>();
+        [[maybe_unused]] auto c = provider.get<CService>();
+    } // Provider destroyed
+
+    // Then
+    BOOST_TEST_CONTEXT("Should track construction/destruction order")
+    {
+        const std::vector<int> expected {0, 2, 4, 5, 3, 1};
+        BOOST_TEST(values == expected, boost::test_tools::per_element());
     }
 
-    B(const B&)            = delete;
-    B& operator=(const B&) = delete;
-
-    B(B&& o) : a(o.a), b_destroyed(o.b_destroyed)
+    BOOST_TEST_CONTEXT("All services should be destroyed")
     {
-        o.b_destroyed = nullptr;
+        BOOST_CHECK(a_destroyed);
+        BOOST_CHECK(b_destroyed);
+        BOOST_CHECK(c_destroyed);
     }
+}
 
-    B& operator=(B&&) = delete;
-
-    ~B()
-    {
-        // assert that A is still alive
-        BOOST_CHECK(!a.a_destroyed || !*a.a_destroyed);
-
-        if (b_destroyed)
-        {
-            *b_destroyed = true;
-        }
-    }
-};
-
-struct C
+BOOST_FIXTURE_TEST_CASE(GivenDependencyChain_WhenResolvingServices_ThenConstructionOrderCorrect,
+                        DependencyChain)
 {
-    bool* c_destroyed = nullptr;
-    A&    a;
-    B&    b;
+    // Given
+    auto services = initialize_services();
 
-    C(A& a, B& b, bool* c_destroyed) : a(a), b(b), c_destroyed(c_destroyed)
+    // When
+    dipp::default_service_provider provider(std::move(services));
+    [[maybe_unused]] auto c = provider.get<CService>().get();
+
+    // Then
+    BOOST_TEST_CONTEXT("Should construct dependencies in order")
     {
-        *c_destroyed = false;
+        const std::vector<int> expected {0, 2, 4};
+        BOOST_TEST(values == expected, boost::test_tools::per_element());
     }
 
-    C(const C&)            = delete;
-    C& operator=(const C&) = delete;
-
-    C(C&& o) : a(o.a), b(o.b), c_destroyed(o.c_destroyed)
+    BOOST_TEST_CONTEXT("Should keep services alive")
     {
-        o.c_destroyed = nullptr;
-    }
-
-    C& operator=(C&&) = delete;
-
-    ~C()
-    {
-        // assert that A and B are still alive
-        BOOST_CHECK(!a.a_destroyed || !*a.a_destroyed);
-        BOOST_CHECK(!b.b_destroyed || !*b.b_destroyed);
-
-        if (c_destroyed)
-        {
-            *c_destroyed = true;
-        }
-    }
-};
-
-using ASingleton = dipp::injected<A, dipp::service_lifetime::singleton>;
-using BSingleton = dipp::injected<B, dipp::service_lifetime::singleton, dipp::dependency<ASingleton>>;
-using CSingleton = dipp::injected<C, dipp::service_lifetime::singleton, dipp::dependency<ASingleton, BSingleton>>;
-
-//
-
-BOOST_AUTO_TEST_CASE(Test_Lifetime_Dependency)
-{
-    bool a_destroyed = true;
-    bool b_destroyed = true;
-    bool c_destroyed = true;
-
-    {
-        dipp::default_service_collection collection;
-
-        collection.add(ASingleton::descriptor_type([&a_destroyed](auto&) { return dipp::make_any<A>(&a_destroyed); }));
-
-        collection.add(
-            BSingleton::descriptor_type([&a_destroyed, &b_destroyed](auto& scope)
-                                        { return dipp::make_any<B>(scope.get<ASingleton>(), &b_destroyed); }));
-
-        collection.add(CSingleton::descriptor_type(
-            [&a_destroyed, &b_destroyed, &c_destroyed](auto& scope)
-            { return dipp::make_any<C>(scope.get<ASingleton>(), scope.get<BSingleton>(), &c_destroyed); }));
-
-        dipp::default_service_provider services(std::move(collection));
-
-        auto a = services.get<ASingleton>();
-        auto b = services.get<BSingleton>();
-        auto c = services.get<CSingleton>();
-
-        (void)a;
-        (void)b;
-        (void)c;
-
         BOOST_CHECK(!a_destroyed);
         BOOST_CHECK(!b_destroyed);
         BOOST_CHECK(!c_destroyed);
     }
-
-    BOOST_CHECK(a_destroyed);
-    BOOST_CHECK(b_destroyed);
-    BOOST_CHECK(c_destroyed);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
