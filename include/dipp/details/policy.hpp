@@ -10,7 +10,7 @@ namespace dipp
 {
     struct default_service_policy
     {
-        using service_info     = move_only_any;
+        using service_info     = std::vector<move_only_any>;
         using service_map_type = std::map<type_key_pair, service_info>;
     };
     static_assert(service_policy_type<default_service_policy>, "default_service_policy is not a service_policy_type");
