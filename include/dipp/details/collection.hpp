@@ -4,75 +4,93 @@
 
 namespace dipp
 {
-    template<service_policy_type StoragePolicyTy> class service_collection
+    template<service_policy_type StoragePolicyTy>
+    class service_collection
     {
         template<service_policy_type, service_storage_memory_type, service_storage_memory_type>
         friend class service_provider;
 
     public:
-        template<base_injected_type InjectableTy> void add(typename InjectableTy::descriptor_type descriptor)
+        template<base_injected_type InjectableTy>
+        void add(typename InjectableTy::descriptor_type descriptor)
         {
             m_Storage.template add_service<typename InjectableTy::descriptor_type>(
                 std::move(descriptor), InjectableTy::key);
         }
 
-        template<base_injected_type InjectableTy> void add()
+        template<base_injected_type InjectableTy>
+        void add()
         {
-            m_Storage.template add_service<typename InjectableTy::descriptor_type>(InjectableTy::key);
+            m_Storage.template add_service<typename InjectableTy::descriptor_type>(
+                InjectableTy::key);
         }
 
-        template<service_descriptor_type DescTy> void add(DescTy descriptor, size_t key = {})
+        template<service_descriptor_type DescTy>
+        void add(DescTy descriptor, size_t key = {})
         {
             m_Storage.template add_service<DescTy>(std::move(descriptor), key);
         }
 
-        template<service_descriptor_type DescTy> void add(size_t key = {})
+        template<service_descriptor_type DescTy>
+        void add(size_t key = {})
         {
             m_Storage.template add_service<DescTy>(key);
         }
 
     public:
-        template<base_injected_type InjectableTy> bool emplace(typename InjectableTy::descriptor_type descriptor)
+        template<base_injected_type InjectableTy>
+        bool emplace(typename InjectableTy::descriptor_type descriptor)
         {
             return m_Storage.template emplace_service<typename InjectableTy::descriptor_type>(
                 std::move(descriptor), InjectableTy::key);
         }
 
-        template<base_injected_type InjectableTy> bool emplace()
+        template<base_injected_type InjectableTy>
+        bool emplace()
         {
-            return m_Storage.template emplace_service<typename InjectableTy::descriptor_type>(InjectableTy::key);
+            return m_Storage.template emplace_service<typename InjectableTy::descriptor_type>(
+                InjectableTy::key);
         }
 
-        template<service_descriptor_type DescTy> bool emplace(DescTy descriptor, size_t key = {})
+        template<service_descriptor_type DescTy>
+        bool emplace(DescTy descriptor, size_t key = {})
         {
             return m_Storage.template emplace_service<DescTy>(std::move(descriptor), key);
         }
 
-        template<service_descriptor_type DescTy> bool emplace(size_t key = {})
+        template<service_descriptor_type DescTy>
+        bool emplace(size_t key = {})
         {
             return m_Storage.template emplace_service<DescTy>(key);
         }
 
     public:
         template<base_injected_type InjectableTy>
-        [[nodiscard]] bool has(typename InjectableTy::descriptor_type descriptor) const noexcept
+        [[nodiscard]]
+        bool has(typename InjectableTy::descriptor_type descriptor) const noexcept
         {
             return m_Storage.template has_service<typename InjectableTy::descriptor_type>(
                 std::move(descriptor), InjectableTy::key);
         }
 
-        template<base_injected_type InjectableTy> [[nodiscard]] bool has() const noexcept
+        template<base_injected_type InjectableTy>
+        [[nodiscard]]
+        bool has() const noexcept
         {
-            return m_Storage.template has_service<typename InjectableTy::descriptor_type>(InjectableTy::key);
+            return m_Storage.template has_service<typename InjectableTy::descriptor_type>(
+                InjectableTy::key);
         }
 
         template<service_descriptor_type DescTy>
-        [[nodiscard]] bool has(DescTy descriptor, size_t key = {}) const noexcept
+        [[nodiscard]]
+        bool has(DescTy descriptor, size_t key = {}) const noexcept
         {
             return m_Storage.template has_service<DescTy>(std::move(descriptor), key);
         }
 
-        template<service_descriptor_type DescTy> [[nodiscard]] bool has(size_t key = {}) const noexcept
+        template<service_descriptor_type DescTy>
+        [[nodiscard]]
+        bool has(size_t key = {}) const noexcept
         {
             return m_Storage.template has_service<DescTy>(key);
         }
