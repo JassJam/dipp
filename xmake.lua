@@ -21,7 +21,6 @@ add_rules("mode.debug", "mode.release")
 set_languages("$(cpp-version)")
 
 add_extrafiles(".clang-format")
-add_extrafiles(".clang-tidy")
 
 includes("project/project.lua")
 
