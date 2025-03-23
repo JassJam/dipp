@@ -86,6 +86,54 @@ namespace dipp
             return root_scope().template has<DescTy>(key);
         }
 
+    public:
+        template<base_injected_type InjectableTy> [[nodiscard]] size_t count() const noexcept
+        {
+            return root_scope().template count<InjectableTy>();
+        }
+
+        template<service_descriptor_type DescTy> [[nodiscard]] size_t count(size_t key = {}) const noexcept
+        {
+            using descriptor_type = DescTy;
+            return root_scope().template count<descriptor_type>(key);
+        }
+
+    public:
+        template<base_injected_type InjectableTy> [[nodiscard]] size_t count_all() const noexcept
+        {
+            return root_scope().template count_all<InjectableTy>();
+        }
+
+        template<service_descriptor_type DescTy> [[nodiscard]] size_t count_all() const noexcept
+        {
+            using descriptor_type = DescTy;
+            return root_scope().template count_all<descriptor_type>();
+        }
+
+    public:
+        template<base_injected_type InjectableTy, typename FuncTy> [[nodiscard]] void for_each(FuncTy&& func)
+        {
+            root_scope().template for_each<InjectableTy>(std::forward<FuncTy>(func));
+        }
+
+        template<service_descriptor_type DescTy, typename FuncTy> void for_each(FuncTy&& func, size_t key = {})
+        {
+            using descriptor_type = DescTy;
+            root_scope().template for_each<descriptor_type>(std::forward<FuncTy>(func), key);
+        }
+
+    public:
+        template<base_injected_type InjectableTy, typename FuncTy> [[nodiscard]] void for_each_all(FuncTy&& func)
+        {
+            root_scope().template for_each_all<InjectableTy>(std::forward<FuncTy>(func));
+        }
+
+        template<service_descriptor_type DescTy, typename FuncTy> void for_each_all(FuncTy&& func)
+        {
+            using descriptor_type = DescTy;
+            root_scope().template for_each_all<descriptor_type>(std::forward<FuncTy>(func));
+        }
+
     private:
         singleton_memory_type m_SingletonStorage;
         storage_type          m_Storage;
