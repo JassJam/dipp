@@ -36,12 +36,14 @@ namespace dipp
     class service_not_found : public std::runtime_error
     {
     private:
-        service_not_found(const std::string& typeName) : std::runtime_error("Service not found: " + typeName)
+        service_not_found(const std::string& typeName)
+            : std::runtime_error("Service not found: " + typeName)
         {
         }
 
     public:
-        template<typename Ty> static void do_throw()
+        template<typename Ty>
+        static void do_throw()
         {
             throw service_not_found(typeid(Ty).name());
         }
@@ -50,14 +52,15 @@ namespace dipp
     class incompatible_service_descriptor : public std::runtime_error
     {
     private:
-        incompatible_service_descriptor(const std::string& typeName) :
-            std::runtime_error("Incompatible service descriptor: " + typeName)
+        incompatible_service_descriptor(const std::string& typeName)
+            : std::runtime_error("Incompatible service descriptor: " + typeName)
         {
         }
 
     public:
         using runtime_error::runtime_error;
-        template<typename Ty> static void do_throw()
+        template<typename Ty>
+        static void do_throw()
         {
             throw incompatible_service_descriptor(typeid(Ty).name());
         }

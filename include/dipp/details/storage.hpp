@@ -7,27 +7,31 @@
 
 namespace dipp
 {
-    template<service_policy_type PolicyTy> class service_storage
+    template<service_policy_type PolicyTy>
+    class service_storage
     {
     public:
-        template<service_scope_type ScopeTy, service_storage_memory_type SingletonMemTy,
+        template<service_scope_type ScopeTy,
+                 service_storage_memory_type SingletonMemTy,
                  service_storage_memory_type ScopedMemTy>
         struct service_loader
         {
-            ScopeTy&        scope;
+            ScopeTy& scope;
             SingletonMemTy& singleton_storage;
-            ScopedMemTy&    scoped_storage;
+            ScopedMemTy& scoped_storage;
 
             template<service_descriptor_type DescTy>
-            [[nodiscard]] auto load(move_only_any& service, type_key_pair handle) -> typename DescTy::service_type
+            [[nodiscard]] auto load(move_only_any& service, type_key_pair handle) ->
+                typename DescTy::service_type
             {
-                return load_service_impl<DescTy>(service, handle, scope, singleton_storage, scoped_storage);
+                return load_service_impl<DescTy>(
+                    service, handle, scope, singleton_storage, scoped_storage);
             }
         };
 
     public:
-        using policy_type       = PolicyTy;
-        using service_map_type  = typename policy_type::service_map_type;
+        using policy_type = PolicyTy;
+        using service_map_type = typename policy_type::service_map_type;
         using service_info_type = typename policy_type::service_map_type;
 
     public:
@@ -36,11 +40,12 @@ namespace dipp
             m_Services.clear();
         }
 
-        template<service_descriptor_type DescTy> void clear(size_t key)
+        template<service_descriptor_type DescTy>
+        void clear(size_t key)
         {
             auto service_type = typeid(typename DescTy::service_type).hash_code();
-            auto handle       = make_type_key(service_type, key);
-            auto iter         = m_Services.find(handle);
+            auto handle = make_type_key(service_type, key);
+            auto iter = m_Services.find(handle);
 
             if (iter != m_Services.end())
             {
@@ -48,7 +53,8 @@ namespace dipp
             }
         }
 
-        template<service_descriptor_type DescTy> void clear_all()
+        template<service_descriptor_type DescTy>
+        void clear_all()
         {
             auto service_type = typeid(typename DescTy::service_type).hash_code();
             for (auto iter = m_Services.begin(); iter != m_Services.end();)
@@ -65,64 +71,46 @@ namespace dipp
         }
 
     public:
-        template<service_descriptor_type DescTy> void add_service(size_t key)
+        template<service_descriptor_type DescTy>
+        void add_service(DescTy&& descriptor, size_t key)
         {
-            auto service_type   = typeid(typename DescTy::service_type).hash_code();
+            auto service_type = typeid(typename DescTy::service_type).hash_code();
             auto service_handle = make_type_key(service_type, key);
 
-            m_Services[service_handle].emplace_back(DescTy{});
-        }
-
-        template<service_descriptor_type DescTy> void add_service(DescTy descriptor, size_t key)
-        {
-            auto service_type   = typeid(typename DescTy::service_type).hash_code();
-            auto service_handle = make_type_key(service_type, key);
-
-            m_Services[service_handle].emplace_back(std::move(descriptor));
+            m_Services[service_handle].emplace_back(std::forward<DescTy>(descriptor));
         }
 
     public:
-        template<service_descriptor_type DescTy> bool emplace_service(size_t key)
+        template<service_descriptor_type DescTy>
+        bool emplace_service(DescTy&& descriptor, size_t key)
         {
             auto service_type = typeid(typename DescTy::service_type).hash_code();
 
             auto service_handle = make_type_key(service_type, key);
-            auto iter           = m_Services.find(service_handle);
+            auto iter = m_Services.find(service_handle);
             if (iter != m_Services.end())
             {
                 return false;
             }
 
-            m_Services.emplace(service_handle, DescTy{});
-            return true;
-        }
-
-        template<service_descriptor_type DescTy> bool emplace_service(DescTy descriptor, size_t key)
-        {
-            auto service_type = typeid(typename DescTy::service_type).hash_code();
-
-            auto service_handle = make_type_key(service_type, key);
-            auto iter           = m_Services.find(service_handle);
-            if (iter != m_Services.end())
-            {
-                return false;
-            }
-
-            m_Services.emplace(service_handle, std::move(descriptor));
+            m_Services.emplace(service_handle, std::forward<DescTy>(descriptor));
             return true;
         }
 
     public:
-        template<service_descriptor_type DescTy, service_storage_memory_type SingletonMemTy,
+        template<service_descriptor_type DescTy,
+                 service_storage_memory_type SingletonMemTy,
                  service_storage_memory_type ScopedMemTy>
-        [[nodiscard]] auto get_service(typename DescTy::scope_type& scope, SingletonMemTy& singleton_storage,
-                                       ScopedMemTy& scoped_storage, size_t key) -> typename DescTy::service_type
+        [[nodiscard]] auto get_service(typename DescTy::scope_type& scope,
+                                       SingletonMemTy& singleton_storage,
+                                       ScopedMemTy& scoped_storage,
+                                       size_t key) -> typename DescTy::service_type
         {
             using service_type = typename DescTy::service_type;
 
             auto service_handle = typeid(typename DescTy::service_type).hash_code();
-            auto handle         = make_type_key(service_handle, key);
-            auto it             = m_Services.find(handle);
+            auto handle = make_type_key(service_handle, key);
+            auto it = m_Services.find(handle);
 
             if (it == m_Services.end()) [[unlikely]]
             {
@@ -131,40 +119,43 @@ namespace dipp
 
             auto& last_service = it->second.back();
 
-            service_loader loader{ scope, singleton_storage, scoped_storage };
+            service_loader loader{scope, singleton_storage, scoped_storage};
             return loader.load<DescTy>(last_service, handle);
         }
 
     public:
-        template<service_descriptor_type DescTy> [[nodiscard]] bool has_service(size_t key) const noexcept
+        template<service_descriptor_type DescTy>
+        [[nodiscard]] bool has_service(size_t key) const noexcept
         {
-            using value_type   = typename DescTy::value_type;
+            using value_type = typename DescTy::value_type;
             using service_type = typename DescTy::service_type;
 
             auto service_handle = typeid(typename DescTy::service_type).hash_code();
-            auto handle         = make_type_key(service_handle, key);
+            auto handle = make_type_key(service_handle, key);
 
             return m_Services.find(handle) != m_Services.end();
         }
 
     public:
-        template<service_descriptor_type DescTy> [[nodiscard]] size_t count(size_t key) const noexcept
+        template<service_descriptor_type DescTy>
+        [[nodiscard]] size_t count(size_t key) const noexcept
         {
             using service_type = typename DescTy::service_type;
 
             auto service_handle = typeid(service_type).hash_code();
-            auto handle         = make_type_key(service_handle, key);
-            auto it             = m_Services.find(handle);
+            auto handle = make_type_key(service_handle, key);
+            auto it = m_Services.find(handle);
 
             return it != m_Services.end() ? it->second.size() : 0;
         }
 
-        template<service_descriptor_type DescTy> [[nodiscard]] size_t count_all() const noexcept
+        template<service_descriptor_type DescTy>
+        [[nodiscard]] size_t count_all() const noexcept
         {
             using service_type = typename DescTy::service_type;
 
-            auto   service_handle = typeid(service_type).hash_code();
-            size_t count          = 0;
+            auto service_handle = typeid(service_type).hash_code();
+            size_t count = 0;
 
             for (auto iter = m_Services.begin(); iter != m_Services.end(); ++iter)
             {
@@ -177,20 +168,25 @@ namespace dipp
             return count;
         }
 
-        template<service_descriptor_type DescTy, service_storage_memory_type SingletonMemTy,
-                 service_storage_memory_type ScopedMemTy, typename FuncTy>
-        void for_each(FuncTy&& func, typename DescTy::scope_type& scope, SingletonMemTy& singleton_storage,
-                      ScopedMemTy& scoped_storage, size_t key)
+        template<service_descriptor_type DescTy,
+                 service_storage_memory_type SingletonMemTy,
+                 service_storage_memory_type ScopedMemTy,
+                 typename FuncTy>
+        void for_each(FuncTy&& func,
+                      typename DescTy::scope_type& scope,
+                      SingletonMemTy& singleton_storage,
+                      ScopedMemTy& scoped_storage,
+                      size_t key)
         {
             using service_type = typename DescTy::service_type;
 
             auto service_handle = typeid(typename DescTy::service_type).hash_code();
-            auto handle         = make_type_key(service_handle, key);
-            auto it             = m_Services.find(handle);
+            auto handle = make_type_key(service_handle, key);
+            auto it = m_Services.find(handle);
 
             if (it != m_Services.end())
             {
-                service_loader loader{ scope, singleton_storage, scoped_storage };
+                service_loader loader{scope, singleton_storage, scoped_storage};
                 for (auto& service : it->second)
                 {
                     func(loader.load<DescTy>(service, handle));
@@ -198,15 +194,19 @@ namespace dipp
             }
         }
 
-        template<service_descriptor_type DescTy, service_storage_memory_type SingletonMemTy,
-                 service_storage_memory_type ScopedMemTy, typename FuncTy>
-        void for_each_all(FuncTy&& func, typename DescTy::scope_type& scope, SingletonMemTy& singleton_storage,
+        template<service_descriptor_type DescTy,
+                 service_storage_memory_type SingletonMemTy,
+                 service_storage_memory_type ScopedMemTy,
+                 typename FuncTy>
+        void for_each_all(FuncTy&& func,
+                          typename DescTy::scope_type& scope,
+                          SingletonMemTy& singleton_storage,
                           ScopedMemTy& scoped_storage)
         {
             using service_type = typename DescTy::service_type;
 
-            auto           service_handle = typeid(service_type).hash_code();
-            service_loader loader{ scope, singleton_storage, scoped_storage };
+            auto service_handle = typeid(service_type).hash_code();
+            service_loader loader{scope, singleton_storage, scoped_storage};
 
             for (auto iter = m_Services.begin(); iter != m_Services.end(); ++iter)
             {
@@ -221,15 +221,18 @@ namespace dipp
         }
 
     private:
-        template<service_descriptor_type DescTy, service_storage_memory_type SingletonMemTy,
+        template<service_descriptor_type DescTy,
+                 service_storage_memory_type SingletonMemTy,
                  service_storage_memory_type ScopedMemTy>
-        [[nodiscard]] static auto load_service_impl(move_only_any& service, type_key_pair handle,
+        [[nodiscard]] static auto load_service_impl(move_only_any& service,
+                                                    type_key_pair handle,
                                                     typename DescTy::scope_type& scope,
-                                                    SingletonMemTy& singleton_storage, ScopedMemTy& scoped_storage) ->
+                                                    SingletonMemTy& singleton_storage,
+                                                    ScopedMemTy& scoped_storage) ->
             typename DescTy::service_type
         {
             using service_type = typename DescTy::service_type;
-            using value_type   = typename DescTy::value_type;
+            using value_type = typename DescTy::value_type;
 
             if constexpr (DescTy::lifetime == service_lifetime::singleton)
             {
@@ -246,7 +249,7 @@ namespace dipp
                     instance_iter = singleton_storage.emplace(handle, *descriptor, scope);
                 }
 
-                return service_type{ *instance_iter->cast<value_type>() };
+                return service_type{*instance_iter->cast<value_type>()};
             }
             else if constexpr (DescTy::lifetime == service_lifetime::scoped)
             {
@@ -263,7 +266,7 @@ namespace dipp
                     instance_iter = scoped_storage.emplace(handle, *descriptor, scope);
                 }
 
-                return service_type{ *instance_iter->cast<value_type>() };
+                return service_type{*instance_iter->cast<value_type>()};
             }
             else if constexpr (DescTy::lifetime == service_lifetime::transient)
             {
@@ -273,7 +276,7 @@ namespace dipp
                     details::fail<incompatible_service_descriptor, service_type>();
                 }
 
-                return service_type{ std::move(*descriptor->load(scope).cast<value_type>()) };
+                return service_type{std::move(*descriptor->load(scope).cast<value_type>())};
             }
             else
             {
