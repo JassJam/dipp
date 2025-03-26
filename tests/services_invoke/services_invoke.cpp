@@ -20,11 +20,11 @@ using WindowService = dipp::injected<Window, dipp::service_lifetime::singleton>;
 BOOST_AUTO_TEST_CASE(GivenWindowService_WhenInvokedWithDifferentWindows_ThenValidatesCorrectly)
 {
     // Given
-    const Window expectedWindow {1024, 768};
-    const Window nonMatchingWindow {1920, 1080};
+    const Window expectedWindow{1024, 768};
+    const Window nonMatchingWindow{1920, 1080};
 
     dipp::default_service_collection services;
-    services.add(WindowService::descriptor_type([&](auto&) { return expectedWindow; }));
+    services.add<WindowService>({[&](auto&) { return expectedWindow; }});
 
     // When
     dipp::default_service_provider provider(std::move(services));

@@ -24,18 +24,21 @@ namespace dipp
             void (*move)(void* dest, void* src);
             void (*destruct)(void* data);
 
-            template<typename Ty> void init()
+            template<typename Ty>
+            void init()
             {
-                move     = &do_move<Ty>;
+                move = &do_move<Ty>;
                 destruct = &do_destruct<Ty>;
             }
 
-            template<typename Ty> static void do_move(void* dest, void* src)
+            template<typename Ty>
+            static void do_move(void* dest, void* src)
             {
                 std::construct_at(std::bit_cast<Ty*>(dest), std::move(*std::bit_cast<Ty*>(src)));
             }
 
-            template<typename Ty> static void do_destruct(void* data)
+            template<typename Ty>
+            static void do_destruct(void* data)
             {
                 std::destroy_at(std::bit_cast<Ty*>(data));
             }
@@ -45,12 +48,14 @@ namespace dipp
         {
             void (*destruct)(void* data);
 
-            template<typename Ty> void init()
+            template<typename Ty>
+            void init()
             {
                 destruct = &do_destroy<Ty>;
             }
 
-            template<typename Ty> static void do_destroy(void* data)
+            template<typename Ty>
+            static void do_destroy(void* data)
             {
                 delete std::bit_cast<Ty*>(data);
             }
@@ -69,7 +74,7 @@ namespace dipp
 
         struct large_storage
         {
-            void*              data;
+            void* data;
             large_storage_rtti rtti;
         };
 
@@ -79,10 +84,10 @@ namespace dipp
             union
             {
                 trivial_storage trivial_type;
-                small_storage   small_type;
-                large_storage   large_type;
+                small_storage small_type;
+                large_storage large_type;
             } u{};
-            any_storage_type type{ any_storage_type::null };
+            any_storage_type type{any_storage_type::null};
         };
 
     public:
@@ -92,40 +97,48 @@ namespace dipp
             alignof(Ty) <= alignof(std::max_align_t) && sizeof(Ty) <= SMALL_BUFFER_SIZE;
 
         template<typename Ty>
-        static constexpr bool is_small = std::is_move_constructible_v<Ty> && alignof(Ty) <= alignof(std::max_align_t) &&
-                                         sizeof(Ty) <= SMALL_BUFFER_SIZE;
+        static constexpr bool is_small =
+            std::is_move_constructible_v<Ty> && alignof(Ty) <= alignof(std::max_align_t) &&
+            sizeof(Ty) <= SMALL_BUFFER_SIZE;
 
-        template<typename Ty> static constexpr bool is_large = !is_trivial<Ty> && !is_small<Ty>;
+        template<typename Ty>
+        static constexpr bool is_large = !is_trivial<Ty> && !is_small<Ty>;
 
     public:
         constexpr move_only_any() noexcept = default;
 
-        move_only_any(const move_only_any&)            = delete;
+        move_only_any(const move_only_any&) = delete;
         move_only_any& operator=(const move_only_any&) = delete;
 
         constexpr move_only_any(move_only_any&& other) noexcept
         {
             m_Storage.type_info = other.m_Storage.type_info;
-            m_Storage.type      = other.m_Storage.type;
+            m_Storage.type = other.m_Storage.type;
             switch (m_Storage.type)
             {
-            case any_storage_type::trivial_type:
-                std::memcpy(&m_Storage.u.trivial_type, &other.m_Storage.u.trivial_type, sizeof(trivial_storage));
-                break;
-            case any_storage_type::small_type:
-                m_Storage.u.small_type.rtti = other.m_Storage.u.small_type.rtti;
-                m_Storage.u.small_type.rtti.move(&m_Storage.u.small_type.buffer, &other.m_Storage.u.small_type.buffer);
-                other.m_Storage.u.small_type.rtti.destruct(&other.m_Storage.u.small_type.buffer);
-                break;
-            case any_storage_type::large_type:
-                m_Storage.u.large_type.rtti = other.m_Storage.u.large_type.rtti;
-                m_Storage.u.large_type.data = std::exchange(other.m_Storage.u.large_type.data, nullptr);
-                break;
+                case any_storage_type::trivial_type:
+                    std::memcpy(&m_Storage.u.trivial_type,
+                                &other.m_Storage.u.trivial_type,
+                                sizeof(trivial_storage));
+                    break;
+                case any_storage_type::small_type:
+                    m_Storage.u.small_type.rtti = other.m_Storage.u.small_type.rtti;
+                    m_Storage.u.small_type.rtti.move(&m_Storage.u.small_type.buffer,
+                                                     &other.m_Storage.u.small_type.buffer);
+                    other.m_Storage.u.small_type.rtti.destruct(
+                        &other.m_Storage.u.small_type.buffer);
+                    break;
+                case any_storage_type::large_type:
+                    m_Storage.u.large_type.rtti = other.m_Storage.u.large_type.rtti;
+                    m_Storage.u.large_type.data =
+                        std::exchange(other.m_Storage.u.large_type.data, nullptr);
+                    break;
             }
             other.m_Storage.type = any_storage_type::null;
         }
 
-        template<typename Ty> constexpr move_only_any(Ty&& value) noexcept(std::is_nothrow_move_assignable_v<Ty>)
+        template<typename Ty>
+        constexpr move_only_any(Ty&& value) noexcept(std::is_nothrow_move_assignable_v<Ty>)
         {
             emplace_impl<Ty>(std::forward<Ty>(value));
         }
@@ -136,22 +149,26 @@ namespace dipp
             {
                 reset();
                 m_Storage.type_info = other.m_Storage.type_info;
-                m_Storage.type      = other.m_Storage.type;
+                m_Storage.type = other.m_Storage.type;
                 switch (m_Storage.type)
                 {
-                case any_storage_type::trivial_type:
-                    std::memcpy(&m_Storage.u.trivial_type, &other.m_Storage.u.trivial_type, sizeof(trivial_storage));
-                    break;
-                case any_storage_type::small_type:
-                    m_Storage.u.small_type.rtti = other.m_Storage.u.small_type.rtti;
-                    m_Storage.u.small_type.rtti.move(
-                        &m_Storage.u.small_type.buffer, &other.m_Storage.u.small_type.buffer);
-                    other.m_Storage.u.small_type.rtti.destruct(&other.m_Storage.u.small_type.buffer);
-                    break;
-                case any_storage_type::large_type:
-                    m_Storage.u.large_type.rtti = other.m_Storage.u.large_type.rtti;
-                    m_Storage.u.large_type.data = std::exchange(other.m_Storage.u.large_type.data, nullptr);
-                    break;
+                    case any_storage_type::trivial_type:
+                        std::memcpy(&m_Storage.u.trivial_type,
+                                    &other.m_Storage.u.trivial_type,
+                                    sizeof(trivial_storage));
+                        break;
+                    case any_storage_type::small_type:
+                        m_Storage.u.small_type.rtti = other.m_Storage.u.small_type.rtti;
+                        m_Storage.u.small_type.rtti.move(&m_Storage.u.small_type.buffer,
+                                                         &other.m_Storage.u.small_type.buffer);
+                        other.m_Storage.u.small_type.rtti.destruct(
+                            &other.m_Storage.u.small_type.buffer);
+                        break;
+                    case any_storage_type::large_type:
+                        m_Storage.u.large_type.rtti = other.m_Storage.u.large_type.rtti;
+                        m_Storage.u.large_type.data =
+                            std::exchange(other.m_Storage.u.large_type.data, nullptr);
+                        break;
                 }
                 other.m_Storage.type = any_storage_type::null;
             }
@@ -168,7 +185,8 @@ namespace dipp
             return move_only_any{};
         }
 
-        template<typename Ty, typename... Args> [[nodiscard]] static move_only_any make(Args&&... args)
+        template<typename Ty, typename... Args>
+        [[nodiscard]] static move_only_any make(Args&&... args)
         {
             move_only_any any;
             any.emplace<Ty>(std::forward<Args>(args)...);
@@ -180,23 +198,25 @@ namespace dipp
         {
             switch (m_Storage.type)
             {
-            case any_storage_type::small_type:
-                m_Storage.u.small_type.rtti.destruct(m_Storage.u.small_type.buffer);
-                break;
-            case any_storage_type::large_type:
-                m_Storage.u.large_type.rtti.destruct(m_Storage.u.large_type.data);
-                break;
+                case any_storage_type::small_type:
+                    m_Storage.u.small_type.rtti.destruct(m_Storage.u.small_type.buffer);
+                    break;
+                case any_storage_type::large_type:
+                    m_Storage.u.large_type.rtti.destruct(m_Storage.u.large_type.data);
+                    break;
             }
             m_Storage.type = any_storage_type::null;
         }
 
-        template<typename Ty, typename... Args> constexpr Ty& emplace(Args&&... args)
+        template<typename Ty, typename... Args>
+        constexpr Ty& emplace(Args&&... args)
         {
             reset();
             return emplace_impl<Ty>(std::forward<Args>(args)...);
         }
 
-        template<typename Ty> constexpr Ty* cast() noexcept
+        template<typename Ty>
+        constexpr Ty* cast() noexcept
         {
             if (m_Storage.type_info == &typeid(Ty))
             {
@@ -236,7 +256,8 @@ namespace dipp
         }
 
     private:
-        template<typename Ty, typename... Args> constexpr Ty& emplace_impl(Args&&... args)
+        template<typename Ty, typename... Args>
+        constexpr Ty& emplace_impl(Args&&... args)
         {
             m_Storage.type_info = &typeid(Ty);
             if constexpr (is_trivial<Ty>)
@@ -260,7 +281,7 @@ namespace dipp
             }
             else
             {
-                auto obj                    = new Ty(std::forward<Args>(args)...);
+                auto obj = new Ty(std::forward<Args>(args)...);
                 m_Storage.u.large_type.data = obj;
 
                 m_Storage.type = any_storage_type::large_type;
@@ -270,7 +291,8 @@ namespace dipp
             }
         }
 
-        template<typename Ty, typename... Args> constexpr void construct(Ty* ptr, Args&&... args)
+        template<typename Ty, typename... Args>
+        constexpr void construct(Ty* ptr, Args&&... args)
         {
             if (std::is_constant_evaluated())
             {
@@ -289,7 +311,8 @@ namespace dipp
     /// <summary>
     /// Create a move_only_any object with the given type and arguments
     /// </summary>
-    template<typename Ty, typename... ArgsTy> [[nodiscard]] constexpr move_only_any make_any(ArgsTy&&... args)
+    template<typename Ty, typename... ArgsTy>
+    [[nodiscard]] constexpr move_only_any make_any(ArgsTy&&... args)
     {
         return move_only_any::make<Ty>(std::forward<ArgsTy>(args)...);
     }

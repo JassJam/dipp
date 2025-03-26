@@ -81,7 +81,7 @@ namespace dipp
             {
                 return details::invoke_impl<arg_types>(scope,
                                                        std::forward<FnTy>(fn),
-                                                       std::make_index_sequence<index + 1> {},
+                                                       std::make_index_sequence<index + 1>{},
                                                        std::forward<ArgsTy>(args)...);
             }
         }

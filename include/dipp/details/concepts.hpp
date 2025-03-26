@@ -6,7 +6,8 @@
 namespace dipp
 {
     template<class From, class To>
-    concept convertible_to = std::is_convertible_v<From, To> && requires { static_cast<To>(std::declval<From>()); };
+    concept convertible_to =
+        std::is_convertible_v<From, To> && requires { static_cast<To>(std::declval<From>()); };
 
     //
 
@@ -17,7 +18,8 @@ namespace dipp
     };
 
     template<typename Ty>
-    concept service_policy_instance_map_type = requires(Ty t) { t.find(std::declval<type_key_pair>()); };
+    concept service_policy_instance_map_type =
+        requires(Ty t) { t.find(std::declval<type_key_pair>()); };
 
     template<typename Ty>
     concept service_policy_type = requires(Ty t) {

@@ -8,19 +8,19 @@
 // Common interfaces and classes
 struct ILogger
 {
-    virtual ~ILogger()                           = default;
+    virtual ~ILogger() = default;
     virtual void log(const std::string& message) = 0;
 };
 
 struct IDatabase
 {
-    virtual ~IDatabase()                       = default;
+    virtual ~IDatabase() = default;
     virtual void query(const std::string& sql) = 0;
 };
 
 struct IUserService
 {
-    virtual ~IUserService()                              = default;
+    virtual ~IUserService() = default;
     virtual void createUser(const std::string& username) = 0;
 };
 
@@ -51,12 +51,13 @@ public:
 
 class UserService : public IUserService
 {
-    std::shared_ptr<ILogger>   logger_;
+    std::shared_ptr<ILogger> logger_;
     std::shared_ptr<IDatabase> database_;
 
 public:
-    INJECT(UserService(std::shared_ptr<ILogger> logger, std::shared_ptr<IDatabase> database)) :
-        logger_(std::move(logger)), database_(std::move(database))
+    INJECT(UserService(std::shared_ptr<ILogger> logger, std::shared_ptr<IDatabase> database))
+        : logger_(std::move(logger))
+        , database_(std::move(database))
     {
     }
 
@@ -100,27 +101,38 @@ public:
 
 // Kangaru Configuration
 struct ConsoleLoggerService;
-struct ILoggerService : kgr::abstract_shared_service<ILogger>, kgr::defaults_to<ConsoleLoggerService>
+struct ILoggerService
+    : kgr::abstract_shared_service<ILogger>
+    , kgr::defaults_to<ConsoleLoggerService>
 {
 };
-struct ConsoleLoggerService : kgr::shared_service<ConsoleLogger>, kgr::overrides<ILoggerService>
+struct ConsoleLoggerService
+    : kgr::shared_service<ConsoleLogger>
+    , kgr::overrides<ILoggerService>
 {
 };
 
 struct SQLDatabaseService;
-struct IDatabaseService : kgr::abstract_shared_service<IDatabase>, kgr::defaults_to<SQLDatabaseService>
+struct IDatabaseService
+    : kgr::abstract_shared_service<IDatabase>
+    , kgr::defaults_to<SQLDatabaseService>
 {
 };
-struct SQLDatabaseService : kgr::shared_service<SQLDatabase>, kgr::overrides<IDatabaseService>
+struct SQLDatabaseService
+    : kgr::shared_service<SQLDatabase>
+    , kgr::overrides<IDatabaseService>
 {
 };
 
 struct UserServiceService;
-struct IUserServiceService : kgr::abstract_shared_service<IUserService>, kgr::defaults_to<UserServiceService>
+struct IUserServiceService
+    : kgr::abstract_shared_service<IUserService>
+    , kgr::defaults_to<UserServiceService>
 {
 };
-struct UserServiceService : kgr::shared_service<UserService, kgr::dependency<ILoggerService, IDatabaseService>>,
-                            kgr::overrides<UserServiceService, IUserServiceService>
+struct UserServiceService
+    : kgr::shared_service<UserService, kgr::dependency<ILoggerService, IDatabaseService>>
+    , kgr::overrides<UserServiceService, IUserServiceService>
 {
 };
 
@@ -130,8 +142,7 @@ struct DippLoggerServiceConfig
 {
     static void setup(dipp::default_service_collection& collection)
     {
-        collection.add(DippLoggerService::descriptor_type([](auto&) -> std::shared_ptr<ILogger>
-                                                          { return std::make_shared<ConsoleLogger>(); }));
+        collection.add(DippLoggerService::descriptor_type::factory<ConsoleLogger>());
     }
 };
 
@@ -140,22 +151,19 @@ struct DippDatabaseServiceConfig
 {
     static void setup(dipp::default_service_collection& collection)
     {
-        collection.add(DippDatabaseService::descriptor_type([](auto&) -> std::shared_ptr<IDatabase>
-                                                            { return std::make_shared<SQLDatabase>(); }));
+        collection.add(DippDatabaseService::descriptor_type::factory<SQLDatabase>());
     }
 };
 
-using DippUserServiceService = dipp::injected_shared<IUserService, dipp::service_lifetime::singleton>;
+using DippUserServiceService =
+    dipp::injected_shared<IUserService,
+                          dipp::service_lifetime::singleton,
+                          dipp::dependency<DippLoggerService, DippDatabaseService>>;
 struct DippUserServiceServiceConfig
 {
     static void setup(dipp::default_service_collection& collection)
     {
-        collection.add(DippUserServiceService::descriptor_type(
-            [](auto& services) -> std::shared_ptr<IUserService>
-            {
-                return std::make_shared<UserService>(
-                    *services.get<DippLoggerService>(), *services.get<DippDatabaseService>());
-            }));
+        collection.add(DippUserServiceService::descriptor_type::factory<UserService>());
     }
 };
 
