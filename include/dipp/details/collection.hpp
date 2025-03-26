@@ -12,56 +12,56 @@ namespace dipp
 
     public:
         template<base_injected_type InjectableTy>
-        void add(typename InjectableTy::descriptor_type descriptor)
+        void add()
         {
-            m_Storage.template add_service<typename InjectableTy::descriptor_type>(
-                std::move(descriptor), InjectableTy::key);
+            using descriptor_type = typename InjectableTy::descriptor_type;
+            add(descriptor_type::factory(), InjectableTy::key);
         }
 
         template<base_injected_type InjectableTy>
-        void add()
+        void add(typename InjectableTy::descriptor_type&& descriptor)
         {
-            m_Storage.template add_service<typename InjectableTy::descriptor_type>(
-                InjectableTy::key);
-        }
-
-        template<service_descriptor_type DescTy>
-        void add(DescTy descriptor, size_t key = {})
-        {
-            m_Storage.template add_service<DescTy>(std::move(descriptor), key);
+            using descriptor_type = typename InjectableTy::descriptor_type;
+            add(std::forward<descriptor_type>(descriptor), InjectableTy::key);
         }
 
         template<service_descriptor_type DescTy>
         void add(size_t key = {})
         {
-            m_Storage.template add_service<DescTy>(key);
+            add(DescTy::factory(), key);
+        }
+
+        template<service_descriptor_type DescTy>
+        void add(DescTy&& descriptor, size_t key = {})
+        {
+            m_Storage.add_service(std::forward<DescTy>(descriptor), key);
         }
 
     public:
         template<base_injected_type InjectableTy>
-        bool emplace(typename InjectableTy::descriptor_type descriptor)
+        bool emplace()
         {
-            return m_Storage.template emplace_service<typename InjectableTy::descriptor_type>(
-                std::move(descriptor), InjectableTy::key);
+            using descriptor_type = typename InjectableTy::descriptor_type;
+            return emplace(descriptor_type::factory(), InjectableTy::key);
         }
 
         template<base_injected_type InjectableTy>
-        bool emplace()
+        bool emplace(typename InjectableTy::descriptor_type&& descriptor, size_t key = {})
         {
-            return m_Storage.template emplace_service<typename InjectableTy::descriptor_type>(
-                InjectableTy::key);
-        }
-
-        template<service_descriptor_type DescTy>
-        bool emplace(DescTy descriptor, size_t key = {})
-        {
-            return m_Storage.template emplace_service<DescTy>(std::move(descriptor), key);
+            using descriptor_type = typename InjectableTy::descriptor_type;
+            return emplace(std::forward<descriptor_type>(descriptor), InjectableTy::key);
         }
 
         template<service_descriptor_type DescTy>
         bool emplace(size_t key = {})
         {
-            return m_Storage.template emplace_service<DescTy>(key);
+            return emplace(DescTy::factory(), key);
+        }
+
+        template<service_descriptor_type DescTy>
+        bool emplace(DescTy&& descriptor, size_t key = {})
+        {
+            return m_Storage.template emplace_service(std::forward<DescTy>(descriptor), key);
         }
 
     public:

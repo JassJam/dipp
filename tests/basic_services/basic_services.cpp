@@ -85,8 +85,8 @@ BOOST_AUTO_TEST_CASE(GivenExternalServiceReference_WhenResolved_ThenDependencies
     dipp::default_service_collection collection;
 
     collection.add<CameraService>();
-    collection.add(scene_service::descriptor_type([&externalScene](auto&)
-                                                  { return std::ref(externalScene); }));
+    collection.add<scene_service>({[&externalScene](auto&) -> std::reference_wrapper<Scene>
+                                   { return std::ref(externalScene); }});
     collection.add<world_service>();
 
     // When

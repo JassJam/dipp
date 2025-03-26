@@ -5,31 +5,37 @@
 
 namespace dipp
 {
-    template<service_descriptor_type DescTy, size_t Key> class base_injected
+    template<service_descriptor_type DescTy, size_t Key>
+    class base_injected
     {
     public:
-        using descriptor_type       = DescTy;
-        using value_type            = typename descriptor_type::value_type;
-        using service_type          = typename descriptor_type::service_type;
+        using descriptor_type = DescTy;
+        using value_type = typename descriptor_type::value_type;
+        using service_type = typename descriptor_type::service_type;
         static constexpr size_t key = Key;
 
-        using reference_type       = std::add_lvalue_reference_t<std::remove_cvref_t<value_type>>;
-        using const_reference_type = std::add_lvalue_reference_t<std::add_const_t<std::remove_cvref_t<value_type>>>;
-        using pointer_type         = std::add_pointer_t<std::remove_cvref_t<value_type>>;
-        using const_pointer_type   = std::add_pointer_t<std::add_const_t<std::remove_cvref_t<value_type>>>;
+        using reference_type = std::add_lvalue_reference_t<std::remove_cvref_t<value_type>>;
+        using const_reference_type =
+            std::add_lvalue_reference_t<std::add_const_t<std::remove_cvref_t<value_type>>>;
+        using pointer_type = std::add_pointer_t<std::remove_cvref_t<value_type>>;
+        using const_pointer_type =
+            std::add_pointer_t<std::add_const_t<std::remove_cvref_t<value_type>>>;
 
-        constexpr base_injected(service_type&& value) noexcept(std::is_nothrow_move_constructible_v<service_type>) :
-            m_Value(std::move(value))
+        constexpr base_injected(service_type&& value) noexcept(
+            std::is_nothrow_move_constructible_v<service_type>)
+            : m_Value(std::move(value))
         {
         }
 
         constexpr base_injected(const service_type& value) noexcept(
-            std::is_nothrow_copy_constructible_v<service_type>) : m_Value(value)
+            std::is_nothrow_copy_constructible_v<service_type>)
+            : m_Value(value)
         {
         }
 
-        constexpr base_injected(service_type& value) noexcept(std::is_nothrow_copy_constructible_v<service_type>) :
-            m_Value(value)
+        constexpr base_injected(service_type& value) noexcept(
+            std::is_nothrow_copy_constructible_v<service_type>)
+            : m_Value(value)
         {
         }
 
@@ -95,19 +101,34 @@ namespace dipp
 
     //
 
-    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>,
-             size_t Key = size_t{}, service_scope_type ScopeTy = default_service_scope>
-    using injected_functor = base_injected<functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
+    template<typename Ty,
+             service_lifetime Lifetime,
+             dependency_container_type DepsTy = dependency<>,
+             size_t Key = size_t{},
+             service_scope_type ScopeTy = default_service_scope>
+    using injected_functor =
+        base_injected<functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>,
-             size_t Key = size_t{}, service_scope_type ScopeTy = default_service_scope>
-    using injected_unique = base_injected<unique_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
+    template<typename Ty,
+             service_lifetime Lifetime,
+             dependency_container_type DepsTy = dependency<>,
+             size_t Key = size_t{},
+             service_scope_type ScopeTy = default_service_scope>
+    using injected_unique =
+        base_injected<unique_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>,
-             size_t Key = size_t{}, service_scope_type ScopeTy = default_service_scope>
-    using injected_shared = base_injected<shared_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
+    template<typename Ty,
+             service_lifetime Lifetime,
+             dependency_container_type DepsTy = dependency<>,
+             size_t Key = size_t{},
+             service_scope_type ScopeTy = default_service_scope>
+    using injected_shared =
+        base_injected<shared_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 
-    template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy = dependency<>,
-             size_t Key = size_t{}, service_scope_type ScopeTy = default_service_scope>
+    template<typename Ty,
+             service_lifetime Lifetime,
+             dependency_container_type DepsTy = dependency<>,
+             size_t Key = size_t{},
+             service_scope_type ScopeTy = default_service_scope>
     using injected = base_injected<local_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
 } // namespace dipp

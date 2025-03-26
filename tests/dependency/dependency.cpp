@@ -85,12 +85,9 @@ public:
     {
         dipp::default_service_collection services;
 
-        services.add(AService::descriptor_type([this](auto&) { return dipp::make_any<A>(*this); }));
-        services.add(BService::descriptor_type(
-            [this](auto& s) { return dipp::make_any<B>(s.get<AService>(), *this); }));
-        services.add(CService::descriptor_type(
-            [this](auto& s)
-            { return dipp::make_any<C>(s.get<AService>(), s.get<BService>(), *this); }));
+        services.add(AService::descriptor_type::factory<A>(*this));
+        services.add(BService::descriptor_type::factory<B>(*this));
+        services.add(CService::descriptor_type::factory<C>(*this));
 
         return services;
     }
@@ -114,7 +111,7 @@ BOOST_FIXTURE_TEST_CASE(
     // Then
     BOOST_TEST_CONTEXT("Should track construction/destruction order")
     {
-        const std::vector<int> expected {0, 2, 4, 5, 3, 1};
+        const std::vector<int> expected{0, 2, 4, 5, 3, 1};
         BOOST_TEST(values == expected, boost::test_tools::per_element());
     }
 
@@ -139,7 +136,7 @@ BOOST_FIXTURE_TEST_CASE(GivenDependencyChain_WhenResolvingServices_ThenConstruct
     // Then
     BOOST_TEST_CONTEXT("Should construct dependencies in order")
     {
-        const std::vector<int> expected {0, 2, 4};
+        const std::vector<int> expected{0, 2, 4};
         BOOST_TEST(values == expected, boost::test_tools::per_element());
     }
 

@@ -4,12 +4,14 @@
 
 namespace dipp
 {
-    template<base_injected_type... Deps> struct dependency
+    template<base_injected_type... Deps>
+    struct dependency
     {
         using types = std::tuple<Deps...>;
     };
 
-    template<> struct dependency<>
+    template<>
+    struct dependency<>
     {
         using types = std::tuple<>;
     };
@@ -19,13 +21,13 @@ namespace dipp
     {
         using dependencies = typename DepsTy::types;
 
-        return std::tuple<
-            std::invoke_result_t<decltype(&ScopeTy::template get<std::tuple_element_t<Is, dependencies>>), ScopeTy>...>{
-            scope.template get<std::tuple_element_t<Is, dependencies>>()...
-        };
+        return std::tuple<std::invoke_result_t<
+            decltype(&ScopeTy::template get<std::tuple_element_t<Is, dependencies>>),
+            ScopeTy>...>{scope.template get<std::tuple_element_t<Is, dependencies>>()...};
     }
 
-    template<service_scope_type ScopeTy, dependency_container_type DepsTy> auto get_tuple_from_scope(ScopeTy& scope)
+    template<service_scope_type ScopeTy, dependency_container_type DepsTy>
+    auto get_tuple_from_scope(ScopeTy& scope)
     {
         return get_tuple_from_scope<ScopeTy, DepsTy>(
             scope, std::make_index_sequence<std::tuple_size_v<typename DepsTy::types>>{});
