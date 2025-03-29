@@ -85,9 +85,9 @@ public:
     {
         dipp::default_service_collection services;
 
-        services.add(AService::descriptor_type::factory<A>(*this));
-        services.add(BService::descriptor_type::factory<B>(*this));
-        services.add(CService::descriptor_type::factory<C>(*this));
+        services.add(AService::descriptor_type::factory<A>(std::ref(*this)));
+        services.add(BService::descriptor_type::factory<B>(std::ref(*this)));
+        services.add(CService::descriptor_type::factory<C>(std::ref(*this)));
 
         return services;
     }
