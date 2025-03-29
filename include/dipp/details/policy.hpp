@@ -8,34 +8,37 @@
 
 namespace dipp
 {
+    using service_info = std::vector<move_only_any>;
+
     struct default_service_policy
     {
-        using service_info = std::vector<move_only_any>;
         using service_map_type = std::map<type_key_pair, service_info>;
     };
     static_assert(service_policy_type<default_service_policy>,
                   "default_service_policy is not a service_policy_type");
 
+    //
+
+    struct instance_info
+    {
+        template<service_descriptor_type DescTy, service_scope_type ScopeTy>
+        instance_info(DescTy& descriptor, ScopeTy& scope)
+            : Instance(descriptor.load(scope))
+        {
+        }
+
+        template<typename Ty>
+        constexpr Ty* cast() noexcept
+        {
+            return Instance.cast<Ty>();
+        }
+
+        move_only_any Instance;
+    };
+
     struct default_service_storage_memory_type
     {
     public:
-        struct instance_info
-        {
-            template<service_descriptor_type DescTy, service_scope_type ScopeTy>
-            instance_info(DescTy& descriptor, ScopeTy& scope)
-                : Instance(descriptor.load(scope))
-            {
-            }
-
-            template<typename Ty>
-            constexpr Ty* cast() noexcept
-            {
-                return Instance.cast<Ty>();
-            }
-
-            move_only_any Instance;
-        };
-
         using instance_map_type = std::map<type_key_pair, instance_info>;
 
     public:

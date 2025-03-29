@@ -8,6 +8,7 @@
 #include <typeindex>
 #include <functional>
 #include <memory>
+#include "move_only_any.hpp"
 
 namespace dipp
 {
