@@ -61,7 +61,7 @@ namespace dipp
         template<service_descriptor_type DescTy>
         bool emplace(DescTy&& descriptor, size_t key = {})
         {
-            return m_Storage.template emplace_service(std::forward<DescTy>(descriptor), key);
+            return m_Storage.emplace_service(std::forward<DescTy>(descriptor), key);
         }
 
     public:
