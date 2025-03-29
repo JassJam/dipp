@@ -37,26 +37,19 @@ namespace dipp
         using dependency_types = typename DepsTy::types;
 
     public:
-        template<typename ScopeTy, typename TupleTy>
-        [[nodiscard]] static auto GetCombinedArgs(ScopeTy& scope, TupleTy&& args)
-        {
-            if constexpr (std::tuple_size_v<typename DepsTy::types> == 0)
-            {
-                (void) scope;
-                return std::forward<TupleTy>(args);
-            }
-            else
-            {
-                return std::tuple_cat(get_tuple_from_scope<ScopeTy, DepsTy>(scope),
-                                      std::forward<TupleTy>(args));
-            }
-        }
-
         template<typename ScopeTy, typename FactoryTy, typename TupleTy>
         [[nodiscard]] static auto ApplyFactory(ScopeTy& scope, FactoryTy&& factory, TupleTy&& args)
         {
-            return std::apply(std::forward<FactoryTy>(factory),
-                              GetCombinedArgs(scope, std::forward<TupleTy>(args)));
+            if constexpr (std::tuple_size_v<typename DepsTy::types> == 0)
+            {
+                return std::apply(std::forward<FactoryTy>(factory), std::forward<TupleTy>(args));
+            }
+            else
+            {
+                auto dependencies = get_tuple_from_scope<ScopeTy, DepsTy>(scope);
+                return std::apply(std::forward<FactoryTy>(factory),
+                                  std::tuple_cat(dependencies, std::forward<TupleTy>(args)));
+            }
         }
     };
 
@@ -127,8 +120,7 @@ namespace dipp
             std::is_nothrow_constructible_v<ImplTy, ArgsTy...>)
         {
             return unique_service_descriptor(
-                [args =
-                     std::forward_as_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable
+                [args = std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable
                 {
                     return base_class::ApplyFactory(
                         scope,
@@ -175,8 +167,7 @@ namespace dipp
             std::is_nothrow_constructible_v<ImplTy, ArgsTy...>)
         {
             return shared_service_descriptor(
-                [args =
-                     std::forward_as_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable
+                [args = std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable
                 {
                     return base_class::ApplyFactory(
                         scope,
@@ -222,8 +213,7 @@ namespace dipp
             std::is_nothrow_constructible_v<ImplTy, ArgsTy...>)
         {
             return local_service_descriptor(
-                [args =
-                     std::forward_as_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable
+                [args = std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable
                 {
                     return base_class::ApplyFactory(
                         scope,
