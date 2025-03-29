@@ -32,7 +32,6 @@ namespace dipp
     public:
         using policy_type = PolicyTy;
         using service_map_type = typename policy_type::service_map_type;
-        using service_info_type = typename policy_type::service_map_type;
 
     public:
         void clear() noexcept
@@ -93,7 +92,7 @@ namespace dipp
                 return false;
             }
 
-            m_Services.emplace(service_handle, std::forward<DescTy>(descriptor));
+            m_Services[service_handle].emplace_back(std::forward<DescTy>(descriptor));
             return true;
         }
 
