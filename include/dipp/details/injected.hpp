@@ -21,6 +21,7 @@ namespace dipp
         using const_pointer_type =
             std::add_pointer_t<std::add_const_t<std::remove_cvref_t<value_type>>>;
 
+    public:
         constexpr base_injected(service_type&& value) noexcept(
             std::is_nothrow_move_constructible_v<service_type>)
             : m_Value(std::move(value))
@@ -53,16 +54,6 @@ namespace dipp
         [[nodiscard]] constexpr reference_type get() noexcept
         {
             return m_Value;
-        }
-
-        [[nodiscard]] constexpr operator const_reference_type() const noexcept
-        {
-            return get();
-        }
-
-        [[nodiscard]] constexpr operator reference_type() noexcept
-        {
-            return get();
         }
 
         [[nodiscard]] constexpr const_pointer_type ptr() const noexcept
@@ -106,29 +97,248 @@ namespace dipp
              dependency_container_type DepsTy = dependency<>,
              size_t Key = size_t{},
              service_scope_type ScopeTy = default_service_scope>
-    using injected_functor =
-        base_injected<functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
+    struct injected_functor
+        : public base_injected<functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>
+    {
+    public:
+        using base_type =
+            base_injected<functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
+
+        using value_type = typename base_type::value_type;
+
+    public:
+        using base_type::base_type;
+
+        using base_type::detach;
+        using base_type::get;
+        using base_type::ptr;
+        using base_type::operator->;
+        using base_type::operator*;
+
+    public:
+        constexpr operator const Ty&() const noexcept
+        {
+            return get();
+        }
+        constexpr operator Ty&() noexcept
+        {
+            return get();
+        }
+
+        constexpr operator const Ty*() const noexcept
+        {
+            return std::addressof(static_cast<const Ty&>(*this));
+        }
+        constexpr operator Ty*() noexcept
+        {
+            return std::addressof(static_cast<Ty&>(*this));
+        }
+    };
 
     template<typename Ty,
              service_lifetime Lifetime,
              dependency_container_type DepsTy = dependency<>,
              size_t Key = size_t{},
              service_scope_type ScopeTy = default_service_scope>
-    using injected_unique =
-        base_injected<unique_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
+    struct injected_unique
+        : public base_injected<unique_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>
+    {
+    public:
+        using base_type =
+            base_injected<unique_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
+        using value_type = typename base_type::value_type;
+
+    public:
+        using base_type::base_type;
+
+        using base_type::detach;
+        using base_type::get;
+        using base_type::ptr;
+        using base_type::operator->;
+        using base_type::operator*;
+
+    public:
+        constexpr operator const value_type&() const noexcept
+        {
+            return get();
+        }
+        constexpr operator value_type&() noexcept
+        {
+            return get();
+        }
+
+        constexpr operator const value_type*() const noexcept
+        {
+            return std::addressof(static_cast<const value_type&>(*this));
+        }
+        constexpr operator value_type*() noexcept
+        {
+            return std::addressof(static_cast<value_type&>(*this));
+        }
+
+        constexpr operator const Ty&() const noexcept
+        {
+            return *static_cast<const value_type&>(*this);
+        }
+        constexpr operator Ty&() noexcept
+        {
+            return *static_cast<value_type&>(*this);
+        }
+
+        constexpr operator const Ty*() const noexcept
+        {
+            return std::addressof(static_cast<const Ty&>(*this));
+        }
+        constexpr operator Ty*() noexcept
+        {
+            return std::addressof(static_cast<Ty&>(*this));
+        }
+    };
 
     template<typename Ty,
              service_lifetime Lifetime,
              dependency_container_type DepsTy = dependency<>,
              size_t Key = size_t{},
              service_scope_type ScopeTy = default_service_scope>
-    using injected_shared =
-        base_injected<shared_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
+    struct injected_shared
+        : public base_injected<shared_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>
+    {
+    public:
+        using base_type =
+            base_injected<shared_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
+        using value_type = typename base_type::value_type;
+
+    public:
+        using base_type::base_type;
+
+        using base_type::detach;
+        using base_type::get;
+        using base_type::ptr;
+        using base_type::operator->;
+        using base_type::operator*;
+
+    public:
+        constexpr operator const value_type&() const noexcept
+        {
+            return get();
+        }
+        constexpr operator value_type&() noexcept
+        {
+            return get();
+        }
+
+        constexpr operator const value_type*() const noexcept
+        {
+            return std::addressof(static_cast<const value_type&>(*this));
+        }
+        constexpr operator value_type*() noexcept
+        {
+            return std::addressof(static_cast<value_type&>(*this));
+        }
+
+        constexpr operator const Ty&() const noexcept
+        {
+            return *static_cast<const value_type&>(*this);
+        }
+        constexpr operator Ty&() noexcept
+        {
+            return *static_cast<value_type&>(*this);
+        }
+
+        constexpr operator const Ty*() const noexcept
+        {
+            return std::addressof(static_cast<const Ty&>(*this));
+        }
+        constexpr operator Ty*() noexcept
+        {
+            return std::addressof(static_cast<Ty&>(*this));
+        }
+    };
 
     template<typename Ty,
              service_lifetime Lifetime,
              dependency_container_type DepsTy = dependency<>,
              size_t Key = size_t{},
              service_scope_type ScopeTy = default_service_scope>
-    using injected = base_injected<local_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
+    struct injected_ref
+        : public base_injected<
+              local_service_descriptor<std::reference_wrapper<Ty>, Lifetime, ScopeTy, DepsTy>,
+              Key>
+    {
+    public:
+        using base_type = base_injected<
+            local_service_descriptor<std::reference_wrapper<Ty>, Lifetime, ScopeTy, DepsTy>,
+            Key>;
+        using value_type = typename base_type::value_type;
+
+    public:
+        using base_type::base_type;
+
+        using base_type::detach;
+        using base_type::get;
+        using base_type::ptr;
+        using base_type::operator->;
+        using base_type::operator*;
+
+    public:
+        constexpr operator const Ty&() const noexcept
+        {
+            return get();
+        }
+        constexpr operator Ty&() noexcept
+        {
+            return get();
+        }
+
+        constexpr operator const Ty*() const noexcept
+        {
+            return std::addressof(static_cast<const Ty&>(*this));
+        }
+        constexpr operator Ty*() noexcept
+        {
+            return std::addressof(static_cast<Ty&>(*this));
+        }
+    };
+
+    template<typename Ty,
+             service_lifetime Lifetime,
+             dependency_container_type DepsTy = dependency<>,
+             size_t Key = size_t{},
+             service_scope_type ScopeTy = default_service_scope>
+    struct injected
+        : public base_injected<local_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>
+    {
+    public:
+        using base_type =
+            base_injected<local_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>;
+        using value_type = typename base_type::value_type;
+
+    public:
+        using base_type::base_type;
+
+        using base_type::detach;
+        using base_type::get;
+        using base_type::ptr;
+        using base_type::operator->;
+        using base_type::operator*;
+
+    public:
+        constexpr operator const Ty&() const noexcept
+        {
+            return get();
+        }
+        constexpr operator Ty&() noexcept
+        {
+            return get();
+        }
+
+        constexpr operator const Ty*() const noexcept
+        {
+            return std::addressof(static_cast<const Ty&>(*this));
+        }
+        constexpr operator Ty*() noexcept
+        {
+            return std::addressof(static_cast<Ty&>(*this));
+        }
+    };
 } // namespace dipp
