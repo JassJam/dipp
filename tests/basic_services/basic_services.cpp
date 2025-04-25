@@ -37,7 +37,7 @@ struct World
     Scene& scene;
     Camera camera;
 
-    World(std::reference_wrapper<Scene> scene, Camera cam)
+    World(Scene& scene, Camera cam)
         : scene(scene)
         , camera(std::move(cam))
     {
@@ -75,8 +75,7 @@ BOOST_AUTO_TEST_CASE(GivenTransientService_WhenRequestedTwice_ThenInstancesDiffe
 BOOST_AUTO_TEST_CASE(GivenExternalServiceReference_WhenResolved_ThenDependenciesCorrect)
 {
     // Given
-    using scene_service =
-        dipp::injected<std::reference_wrapper<Scene>, dipp::service_lifetime::singleton>;
+    using scene_service = dipp::injected_ref<Scene, dipp::service_lifetime::singleton>;
     using world_service = dipp::injected<World,
                                          dipp::service_lifetime::scoped,
                                          dipp::dependency<scene_service, CameraService>>;
