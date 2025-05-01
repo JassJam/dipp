@@ -213,7 +213,7 @@ namespace dipp
                         scope,
                         [](auto&&... params) mutable
                         {
-                            return dipp::make_any<std::unique_ptr<Ty>>(
+                            return dipp::make_any<std::shared_ptr<Ty>>(
                                 std::make_shared<implementation_type>(
                                     std::forward<decltype(params)>(params)...));
                         },
