@@ -34,11 +34,17 @@ namespace dipp
         using service_map_type = typename policy_type::service_map_type;
 
     public:
+        /// <summary>
+        /// Clears all services from the storage.
+        /// </summary>
         void clear() noexcept
         {
             m_Services.clear();
         }
 
+        /// <summary>
+        /// Clears the service with the specified key from the storage.
+        /// </summary>
         template<service_descriptor_type DescTy>
         void clear(size_t key)
         {
@@ -52,6 +58,9 @@ namespace dipp
             }
         }
 
+        /// <summary>
+        /// Clears all services of the specified type from the storage.
+        /// </summary>
         template<service_descriptor_type DescTy>
         void clear_all()
         {
@@ -70,6 +79,9 @@ namespace dipp
         }
 
     public:
+        /// <summary>
+        /// Adds a service to the storage with the specified key.
+        /// </summary>
         template<service_descriptor_type DescTy>
         void add_service(DescTy&& descriptor, size_t key)
         {
@@ -80,6 +92,9 @@ namespace dipp
         }
 
     public:
+        /// <summary>
+        /// Adds a service to the storage with the specified key if it does not already exist.
+        /// </summary>
         template<service_descriptor_type DescTy>
         bool emplace_service(DescTy&& descriptor, size_t key)
         {
@@ -97,6 +112,9 @@ namespace dipp
         }
 
     public:
+        /// <summary>
+        /// Gets a service from the storage with the specified key.
+        /// </summary>
         template<service_descriptor_type DescTy,
                  service_storage_memory_type SingletonMemTy,
                  service_storage_memory_type ScopedMemTy>
@@ -123,6 +141,9 @@ namespace dipp
         }
 
     public:
+        /// <summary>
+        /// Checks if a service with the specified key exists in the storage.
+        /// </summary>
         template<service_descriptor_type DescTy>
         [[nodiscard]] bool has_service(size_t key) const noexcept
         {
@@ -136,6 +157,9 @@ namespace dipp
         }
 
     public:
+        /// <summary>
+        /// Counts the number of services with the specified key in the storage.
+        /// </summary>
         template<service_descriptor_type DescTy>
         [[nodiscard]] size_t count(size_t key) const noexcept
         {
@@ -148,6 +172,9 @@ namespace dipp
             return it != m_Services.end() ? it->second.size() : 0;
         }
 
+        /// <summary>
+        /// Counts the total number of services of the specified type in the storage.
+        /// </summary>
         template<service_descriptor_type DescTy>
         [[nodiscard]] size_t count_all() const noexcept
         {
@@ -167,6 +194,10 @@ namespace dipp
             return count;
         }
 
+        /// <summary>
+        /// Iterates over all services of the specified type in the storage and applies the provided
+        /// function to each service.
+        /// </summary>
         template<service_descriptor_type DescTy,
                  service_storage_memory_type SingletonMemTy,
                  service_storage_memory_type ScopedMemTy,
@@ -193,6 +224,9 @@ namespace dipp
             }
         }
 
+        /// <summary>
+        /// Iterates over all services of the specified type in the storage and applies the provided
+        /// </summary>
         template<service_descriptor_type DescTy,
                  service_storage_memory_type SingletonMemTy,
                  service_storage_memory_type ScopedMemTy,
@@ -220,6 +254,9 @@ namespace dipp
         }
 
     private:
+        /// <summary>
+        /// Loads a service from the storage with the specified key.
+        /// </summary>
         template<service_descriptor_type DescTy,
                  service_storage_memory_type SingletonMemTy,
                  service_storage_memory_type ScopedMemTy>

@@ -41,46 +41,76 @@ namespace dipp
         }
 
     public:
+        /// <summary>
+        /// Detach the service from the injected object.
+        /// </summary>
+        template<
+            typename = std::enable_if_t<descriptor_type::lifetime == service_lifetime::transient>>
         [[nodiscard]] constexpr auto detach() noexcept
         {
             return std::move(m_Value);
         }
 
+        /// <summary>
+        /// Get the service from the injected object.
+        /// </summary>
         [[nodiscard]] constexpr const_reference_type get() const noexcept
         {
             return m_Value;
         }
 
+        /// <summary>
+        /// Get the service from the injected object.
+        /// </summary>
         [[nodiscard]] constexpr reference_type get() noexcept
         {
             return m_Value;
         }
 
+        /// <summary>
+        /// Get the address of the service from the injected object.
+        /// </summary>
         [[nodiscard]] constexpr const_pointer_type ptr() const noexcept
         {
             return std::addressof(get());
         }
 
+        /// <summary>
+        /// Get the address of the service from the injected object.
+        /// </summary>
+        /// <returns></returns>
         [[nodiscard]] constexpr pointer_type ptr() noexcept
         {
             return std::addressof(get());
         }
 
+        /// <summary>
+        /// Get the address of the service from the injected object.
+        /// </summary>
         [[nodiscard]] constexpr const_pointer_type operator->() const noexcept
         {
             return ptr();
         }
 
+        /// <summary>
+        /// Get the address of the service from the injected object.
+        /// </summary>
         [[nodiscard]] constexpr pointer_type operator->() noexcept
         {
             return ptr();
         }
 
+        /// <summary>
+        /// Get the service from the injected object.
+        /// </summary>
         [[nodiscard]] constexpr const_reference_type operator*() const noexcept
         {
             return get();
         }
 
+        /// <summary>
+        /// Get the service from the injected object.
+        /// </summary>
         [[nodiscard]] constexpr reference_type operator*() noexcept
         {
             return get();
