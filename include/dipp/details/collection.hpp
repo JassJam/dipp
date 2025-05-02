@@ -11,6 +11,9 @@ namespace dipp
         friend class service_provider;
 
     public:
+        /// <summary>
+        /// Adds a service to the collection.
+        /// </summary>
         template<base_injected_type InjectableTy>
         void add()
         {
@@ -18,6 +21,9 @@ namespace dipp
             add(descriptor_type::factory(), InjectableTy::key);
         }
 
+        /// <summary>
+        /// Adds a service to the collection.
+        /// </summary>
         template<base_injected_type InjectableTy>
         void add(typename InjectableTy::descriptor_type&& descriptor)
         {
@@ -25,12 +31,18 @@ namespace dipp
             add(std::forward<descriptor_type>(descriptor), InjectableTy::key);
         }
 
+        /// <summary>
+        /// Adds a service to the collection.
+        /// </summary>
         template<service_descriptor_type DescTy>
         void add(size_t key = {})
         {
             add(DescTy::factory(), key);
         }
 
+        /// <summary>
+        /// Adds a service to the collection.
+        /// </summary>
         template<service_descriptor_type DescTy>
         void add(DescTy&& descriptor, size_t key = {})
         {
@@ -38,6 +50,9 @@ namespace dipp
         }
 
     public:
+        /// <summary>
+        /// Emplaces a service in the collection.
+        /// </summary>
         template<base_injected_type InjectableTy>
         bool emplace()
         {
@@ -45,6 +60,9 @@ namespace dipp
             return emplace(descriptor_type::factory(), InjectableTy::key);
         }
 
+        /// <summary>
+        /// Emplaces a service in the collection.
+        /// </summary>
         template<base_injected_type InjectableTy>
         bool emplace(typename InjectableTy::descriptor_type&& descriptor, size_t key = {})
         {
@@ -52,12 +70,18 @@ namespace dipp
             return emplace(std::forward<descriptor_type>(descriptor), InjectableTy::key);
         }
 
+        /// <summary>
+        /// Emplaces a service in the collection.
+        /// </summary>
         template<service_descriptor_type DescTy>
         bool emplace(size_t key = {})
         {
             return emplace(DescTy::factory(), key);
         }
 
+        /// <summary>
+        /// Emplaces a service in the collection.
+        /// </summary>
         template<service_descriptor_type DescTy>
         bool emplace(DescTy&& descriptor, size_t key = {})
         {
@@ -65,32 +89,31 @@ namespace dipp
         }
 
     public:
+        /// <summary>
+        /// Checks if a service is present in the collection.
+        /// </summary>
         template<base_injected_type InjectableTy>
-        [[nodiscard]]
-        bool has(typename InjectableTy::descriptor_type descriptor) const noexcept
+        [[nodiscard]] bool has(typename InjectableTy::descriptor_type descriptor) const noexcept
         {
             return m_Storage.template has_service<typename InjectableTy::descriptor_type>(
                 std::move(descriptor), InjectableTy::key);
         }
 
+        /// <summary>
+        /// Checks if a service is present in the collection.
+        /// </summary>
         template<base_injected_type InjectableTy>
-        [[nodiscard]]
-        bool has() const noexcept
+        [[nodiscard]] bool has() const noexcept
         {
             return m_Storage.template has_service<typename InjectableTy::descriptor_type>(
                 InjectableTy::key);
         }
 
+        /// <summary>
+        /// Checks if a service is present in the collection.
+        /// </summary>
         template<service_descriptor_type DescTy>
-        [[nodiscard]]
-        bool has(DescTy descriptor, size_t key = {}) const noexcept
-        {
-            return m_Storage.template has_service<DescTy>(std::move(descriptor), key);
-        }
-
-        template<service_descriptor_type DescTy>
-        [[nodiscard]]
-        bool has(size_t key = {}) const noexcept
+        [[nodiscard]] bool has(size_t key = {}) const noexcept
         {
             return m_Storage.template has_service<DescTy>(key);
         }

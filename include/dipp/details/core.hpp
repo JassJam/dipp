@@ -19,6 +19,26 @@ namespace dipp
         scoped
     };
 
+    /// <summary>
+    /// Converts a service_lifetime enum to a string_view.
+    /// </summary>
+    constexpr std::string_view to_string(service_lifetime lifetime)
+    {
+        switch (lifetime)
+        {
+            case service_lifetime::singleton:
+                return "singleton";
+            case service_lifetime::transient:
+                return "transient";
+            case service_lifetime::scoped:
+                return "scoped";
+            default:
+                return "unknown";
+        }
+    }
+
+    //
+
     struct string_hash
     {
         constexpr string_hash() noexcept
@@ -50,11 +70,17 @@ namespace dipp
         }
     };
 
+    /// <summary>
+    /// Generates a hash key from a string literal or std::string_view.
+    /// </summary>
     static constexpr size_t key(const char* str) noexcept
     {
         return string_hash(str).value;
     }
 
+    /// <summary>
+    /// Generates a hash key from a std::string_view.
+    /// </summary>
     static constexpr size_t key(const std::string_view& str) noexcept
     {
         return string_hash(str).value;
@@ -62,76 +88,13 @@ namespace dipp
 
     //
 
-    template<typename Ty>
-    concept function_descriptor_type = requires {
-        typename Ty::args_types;
-        typename Ty::return_type;
-    };
-
-    template<typename Ty>
-    struct function_descriptor;
-
-    template<typename RetTy, typename... ArgsTy>
-    struct function_descriptor<RetTy (*)(ArgsTy...)>
-    {
-        using args_types = std::tuple<ArgsTy...>;
-        using return_type = RetTy;
-    };
-
-    template<typename RetTy, typename... ArgsTy>
-    struct function_descriptor<RetTy(ArgsTy...)>
-    {
-        using args_types = std::tuple<ArgsTy...>;
-        using return_type = RetTy;
-    };
-
-    template<typename RetTy, typename... ArgsTy>
-    struct function_descriptor<std::function<RetTy(ArgsTy...)>>
-    {
-        using args_types = std::tuple<ArgsTy...>;
-        using return_type = RetTy;
-    };
-
-    template<typename FnTy>
-    struct function_descriptor<std::function<FnTy>> : function_descriptor<FnTy>
-    {
-    };
-
-#if _HAS_CXX23
-    template<typename RetTy, typename... ArgsTy>
-    struct function_descriptor<std::move_only_function<RetTy(ArgsTy...)>>
-    {
-        using args_types = std::tuple<ArgsTy...>;
-        using return_type = RetTy;
-    };
-
-    template<typename FnTy>
-    struct function_descriptor<std::move_only_function<FnTy>> : function_descriptor<FnTy>
-    {
-    };
-#endif
-
-    //
-
-    template<function_descriptor_type FnTy, size_t Index>
-        requires(Index < std::tuple_size_v<typename FnTy::args_types>)
-    struct function_args_at
-    {
-        using type = std::tuple_element_t<Index, typename FnTy::args_types>;
-    };
-
-    template<function_descriptor_type FnTy>
-    struct function_return_type
-    {
-        using type = typename FnTy::return_type;
-    };
-
-    //
-
     // type is the type of the service/descriptor/instance
     // key is the key identifier of the service/descriptor/instance
     using type_key_pair = std::pair<size_t /*type*/, size_t /*key*/>;
 
+    /// <summary>
+    /// Creates a type_key_pair from a type and a key.
+    /// </summary>
     [[nodiscard]] constexpr auto make_type_key(size_t type, size_t key) noexcept
     {
         return std::make_pair(type, key);

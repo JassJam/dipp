@@ -16,6 +16,9 @@ namespace dipp
         using types = std::tuple<>;
     };
 
+    /// <summary>
+    /// Get a tuple of dependencies from a scope.
+    /// </summary>
     template<service_scope_type ScopeTy, dependency_container_type DepsTy, std::size_t... Is>
     auto get_tuple_from_scope(ScopeTy& scope, std::index_sequence<Is...>)
     {
@@ -26,6 +29,9 @@ namespace dipp
             ScopeTy>...>{scope.template get<std::tuple_element_t<Is, dependencies>>()...};
     }
 
+    /// <summary>
+    /// Get a tuple of dependencies from a scope.
+    /// </summary>
     template<service_scope_type ScopeTy, dependency_container_type DepsTy>
     auto get_tuple_from_scope(ScopeTy& scope)
     {

@@ -61,12 +61,18 @@ namespace dipp
         }
 
     public:
+        /// <summary>
+        /// Finds the instance by the handle.
+        /// </summary>
         auto find(const type_key_pair& handle)
         {
             auto it = m_InstanceRefs.find(handle);
             return it != m_InstanceRefs.end() ? it->second : nullptr;
         }
 
+        /// <summary>
+        /// Emplace a new instance into the storage.
+        /// </summary>
         template<service_descriptor_type DescTy, service_scope_type ScopeTy>
         auto emplace(const type_key_pair& handle, DescTy& descriptor, ScopeTy& scope)
         {
