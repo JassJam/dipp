@@ -40,6 +40,9 @@ namespace dipp
         ~service_scope() = default;
 
     public:
+        /// <summary>
+        /// Get a service from the storage.
+        /// </summary>
         template<base_injected_type InjectableTy>
         [[nodiscard]] auto get() -> InjectableTy
         {
@@ -48,6 +51,9 @@ namespace dipp
                 *this, *m_SingletonStorage, m_LocalStorage, InjectableTy::key);
         }
 
+        /// <summary>
+        /// Get a service from the storage.
+        /// </summary>
         template<service_descriptor_type DescTy>
         [[nodiscard]] auto get(size_t key = {}) -> typename DescTy::service_type
         {
@@ -56,6 +62,9 @@ namespace dipp
         }
 
     public:
+        /// <summary>
+        /// Check if a service is registered in the storage.
+        /// </summary>
         template<base_injected_type InjectableTy>
         [[nodiscard]] bool has() const noexcept
         {
@@ -63,6 +72,9 @@ namespace dipp
             return m_Storage->template has_service<descriptor_type>(InjectableTy::key);
         }
 
+        /// <summary>
+        /// Check if a service is registered in the storage.
+        /// </summary>
         template<service_descriptor_type DescTy>
         [[nodiscard]] bool has(size_t key = {}) const noexcept
         {
@@ -70,6 +82,9 @@ namespace dipp
         }
 
     public:
+        /// <summary>
+        /// Count the number of services registered in the storage.
+        /// </summary>
         template<base_injected_type InjectableTy>
         [[nodiscard]] size_t count() const noexcept
         {
@@ -77,6 +92,9 @@ namespace dipp
             return m_Storage->template count<descriptor_type>(InjectableTy::key);
         }
 
+        /// <summary>
+        /// Count the number of services registered in the storage.
+        /// </summary>
         template<service_descriptor_type DescTy>
         [[nodiscard]] size_t count(size_t key = {}) const noexcept
         {
@@ -85,6 +103,9 @@ namespace dipp
         }
 
     public:
+        /// <summary>
+        /// Count the number of services registered in the storage.
+        /// </summary>
         template<base_injected_type InjectableTy>
         [[nodiscard]] size_t count_all() const noexcept
         {
@@ -92,6 +113,9 @@ namespace dipp
             return m_Storage->template count_all<descriptor_type>();
         }
 
+        /// <summary>
+        /// Count the number of services registered in the storage.
+        /// </summary>
         template<service_descriptor_type DescTy>
         [[nodiscard]] size_t count_all() const noexcept
         {
@@ -100,6 +124,9 @@ namespace dipp
         }
 
     public:
+        /// <summary>
+        /// Get a service from the storage.
+        /// </summary>
         template<base_injected_type InjectableTy, typename FuncTy>
         [[nodiscard]] void for_each(FuncTy&& func)
         {
@@ -111,6 +138,9 @@ namespace dipp
                                                           InjectableTy::key);
         }
 
+        /// <summary>
+        /// Get a service from the storage.
+        /// </summary>
         template<service_descriptor_type DescTy, typename FuncTy>
         void for_each(FuncTy&& func, size_t key = {})
         {
@@ -120,6 +150,9 @@ namespace dipp
         }
 
     public:
+        /// <summary>
+        /// Get a service from the storage.
+        /// </summary>
         template<base_injected_type InjectableTy, typename FuncTy>
         [[nodiscard]] void for_each_all(FuncTy&& func)
         {
@@ -128,6 +161,9 @@ namespace dipp
                 std::forward<FuncTy>(func), *this, *m_SingletonStorage, m_LocalStorage);
         }
 
+        /// <summary>
+        /// Get a service from the storage.
+        /// </summary>
         template<service_descriptor_type DescTy, typename FuncTy>
         void for_each_all(FuncTy&& func)
         {

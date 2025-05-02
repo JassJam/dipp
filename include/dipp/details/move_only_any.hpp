@@ -14,6 +14,9 @@ namespace dipp
         large_type
     };
 
+    /// <summary>
+    /// A move-only variant of std::any that can store objects of different types.
+    /// </summary>
     class move_only_any
     {
     private:
