@@ -22,6 +22,7 @@ set_languages("$(cpp-version)")
 
 add_extrafiles(".clang-format")
 
+includes("project/packages.lua")
 includes("project/project.lua")
 
 if is_config("test", true) then
