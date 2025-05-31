@@ -1,8 +1,11 @@
 #pragma once
 
 #include "policy.hpp"
-#include "exception.hpp"
 #include "move_only_any.hpp"
+
+#include "fail.hpp"
+#include "errors/service_not_found.hpp"
+#include "errors/incompatible_service_descriptor.hpp"
 
 namespace dipp
 {
