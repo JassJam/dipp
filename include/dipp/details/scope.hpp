@@ -2,6 +2,7 @@
 
 #include "storage.hpp"
 #include "policy.hpp"
+#include "string_hash.hpp"
 
 namespace dipp
 {
