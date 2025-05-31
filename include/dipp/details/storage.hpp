@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core.hpp"
 #include "policy.hpp"
 #include "exception.hpp"
 #include "move_only_any.hpp"

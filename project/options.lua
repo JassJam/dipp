@@ -1,0 +1,21 @@
+option("test")
+    set_default(false)
+    set_description("Enable test support")
+option_end()
+
+option("benchmark")
+    set_default(false)
+    set_description("Enable benchmark support")
+option_end()
+
+option("error-type")
+    set_default("result")
+    set_description("Set the error handling type")
+    set_values("result", "exceptions")
+option_end()
+
+option("cpp-version")
+    set_default("c++20")
+    set_description("Set the C++ language version")
+    set_values("c++20", "c++23")
+option_end()
