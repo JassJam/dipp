@@ -1,6 +1,7 @@
 #pragma once
 
-#include "core.hpp"
+#include "service_lifetime.hpp"
+#include "type_key_pair.hpp"
 #include "move_only_any.hpp"
 
 namespace dipp
