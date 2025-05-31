@@ -17,7 +17,6 @@ local function install_result_packages()
     end
     if is_config("error-type", "result") then
         table.insert(boost_modules, "leaf")
-        table.insert(boost_modules, "regex")
     end
 
     -- if boost_modules is empty, then we don't need to install boost
@@ -25,6 +24,7 @@ local function install_result_packages()
         return
     end
 
+    table.insert(boost_modules, "regex")
     add_requires("boost[cmake,".. table.concat(boost_modules, ",") .."] " .. boost_lib_version)
 end
 
