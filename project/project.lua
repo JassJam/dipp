@@ -11,5 +11,5 @@ target("dipp")
     add_includedirs(os.projectdir() .. "/include", {public = true})
 
     add_filegroups("dipp", {rootdir = os.projectdir()})
-    add_packages("boost", {public = true})
+    add_result_packages()
 target_end()
