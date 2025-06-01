@@ -1,9 +1,8 @@
 #pragma once
 
-
 namespace dipp
 {
-    enum class service_lifetime : uint8_t
+    enum class service_lifetime : unsigned char
     {
         singleton,
         transient,

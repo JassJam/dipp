@@ -4,7 +4,6 @@
 
 namespace dipp
 {
-
     class incompatible_service_descriptor final : public details::base_error
     {
     private:

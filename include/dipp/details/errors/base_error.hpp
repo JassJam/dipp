@@ -2,7 +2,7 @@
 
 #include <string>
 #ifndef DIPP_USE_RESULT
-#include <stdexcept>
+    #include <stdexcept>
 #endif
 
 namespace dipp::details
