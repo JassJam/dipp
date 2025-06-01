@@ -56,8 +56,8 @@ BOOST_AUTO_TEST_CASE(GivenTransientService_WhenRequestedTwice_ThenInstancesDiffe
 
     // When
     dipp::default_service_provider services(std::move(collection));
-    auto cameraA = services.get<CameraService>();
-    auto cameraB = services.get<CameraService>();
+    auto cameraA = *services.get<CameraService>();
+    auto cameraB = *services.get<CameraService>();
 
     // Then
     BOOST_TEST_CONTEXT("Should maintain property values")
@@ -90,8 +90,8 @@ BOOST_AUTO_TEST_CASE(GivenExternalServiceReference_WhenResolved_ThenDependencies
 
     // When
     dipp::default_service_provider services(std::move(collection));
-    Scene& scene = services.get<scene_service>().get();
-    World& world = services.get<world_service>();
+    Scene& scene = *services.get<scene_service>();
+    World& world = *services.get<world_service>();
 
     // Then
     BOOST_TEST_CONTEXT("Should resolve external references")
@@ -118,8 +118,9 @@ BOOST_AUTO_TEST_CASE(GivenMixedServiceLifetimes_WhenResolved_ThenDependenciesHon
 
     // When
     dipp::default_service_provider services(std::move(collection));
-    auto [camera, scene, world] = std::make_tuple(
-        services.get<CameraService>(), services.get<SceneService>(), services.get<WorldService>());
+    auto [camera, scene, world] = std::make_tuple(*services.get<CameraService>(),
+                                                  *services.get<SceneService>(),
+                                                  *services.get<WorldService>());
 
     // Then
     BOOST_TEST_CONTEXT("Should resolve property values")
@@ -149,13 +150,13 @@ BOOST_AUTO_TEST_CASE(GivenScopedServices_WhenCreatingNewScope_ThenInstanceBehavi
     auto rootScope = rootServices.create_scope();
 
     // When
-    auto [rootCamera, rootScene, rootWorld] = std::make_tuple(rootServices.get<CameraService>(),
-                                                              rootServices.get<SceneService>(),
-                                                              rootServices.get<WorldService>());
+    auto [rootCamera, rootScene, rootWorld] = std::make_tuple(*rootServices.get<CameraService>(),
+                                                              *rootServices.get<SceneService>(),
+                                                              *rootServices.get<WorldService>());
 
-    auto [scopeCamera, scopeScene, scopeWorld] = std::make_tuple(rootScope.get<CameraService>(),
-                                                                 rootScope.get<SceneService>(),
-                                                                 rootScope.get<WorldService>());
+    auto [scopeCamera, scopeScene, scopeWorld] = std::make_tuple(*rootScope.get<CameraService>(),
+                                                                 *rootScope.get<SceneService>(),
+                                                                 *rootScope.get<WorldService>());
 
     // Then
     BOOST_TEST_CONTEXT("Transient services should create new instances")

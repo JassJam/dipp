@@ -1,11 +1,13 @@
 #pragma once
 
 #include <string>
+#ifndef DIPP_USE_RESULT
 #include <stdexcept>
+#endif
 
 namespace dipp::details
 {
-#if DIPP_USE_RESULT
+#ifdef DIPP_USE_RESULT
     struct base_error
     {
         constexpr explicit base_error(const char* typeName)
