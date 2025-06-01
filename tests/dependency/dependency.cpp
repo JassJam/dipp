@@ -85,9 +85,9 @@ public:
     {
         dipp::default_service_collection services;
 
-        services.add(AService::descriptor_type::factory<A>(std::ref(*this)));
-        services.add(BService::descriptor_type::factory<B>(std::ref(*this)));
-        services.add(CService::descriptor_type::factory<C>(std::ref(*this)));
+        services.add<AService>(std::ref(*this));
+        services.add<BService>(std::ref(*this));
+        services.add<CService>(std::ref(*this));
 
         return services;
     }
@@ -131,7 +131,7 @@ BOOST_FIXTURE_TEST_CASE(GivenDependencyChain_WhenResolvingServices_ThenConstruct
 
     // When
     dipp::default_service_provider provider(std::move(services));
-    [[maybe_unused]] auto c = provider.get<CService>().get();
+    [[maybe_unused]] auto c = *provider.get<CService>();
 
     // Then
     BOOST_TEST_CONTEXT("Should construct dependencies in order")

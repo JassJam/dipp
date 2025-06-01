@@ -117,29 +117,33 @@ namespace dipp
         /// <summary>
         /// Gets a service from the storage with the specified key.
         /// </summary>
-        template<service_descriptor_type DescTy,
+        template<base_injected_type Injected,
+                 service_scope_type ScopeTy,
                  service_storage_memory_type SingletonMemTy,
                  service_storage_memory_type ScopedMemTy>
-        [[nodiscard]] auto get_service(typename DescTy::scope_type& scope,
+        [[nodiscard]] auto get_service(ScopeTy& scope,
                                        SingletonMemTy& singleton_storage,
-                                       ScopedMemTy& scoped_storage,
-                                       size_t key) -> typename DescTy::service_type
+                                       ScopedMemTy& scoped_storage) -> result<Injected>
         {
-            using service_type = typename DescTy::service_type;
+            using descriptor_type = typename Injected::descriptor_type;
+            using service_type = typename descriptor_type::service_type;
 
-            auto service_handle = typeid(typename DescTy::service_type).hash_code();
-            auto handle = make_type_key(service_handle, key);
+            auto service_handle = typeid(service_type).hash_code();
+            auto handle = make_type_key(service_handle, Injected::key);
             auto it = m_Services.find(handle);
 
             if (it == m_Services.end()) [[unlikely]]
             {
-                details::fail<service_not_found, service_type>();
+#ifdef DIPP_USE_RESULT
+                return
+#endif
+                    details::fail<service_not_found, service_type>();
             }
 
             auto& last_service = it->second.back();
 
             service_loader loader{scope, singleton_storage, scoped_storage};
-            return loader.load<DescTy>(last_service, handle);
+            return make_result<Injected>(loader.load<descriptor_type>(last_service, handle));
         }
 
     public:

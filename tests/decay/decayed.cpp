@@ -61,41 +61,41 @@ BOOST_AUTO_TEST_CASE(GiveNonTransientServices_WhenFetched_ThenTheyCanBeDecayed)
     auto rootScope = rootServices.create_scope();
 
     // When + Then
-    Camera camera = rootServices.get<CameraService>();
+    Camera camera = std::move(*rootServices.get<CameraService>());
     (void) camera;
 
     //
 
-    Scene& sceneRef = rootScope.get<SceneService>();
+    Scene& sceneRef = *rootScope.get<SceneService>();
     (void) sceneRef; // can be decayed to Scene&
 
-    Scene* scenePtr = rootScope.get<SceneService>();
+    Scene* scenePtr = *rootScope.get<SceneService>();
     (void) scenePtr; // can be decayed to Scene*
 
-    const Scene& sceneConstRef = rootScope.get<SceneService>();
+    const Scene& sceneConstRef = *rootScope.get<SceneService>();
     (void) sceneConstRef; // can be decayed to const Scene&
 
-    const Scene* sceneConstPtr = rootScope.get<SceneService>();
+    const Scene* sceneConstPtr = *rootScope.get<SceneService>();
     (void) sceneConstPtr; // can be decayed to const Scene*
 
     //
 
-    World& world = rootScope.get<WorldService>();
+    World& world = *rootScope.get<WorldService>();
     (void) world; // can be decayed to World&
 
-    World* worldPtr = rootScope.get<WorldService>();
+    World* worldPtr = *rootScope.get<WorldService>();
     (void) worldPtr; // can be decayed to World*
 
-    const World& worldConstRef = rootScope.get<WorldService>();
+    const World& worldConstRef = *rootScope.get<WorldService>();
     (void) worldConstRef; // can be decayed to const World&
 
-    const World* worldConstPtr = rootScope.get<WorldService>();
+    const World* worldConstPtr = *rootScope.get<WorldService>();
     (void) worldConstPtr; // can be decayed to const World*
 
-    const std::unique_ptr<World>& worldConstUniquePtr = rootScope.get<WorldService>();
+    const std::unique_ptr<World>& worldConstUniquePtr = *rootScope.get<WorldService>();
     (void) worldConstUniquePtr; // can be decayed to const std::unique_ptr<World>&
 
-    const std::unique_ptr<World>* worldConstUniquePtrPtr = rootScope.get<WorldService>();
+    const std::unique_ptr<World>* worldConstUniquePtrPtr = *rootScope.get<WorldService>();
     (void) worldConstUniquePtrPtr; // can be decayed to const std::unique_ptr<World>*
 }
 

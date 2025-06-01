@@ -82,7 +82,7 @@ namespace dipp
         /// Gets the service of the specified type from the root scope.
         /// </summary>
         template<base_injected_type InjectableTy>
-        [[nodiscard]] auto get() -> InjectableTy
+        [[nodiscard]] auto get() -> result<InjectableTy>
         {
             return root_scope().template get<InjectableTy>();
         }

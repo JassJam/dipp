@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #ifdef DIPP_USE_RESULT
     #include <boost/leaf.hpp>
 
@@ -11,7 +13,7 @@ namespace dipp
     template<typename Ty, typename... Args>
     inline result<Ty> make_result(Args&&... args)
     {
-        return boost::leaf::make_result<Ty>(std::forward<Args>(args)...);
+        return result<Ty>(std::forward<Args>(args)...);
     }
 
     template<typename Error>
@@ -67,6 +69,18 @@ namespace dipp
         }
 
         constexpr ~result() = default;
+
+        [[nodiscard]]
+        constexpr Ty& operator*()
+        {
+            return m_Value;
+        }
+
+        [[nodiscard]]
+        constexpr const Ty& operator*() const
+        {
+            return m_Value;
+        }
 
         [[nodiscard]]
         constexpr operator Ty&() &
@@ -128,7 +142,7 @@ namespace dipp
 
     template<typename Error>
         requires std::is_base_of_v<std::exception, Error>
-    [[nodiscard]] constexpr inline auto make_error(const Error& error)
+    [[nodiscard]] constexpr inline void make_error(const Error& error)
     {
         throw error;
     }

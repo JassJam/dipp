@@ -189,37 +189,51 @@ namespace dipp
 
     public:
         constexpr operator const value_type&() const noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return get();
         }
         constexpr operator value_type&() noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return get();
         }
 
+        constexpr operator value_type() && noexcept
+            requires(Lifetime == service_lifetime::transient)
+        {
+            return detach();
+        }
+
         constexpr operator const value_type*() const noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return std::addressof(static_cast<const value_type&>(*this));
         }
         constexpr operator value_type*() noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return std::addressof(static_cast<value_type&>(*this));
         }
 
         constexpr operator const Ty&() const noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return *static_cast<const value_type&>(*this);
         }
         constexpr operator Ty&() noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return *static_cast<value_type&>(*this);
         }
 
         constexpr operator const Ty*() const noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return std::addressof(static_cast<const Ty&>(*this));
         }
         constexpr operator Ty*() noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return std::addressof(static_cast<Ty&>(*this));
         }
@@ -249,37 +263,51 @@ namespace dipp
 
     public:
         constexpr operator const value_type&() const noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return get();
         }
         constexpr operator value_type&() noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return get();
         }
 
+        constexpr operator value_type() && noexcept
+            requires(Lifetime == service_lifetime::transient)
+        {
+            return detach();
+        }
+
         constexpr operator const value_type*() const noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return std::addressof(static_cast<const value_type&>(*this));
         }
         constexpr operator value_type*() noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return std::addressof(static_cast<value_type&>(*this));
         }
 
         constexpr operator const Ty&() const noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return *static_cast<const value_type&>(*this);
         }
         constexpr operator Ty&() noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return *static_cast<value_type&>(*this);
         }
 
         constexpr operator const Ty*() const noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return std::addressof(static_cast<const Ty&>(*this));
         }
         constexpr operator Ty*() noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return std::addressof(static_cast<Ty&>(*this));
         }
@@ -290,6 +318,7 @@ namespace dipp
              dependency_container_type DepsTy = dependency<>,
              size_t Key = size_t{},
              service_scope_type ScopeTy = default_service_scope>
+        requires(Lifetime != service_lifetime::transient)
     struct injected_ref
         : public base_injected<
               local_service_descriptor<std::reference_wrapper<Ty>, Lifetime, ScopeTy, DepsTy>,
@@ -354,19 +383,29 @@ namespace dipp
 
     public:
         constexpr operator const Ty&() const noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return get();
         }
         constexpr operator Ty&() noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return get();
         }
 
+        constexpr operator Ty() && noexcept
+            requires(Lifetime == service_lifetime::transient)
+        {
+            return detach();
+        }
+
         constexpr operator const Ty*() const noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return std::addressof(static_cast<const Ty&>(*this));
         }
         constexpr operator Ty*() noexcept
+            requires(Lifetime != service_lifetime::transient)
         {
             return std::addressof(static_cast<Ty&>(*this));
         }

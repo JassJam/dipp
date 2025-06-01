@@ -24,9 +24,8 @@ namespace dipp
     {
         using dependencies = typename DepsTy::types;
 
-        return std::tuple<std::invoke_result_t<
-            decltype(&ScopeTy::template get<std::tuple_element_t<Is, dependencies>>),
-            ScopeTy>...>{scope.template get<std::tuple_element_t<Is, dependencies>>()...};
+        return std::make_tuple(
+            scope.template get<std::tuple_element_t<Is, dependencies>>().value()...);
     }
 
     /// <summary>
