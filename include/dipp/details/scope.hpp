@@ -45,21 +45,10 @@ namespace dipp
         /// Get a service from the storage.
         /// </summary>
         template<base_injected_type InjectableTy>
-        [[nodiscard]] auto get() -> InjectableTy
+        [[nodiscard]] auto get() -> result<InjectableTy>
         {
-            using descriptor_type = typename InjectableTy::descriptor_type;
-            return m_Storage->template get_service<descriptor_type>(
-                *this, *m_SingletonStorage, m_LocalStorage, InjectableTy::key);
-        }
-
-        /// <summary>
-        /// Get a service from the storage.
-        /// </summary>
-        template<service_descriptor_type DescTy>
-        [[nodiscard]] auto get(size_t key = {}) -> typename DescTy::service_type
-        {
-            return m_Storage->template get_service<DescTy>(
-                *this, *m_SingletonStorage, m_LocalStorage, key);
+            return m_Storage->template get_service<InjectableTy>(
+                *this, *m_SingletonStorage, m_LocalStorage);
         }
 
     public:
@@ -73,15 +62,6 @@ namespace dipp
             return m_Storage->template has_service<descriptor_type>(InjectableTy::key);
         }
 
-        /// <summary>
-        /// Check if a service is registered in the storage.
-        /// </summary>
-        template<service_descriptor_type DescTy>
-        [[nodiscard]] bool has(size_t key = {}) const noexcept
-        {
-            return m_Storage->template has_service<DescTy>(key);
-        }
-
     public:
         /// <summary>
         /// Count the number of services registered in the storage.
@@ -93,16 +73,6 @@ namespace dipp
             return m_Storage->template count<descriptor_type>(InjectableTy::key);
         }
 
-        /// <summary>
-        /// Count the number of services registered in the storage.
-        /// </summary>
-        template<service_descriptor_type DescTy>
-        [[nodiscard]] size_t count(size_t key = {}) const noexcept
-        {
-            using descriptor_type = DescTy;
-            return m_Storage->template count<descriptor_type>(key);
-        }
-
     public:
         /// <summary>
         /// Count the number of services registered in the storage.
@@ -111,16 +81,6 @@ namespace dipp
         [[nodiscard]] size_t count_all() const noexcept
         {
             using descriptor_type = typename InjectableTy::descriptor_type;
-            return m_Storage->template count_all<descriptor_type>();
-        }
-
-        /// <summary>
-        /// Count the number of services registered in the storage.
-        /// </summary>
-        template<service_descriptor_type DescTy>
-        [[nodiscard]] size_t count_all() const noexcept
-        {
-            using descriptor_type = DescTy;
             return m_Storage->template count_all<descriptor_type>();
         }
 
@@ -139,17 +99,6 @@ namespace dipp
                                                           InjectableTy::key);
         }
 
-        /// <summary>
-        /// Get a service from the storage.
-        /// </summary>
-        template<service_descriptor_type DescTy, typename FuncTy>
-        void for_each(FuncTy&& func, size_t key = {})
-        {
-            using descriptor_type = DescTy;
-            m_Storage->template for_each<descriptor_type>(
-                std::forward<FuncTy>(func), *this, *m_SingletonStorage, m_LocalStorage, key);
-        }
-
     public:
         /// <summary>
         /// Get a service from the storage.
@@ -158,17 +107,6 @@ namespace dipp
         [[nodiscard]] void for_each_all(FuncTy&& func)
         {
             using descriptor_type = typename InjectableTy::descriptor_type;
-            m_Storage->template for_each_all<descriptor_type>(
-                std::forward<FuncTy>(func), *this, *m_SingletonStorage, m_LocalStorage);
-        }
-
-        /// <summary>
-        /// Get a service from the storage.
-        /// </summary>
-        template<service_descriptor_type DescTy, typename FuncTy>
-        void for_each_all(FuncTy&& func)
-        {
-            using descriptor_type = DescTy;
             m_Storage->template for_each_all<descriptor_type>(
                 std::forward<FuncTy>(func), *this, *m_SingletonStorage, m_LocalStorage);
         }

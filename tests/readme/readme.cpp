@@ -62,24 +62,24 @@ BOOST_AUTO_TEST_CASE(SingletonAndScoped_Test)
     // get the engine service
     // the engine service will create a window service and inject it into the engine
     // if the scope is at the root level, the engine will be treated as a singleton
-    auto engine = services.get<EngineService>();
+    Engine& engine = *services.get<EngineService>();
 
     // create a scope
     auto scope = services.create_scope();
 
     // get the engine service from the scope
     // the engine will be destroyed when the scope is destroyed
-    auto engine2 = scope.get<EngineService>();
+    Engine& engine2 = *scope.get<EngineService>();
 
     // get the window service from the scope
     auto window = scope.get<WindowService>();
 
     // since the window is a singleton, the window from the scope should be the same as the window
     // from the engine
-    BOOST_CHECK_EQUAL(&engine->window, &engine2->window);
+    BOOST_CHECK_EQUAL(&engine.window, &engine2.window);
 
     // and the engine from the scope should be different from the engine from the root scope
-    BOOST_CHECK_NE(engine.ptr(), engine2.ptr());
+    BOOST_CHECK_NE(&engine, &engine2);
 }
 
 BOOST_AUTO_TEST_CASE(TwoDifferentSingletons_Test)
@@ -111,11 +111,11 @@ BOOST_AUTO_TEST_CASE(TwoDifferentSingletons_Test)
     // get the engine service
     // the engine service will create a window service and inject it into the engine
     // if the scope is at the root level, the engine will be treated as a singleton
-    auto engine = services.get<EngineService>();
+    Engine2& engine = *services.get<EngineService>();
 
     // get the window service from the engine
-    auto& window1 = engine->window1;
-    auto& window2 = engine->window2;
+    auto& window1 = engine.window1;
+    auto& window2 = engine.window2;
 
     // both window services shouldn't be the same
     BOOST_CHECK_NE(&window1, &window2);

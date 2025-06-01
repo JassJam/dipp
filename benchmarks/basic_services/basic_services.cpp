@@ -142,7 +142,7 @@ struct DippLoggerServiceConfig
 {
     static void setup(dipp::default_service_collection& collection)
     {
-        collection.add(DippLoggerService::descriptor_type::factory<ConsoleLogger>());
+        collection.add_impl<DippLoggerService, ConsoleLogger>();
     }
 };
 
@@ -151,7 +151,7 @@ struct DippDatabaseServiceConfig
 {
     static void setup(dipp::default_service_collection& collection)
     {
-        collection.add(DippDatabaseService::descriptor_type::factory<SQLDatabase>());
+        collection.add_impl<DippDatabaseService, SQLDatabase>();
     }
 };
 
@@ -163,7 +163,7 @@ struct DippUserServiceServiceConfig
 {
     static void setup(dipp::default_service_collection& collection)
     {
-        collection.add(DippUserServiceService::descriptor_type::factory<UserService>());
+        collection.add_impl<DippUserServiceService, UserService>();
     }
 };
 

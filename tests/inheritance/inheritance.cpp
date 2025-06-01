@@ -42,15 +42,13 @@ BOOST_AUTO_TEST_CASE(GivenInterface_WhenInstantiated_ThenImplementationIsCreated
     // Given
     dipp::default_service_collection collection;
     collection.add<SomeClassService>();
-    collection.add(
-        InterfaceService::descriptor_type::factory<ImplementationService::descriptor_type>());
+    collection.add_impl<InterfaceService, ImplementationService>();
 
     // When
     dipp::default_service_provider services(std::move(collection));
 
     // Then
-    auto& value = services.get<InterfaceService>().get();
-    (void) value;
+    BOOST_CHECK(services.get<InterfaceService>().has_value());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
