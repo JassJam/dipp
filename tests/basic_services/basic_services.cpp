@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_SUITE(BasicServices_Test)
 
 struct Camera
 {
-    explicit Camera(int fov = 90)
+    constexpr explicit Camera(int fov = 90)
         : fov(fov)
     {
     }
@@ -20,7 +20,7 @@ using CameraService = dipp::injected<Camera, dipp::service_lifetime::transient>;
 
 struct Scene
 {
-    explicit Scene(Camera cam, int max_entities = 100)
+    constexpr explicit Scene(Camera cam, int max_entities = 100)
         : camera(std::move(cam))
         , max_entities(max_entities)
     {
@@ -37,7 +37,7 @@ struct World
     Scene& scene;
     Camera camera;
 
-    World(Scene& scene, Camera cam)
+    constexpr World(Scene& scene, Camera cam)
         : scene(scene)
         , camera(std::move(cam))
     {
@@ -84,8 +84,9 @@ BOOST_AUTO_TEST_CASE(GivenExternalServiceReference_WhenResolved_ThenDependencies
     dipp::default_service_collection collection;
 
     collection.add<CameraService>();
-    collection.add<scene_service>({[&externalScene](auto&) -> std::reference_wrapper<Scene>
-                                   { return std::ref(externalScene); }});
+    collection.add<scene_service>(
+        [&externalScene](auto&) -> dipp::result<std::reference_wrapper<Scene>>
+        { return std::ref(externalScene); });
     collection.add<world_service>();
 
     // When

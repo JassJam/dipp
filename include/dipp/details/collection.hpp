@@ -94,23 +94,31 @@ namespace dipp
         void add(FactoryTy&& factory)
         {
             using descriptor_type = typename InjectableTy::descriptor_type;
+            using value_type = typename descriptor_type::value_type;
             using scope_type = typename descriptor_type::scope_type;
             using return_type = std::invoke_result_t<FactoryTy, scope_type&>;
+            using actual_return_type = unwrap_result_type_t<return_type>;
 
-            auto wrapped_factory = [factory = std::forward<FactoryTy>(factory)](
-                                       scope_type& scope) mutable -> move_only_any
+            // If return type is move_only_any, use directly
+            if constexpr (std::same_as<return_type, move_only_any>)
             {
-                if constexpr (std::same_as<return_type, move_only_any>)
+                add(descriptor_type(std::forward<FactoryTy>(factory)), InjectableTy::key);
+            }
+            // If actual return type can be converted to value_type, wrap it
+            else if constexpr (convertible_to<actual_return_type, value_type>)
+            {
+                auto wrapped_factory = [factory = std::forward<FactoryTy>(factory)](
+                                           scope_type& scope) mutable -> move_only_any
                 {
-                    return factory(scope);
-                }
-                else
-                {
-                    return make_any<return_type>(factory(scope));
-                }
-            };
-
-            add(descriptor_type(std::move(wrapped_factory)), InjectableTy::key);
+                    return dipp::make_any<value_type>(factory(scope));
+                };
+                add(descriptor_type(std::move(wrapped_factory)), InjectableTy::key);
+            }
+            else
+            {
+                static_assert(convertible_to<actual_return_type, value_type>,
+                              "Factory return type must be convertible to the service value type");
+            }
         }
 
         /// <summary>
@@ -224,23 +232,33 @@ namespace dipp
         bool emplace(FactoryTy&& factory)
         {
             using descriptor_type = typename InjectableTy::descriptor_type;
+            using value_type = typename descriptor_type::value_type;
             using scope_type = typename descriptor_type::scope_type;
             using return_type = std::invoke_result_t<FactoryTy, scope_type&>;
+            using actual_return_type = unwrap_result_type_t<return_type>;
 
-            auto wrapped_factory = [factory = std::forward<FactoryTy>(factory)](
-                                       scope_type& scope) mutable -> move_only_any
+            // If return type is move_only_any, use directly
+            if constexpr (std::same_as<return_type, move_only_any>)
             {
-                if constexpr (std::same_as<return_type, move_only_any>)
+                return emplace(descriptor_type(std::forward<FactoryTy>(factory)),
+                               InjectableTy::key);
+            }
+            // If actual return type can be converted to value_type, wrap it
+            else if constexpr (convertible_to<actual_return_type, value_type>)
+            {
+                auto wrapped_factory = [factory = std::forward<FactoryTy>(factory)](
+                                           scope_type& scope) mutable -> move_only_any
                 {
-                    return factory(scope);
-                }
-                else
-                {
-                    return make_any<return_type>(factory(scope));
-                }
-            };
-
-            return emplace(descriptor_type(std::move(wrapped_factory)), InjectableTy::key);
+                    return dipp::make_any<value_type>(factory(scope));
+                };
+                return emplace(descriptor_type(std::move(wrapped_factory)), InjectableTy::key);
+            }
+            else
+            {
+                static_assert(convertible_to<actual_return_type, value_type>,
+                              "Factory return type must be convertible to the service value type");
+                return false;
+            }
         }
 
         /// <summary>
@@ -280,35 +298,13 @@ namespace dipp
 
     public:
         /// <summary>
-        /// Checks if a specific service instance is present in the collection.
-        /// Example: bool exists = collection.has<MyService>(descriptor_instance);
-        /// </summary>
-        template<base_injected_type InjectableTy>
-        [[nodiscard]] bool has(typename InjectableTy::descriptor_type descriptor) const noexcept
-        {
-            return m_Storage.template has_service<typename InjectableTy::descriptor_type>(
-                std::move(descriptor), InjectableTy::key);
-        }
-
-        /// <summary>
         /// Checks if a service type is registered in the collection.
         /// Example: if (collection.has<LoggerService>()) { /* do something */ }
         /// </summary>
         template<base_injected_type InjectableTy>
         [[nodiscard]] bool has() const noexcept
         {
-            return m_Storage.template has_service<typename InjectableTy::descriptor_type>(
-                InjectableTy::key);
-        }
-
-        /// <summary>
-        /// Checks if a service descriptor type is registered with a specific key.
-        /// Example: bool exists = collection.has<MyServiceDescriptor>(dipp::key("custom"));
-        /// </summary>
-        template<service_descriptor_type DescTy>
-        [[nodiscard]] bool has(size_t key = {}) const noexcept
-        {
-            return m_Storage.template has_service<DescTy>(key);
+            return m_Storage.template has_service<InjectableTy>();
         }
 
     private:

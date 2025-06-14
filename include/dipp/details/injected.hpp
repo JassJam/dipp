@@ -23,7 +23,7 @@ namespace dipp
 
     public:
         constexpr base_injected(service_type&& value) noexcept(
-            std::is_nothrow_move_constructible_v<service_type>)
+            std::is_nothrow_move_constructible_v<value_type>)
             : m_Value(std::move(value))
         {
         }
@@ -37,6 +37,14 @@ namespace dipp
         constexpr base_injected(service_type& value) noexcept(
             std::is_nothrow_copy_constructible_v<service_type>)
             : m_Value(value)
+        {
+        }
+
+        template<typename... Args>
+        constexpr base_injected(Args&&... args) noexcept(
+            std::is_nothrow_constructible_v<service_type, Args...>)
+            requires(std::constructible_from<service_type, Args...>)
+            : m_Value(std::forward<Args>(args)...)
         {
         }
 
