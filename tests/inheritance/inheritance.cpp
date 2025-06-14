@@ -22,7 +22,7 @@ class SomeClass
 class Implementation : public Interface
 {
 public:
-    Implementation(SomeClass&)
+    Implementation(std::unique_ptr<SomeClass>)
     {
     }
 };
@@ -31,7 +31,8 @@ public:
 
 using InterfaceService = dipp::injected_unique<Interface, dipp::service_lifetime::transient>;
 
-using SomeClassService = dipp::injected_unique<SomeClass, dipp::service_lifetime::singleton>;
+using SomeClassService = dipp::injected_unique<SomeClass, dipp::service_lifetime::transient>;
+
 using ImplementationService = dipp::
     injected<Implementation, dipp::service_lifetime::transient, dipp::dependency<SomeClassService>>;
 

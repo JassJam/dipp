@@ -69,7 +69,7 @@ BOOST_DATA_TEST_CASE(GivenCamera_WhenAddingToCollection_ThenCameraIsCreated,
     // Given
     dipp::default_service_collection collection;
 
-    collection.add<CameraService>({[&](auto&) { return test_case.factory(); }});
+    collection.add<CameraService>([&](auto&) { return test_case.factory(); });
 
     // When
     dipp::default_service_provider services(std::move(collection));
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(GivenCameraServices_WhenAddingToCollection_ThenCamerasAreCr
     BOOST_CHECK_EQUAL(camera_count, 3);
 
     services.for_each<CameraService>(
-        [&](CameraService cameraService)
+        [&](const CameraService& cameraService)
         {
             auto& camera = cameraService.get();
             BOOST_CHECK_NE(camera.get(), nullptr);
@@ -140,9 +140,9 @@ BOOST_AUTO_TEST_CASE(
 
     auto fetch_cameras = [&]()
     {
-        std::vector<ICamera*> cameras;
-        services.for_each<singleton_service>([&](singleton_service cameraService)
-                                             { cameras.push_back(cameraService.get().get()); });
+        std::vector<const ICamera*> cameras;
+        services.for_each<singleton_service>([&](const singleton_service& cameraService)
+                                             { cameras.push_back(cameraService->get()); });
         return cameras;
     };
 

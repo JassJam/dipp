@@ -3,6 +3,7 @@
 #include <bit>
 #include <typeinfo>
 #include <memory>
+#include "result.hpp"
 
 namespace dipp
 {
@@ -107,9 +108,23 @@ namespace dipp
         template<typename Ty>
         static constexpr bool is_large = !is_trivial<Ty> && !is_small<Ty>;
 
-    public:
+    private:
         constexpr move_only_any() noexcept = default;
 
+        template<typename Ty>
+        constexpr move_only_any(result<Ty>&& value) noexcept(
+            std::is_nothrow_move_assignable_v<result<Ty>>)
+        {
+            emplace_impl<Ty>(std::forward<result<Ty>>(value));
+        }
+
+        template<typename Ty>
+        constexpr move_only_any(Ty&& value) noexcept(std::is_nothrow_move_assignable_v<Ty>)
+        {
+            emplace_impl<Ty>(std::forward<Ty>(value));
+        }
+
+    public:
         move_only_any(const move_only_any&) = delete;
         move_only_any& operator=(const move_only_any&) = delete;
 
@@ -138,12 +153,6 @@ namespace dipp
                     break;
             }
             other.m_Storage.type = any_storage_type::null;
-        }
-
-        template<typename Ty>
-        constexpr move_only_any(Ty&& value) noexcept(std::is_nothrow_move_assignable_v<Ty>)
-        {
-            emplace_impl<Ty>(std::forward<Ty>(value));
         }
 
         constexpr move_only_any& operator=(move_only_any&& other) noexcept
@@ -212,28 +221,30 @@ namespace dipp
         }
 
         template<typename Ty, typename... Args>
-        constexpr Ty& emplace(Args&&... args)
+        constexpr result<Ty>& emplace(Args&&... args)
         {
             reset();
             return emplace_impl<Ty>(std::forward<Args>(args)...);
         }
 
         template<typename Ty>
-        constexpr Ty* cast() noexcept
+        constexpr result<Ty>* cast() noexcept
         {
+            using resulty_type = result<Ty>;
+
             if (m_Storage.type_info == &typeid(Ty))
             {
-                if constexpr (is_trivial<Ty>)
+                if constexpr (is_trivial<resulty_type>)
                 {
-                    return std::bit_cast<Ty*>(&m_Storage.u.trivial_type.buffer);
+                    return std::bit_cast<resulty_type*>(&m_Storage.u.trivial_type.buffer);
                 }
-                else if constexpr (is_small<Ty>)
+                else if constexpr (is_small<resulty_type>)
                 {
-                    return std::bit_cast<Ty*>(&m_Storage.u.small_type.buffer);
+                    return std::bit_cast<resulty_type*>(&m_Storage.u.small_type.buffer);
                 }
                 else
                 {
-                    return std::bit_cast<Ty*>(m_Storage.u.large_type.data);
+                    return std::bit_cast<resulty_type*>(m_Storage.u.large_type.data);
                 }
             }
             return nullptr;
@@ -260,50 +271,68 @@ namespace dipp
 
     private:
         template<typename Ty, typename... Args>
-        constexpr Ty& emplace_impl(Args&&... args)
+        constexpr result<Ty>& emplace_impl(Args&&... args)
         {
+            using result_type = result<Ty>;
+            using pointer_type = std::add_pointer_t<result_type>;
+
             m_Storage.type_info = &typeid(Ty);
-            if constexpr (is_trivial<Ty>)
+            if constexpr (is_trivial<result_type>)
             {
-                auto obj = std::bit_cast<std::add_pointer_t<Ty>>(&m_Storage.u.trivial_type.buffer);
-                construct(obj, std::forward<Args>(args)...);
+                auto obj = std::bit_cast<pointer_type>(&m_Storage.u.trivial_type.buffer);
+                construct_result(obj, std::forward<Args>(args)...);
 
                 m_Storage.type = any_storage_type::trivial_type;
 
                 return *obj;
             }
-            else if constexpr (is_small<Ty>)
+            else if constexpr (is_small<result_type>)
             {
-                auto obj = std::bit_cast<std::add_pointer_t<Ty>>(&m_Storage.u.small_type.buffer);
-                construct(obj, std::forward<Args>(args)...);
+                auto obj = std::bit_cast<pointer_type>(&m_Storage.u.small_type.buffer);
+                construct_result(obj, std::forward<Args>(args)...);
 
                 m_Storage.type = any_storage_type::small_type;
-                m_Storage.u.small_type.rtti.init<Ty>();
+                m_Storage.u.small_type.rtti.init<result_type>();
 
                 return *obj;
             }
             else
             {
-                auto obj = new Ty(std::forward<Args>(args)...);
+                auto obj = new result_type(std::forward<Args>(args)...);
                 m_Storage.u.large_type.data = obj;
 
                 m_Storage.type = any_storage_type::large_type;
-                m_Storage.u.large_type.rtti.init<Ty>();
+                m_Storage.u.large_type.rtti.init<result_type>();
 
                 return *obj;
             }
         }
 
         template<typename Ty, typename... Args>
-        constexpr void construct(Ty* ptr, Args&&... args)
+        constexpr void construct_result(result<Ty>* ptr, Args&&... args)
         {
-            if (std::is_constant_evaluated())
+            using result_type = result<Ty>;
+            if constexpr (std::is_constructible_v<result_type, Args...>)
             {
-                std::construct_at(ptr, std::forward<Args>(args)...);
+                if (std::is_constant_evaluated())
+                {
+                    std::construct_at(ptr, std::forward<Args>(args)...);
+                }
+                else
+                {
+                    new (ptr) result_type(std::forward<Args>(args)...);
+                }
             }
             else
             {
-                new (ptr) Ty(std::forward<Args>(args)...);
+                if (std::is_constant_evaluated())
+                {
+                    std::construct_at(ptr, Ty{std::forward<Args>(args)...});
+                }
+                else
+                {
+                    new (ptr) result_type(Ty{std::forward<Args>(args)...});
+                }
             }
         }
 
@@ -315,7 +344,7 @@ namespace dipp
     /// Create a move_only_any object with the given type and arguments
     /// </summary>
     template<typename Ty, typename... ArgsTy>
-    [[nodiscard]] constexpr move_only_any make_any(ArgsTy&&... args)
+    [[nodiscard]] constexpr auto make_any(ArgsTy&&... args)
     {
         return move_only_any::make<Ty>(std::forward<ArgsTy>(args)...);
     }
