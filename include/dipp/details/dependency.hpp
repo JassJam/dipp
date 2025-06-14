@@ -19,7 +19,7 @@ namespace dipp
     /// <summary>
     /// Get a tuple of dependencies from a scope.
     /// </summary>
-    template<service_scope_type ScopeTy, dependency_container_type DepsTy, std::size_t... Is>
+    template<dependency_container_type DepsTy, service_scope_type ScopeTy, std::size_t... Is>
     auto get_tuple_from_scope(ScopeTy& scope, std::index_sequence<Is...>)
     {
         using dependencies = typename DepsTy::types;
@@ -31,10 +31,12 @@ namespace dipp
     /// <summary>
     /// Get a tuple of dependencies from a scope.
     /// </summary>
-    template<service_scope_type ScopeTy, dependency_container_type DepsTy>
+    template<dependency_container_type DepsTy, service_scope_type ScopeTy>
     auto get_tuple_from_scope(ScopeTy& scope)
     {
-        return get_tuple_from_scope<ScopeTy, DepsTy>(
-            scope, std::make_index_sequence<std::tuple_size_v<typename DepsTy::types>>{});
+        using dependencies = typename DepsTy::types;
+
+        return get_tuple_from_scope<DepsTy>(
+            scope, std::make_index_sequence<std::tuple_size_v<dependencies>>{});
     }
 } // namespace dipp

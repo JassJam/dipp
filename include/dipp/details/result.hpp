@@ -23,6 +23,8 @@ namespace dipp
     }
 } // namespace dipp
 
+    #define DIPP_RETURN_ERROR return
+
 #else
 
 namespace dipp
@@ -130,6 +132,10 @@ namespace dipp
             return false; // No error handling in this implementation
         }
 
+        constexpr void error() const
+        {
+        }
+
     private:
         Ty m_Value;
     };
@@ -147,4 +153,38 @@ namespace dipp
         throw error;
     }
 } // namespace dipp
+
+    #define DIPP_RETURN_ERROR
+
 #endif
+
+namespace dipp
+{
+    template<typename Ty>
+    struct is_result_type : std::false_type
+    {
+    };
+
+    template<typename Ty>
+    struct is_result_type<result<Ty>> : std::true_type
+    {
+    };
+
+    template<typename Ty>
+    inline constexpr bool is_result_type_v = is_result_type<Ty>::value;
+
+    template<typename T>
+    struct unwrap_result_type
+    {
+        using type = T;
+    };
+
+    template<typename T>
+    struct unwrap_result_type<result<T>>
+    {
+        using type = T;
+    };
+
+    template<typename T>
+    using unwrap_result_type_t = typename unwrap_result_type<T>::type;
+}

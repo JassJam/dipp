@@ -9,18 +9,18 @@ BOOST_AUTO_TEST_SUITE(Decayed_Test)
 
 struct Camera
 {
-    explicit Camera(int fov = 90)
+    Camera(int fov = 90)
         : fov(fov)
     {
     }
 
     int fov;
 };
-using CameraService = dipp::injected<Camera, dipp::service_lifetime::transient>;
+using CameraService = dipp::injected<Camera, dipp::service_lifetime::singleton>;
 
 struct Scene
 {
-    explicit Scene(Camera cam, int max_entities = 100)
+    Scene(Camera& cam, int max_entities = 100)
         : camera(std::move(cam))
         , max_entities(max_entities)
     {
@@ -44,16 +44,17 @@ struct World
     }
 };
 using WorldService = dipp::injected_unique<World,
-                                           dipp::service_lifetime::scoped,
+                                           dipp::service_lifetime::singleton,
                                            dipp::dependency<SceneService, CameraService>>;
 
 //
 
 BOOST_AUTO_TEST_CASE(GiveNonTransientServices_WhenFetched_ThenTheyCanBeDecayed)
 {
-    // Given
+    //// Given
     dipp::default_service_collection collection;
     collection.add<CameraService>();
+
     collection.add<SceneService>();
     collection.add<WorldService>();
 

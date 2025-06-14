@@ -23,7 +23,7 @@ namespace dipp
              service_lifetime Lifetime,
              service_scope_type ScopeTy,
              dependency_container_type DepsTy = dependency<>>
-    class functor_service_descriptor : public base_service_descriptor<Ty, Lifetime, DepsTy>
+    struct functor_service_descriptor : base_service_descriptor<Ty, Lifetime, DepsTy>
     {
     public:
         using value_type = Ty;
@@ -60,8 +60,8 @@ namespace dipp
              service_lifetime Lifetime,
              service_scope_type ScopeTy,
              dependency_container_type DepsTy = dependency<>>
-    class unique_service_descriptor
-        : public functor_service_descriptor<std::unique_ptr<Ty>, Lifetime, ScopeTy, DepsTy>
+    struct unique_service_descriptor
+        : functor_service_descriptor<std::unique_ptr<Ty>, Lifetime, ScopeTy, DepsTy>
     {
     public:
         using base_class =
@@ -122,8 +122,8 @@ namespace dipp
              service_lifetime Lifetime,
              service_scope_type ScopeTy,
              dependency_container_type DepsTy = dependency<>>
-    class shared_service_descriptor
-        : public functor_service_descriptor<std::shared_ptr<Ty>, Lifetime, ScopeTy, DepsTy>
+    struct shared_service_descriptor
+        : functor_service_descriptor<std::shared_ptr<Ty>, Lifetime, ScopeTy, DepsTy>
     {
     public:
         using base_class =
@@ -184,8 +184,7 @@ namespace dipp
              service_lifetime Lifetime,
              service_scope_type ScopeTy,
              dependency_container_type DepsTy = dependency<>>
-    class local_service_descriptor
-        : public functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>
+    struct local_service_descriptor : functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>
     {
     public:
         using base_class = functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>;

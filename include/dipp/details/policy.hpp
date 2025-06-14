@@ -31,7 +31,7 @@ namespace dipp
         }
 
         template<typename Ty>
-        constexpr Ty* cast() noexcept
+        constexpr auto cast() noexcept
         {
             return Instance.cast<Ty>();
         }

@@ -12,16 +12,22 @@ namespace dipp
     [[nodiscard]] static auto apply(ScopeTy& scope, FactoryTy&& factory, ArgsTy&& args)
     {
         using dependencies_type = typename DepsTy::types;
+        using args_type = ArgsTy;
 
         if constexpr (std::tuple_size_v<dependencies_type> == 0)
         {
             return std::apply(std::forward<FactoryTy>(factory), std::forward<ArgsTy>(args));
         }
+        else if constexpr (std::tuple_size_v<args_type> == 0)
+        {
+            auto dependencies = dipp::get_tuple_from_scope<DepsTy>(scope);
+            return std::apply(std::forward<FactoryTy>(factory), std::move(dependencies));
+        }
         else
         {
-            auto dependencies = dipp::get_tuple_from_scope<ScopeTy, DepsTy>(scope);
+            auto dependencies = dipp::get_tuple_from_scope<DepsTy>(scope);
             return std::apply(std::forward<FactoryTy>(factory),
-                              std::tuple_cat(dependencies, std::forward<ArgsTy>(args)));
+                              std::tuple_cat(std::move(dependencies), std::forward<ArgsTy>(args)));
         }
     }
 } // namespace dipp

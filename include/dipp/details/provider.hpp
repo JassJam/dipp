@@ -87,15 +87,6 @@ namespace dipp
             return root_scope().template get<InjectableTy>();
         }
 
-        /// <summary>
-        /// Gets the service of the specified type from the root scope.
-        /// </summary>
-        template<service_descriptor_type DescTy>
-        [[nodiscard]] auto get(size_t key = {}) -> typename DescTy::service_type
-        {
-            return root_scope().template get<DescTy>(key);
-        }
-
     public:
         /// <summary>
         /// Checks if the service of the specified type is registered in the root scope.
@@ -104,15 +95,6 @@ namespace dipp
         [[nodiscard]] bool has() const noexcept
         {
             return root_scope().template has<InjectableTy>();
-        }
-
-        /// <summary>
-        /// Checks if the service of the specified type is registered in the root scope.
-        /// </summary>
-        template<service_descriptor_type DescTy>
-        [[nodiscard]] bool has(size_t key = {}) const noexcept
-        {
-            return root_scope().template has<DescTy>(key);
         }
 
     public:
@@ -125,16 +107,6 @@ namespace dipp
             return root_scope().template count<InjectableTy>();
         }
 
-        /// <summary>
-        /// Counts the number of services of the specified type in the root scope.
-        /// </summary>
-        template<service_descriptor_type DescTy>
-        [[nodiscard]] size_t count(size_t key = {}) const noexcept
-        {
-            using descriptor_type = DescTy;
-            return root_scope().template count<descriptor_type>(key);
-        }
-
     public:
         /// <summary>
         /// Counts the number of services of the specified type in all scopes.
@@ -143,16 +115,6 @@ namespace dipp
         [[nodiscard]] size_t count_all() const noexcept
         {
             return root_scope().template count_all<InjectableTy>();
-        }
-
-        /// <summary>
-        /// Counts the number of services of the specified type in all scopes.
-        /// </summary>
-        template<service_descriptor_type DescTy>
-        [[nodiscard]] size_t count_all() const noexcept
-        {
-            using descriptor_type = DescTy;
-            return root_scope().template count_all<descriptor_type>();
         }
 
     public:
@@ -165,16 +127,6 @@ namespace dipp
             root_scope().template for_each<InjectableTy>(std::forward<FuncTy>(func));
         }
 
-        /// <summary>
-        /// Creates a new service of the specified type in the root scope.
-        /// </summary>
-        template<service_descriptor_type DescTy, typename FuncTy>
-        void for_each(FuncTy&& func, size_t key = {})
-        {
-            using descriptor_type = DescTy;
-            root_scope().template for_each<descriptor_type>(std::forward<FuncTy>(func), key);
-        }
-
     public:
         /// <summary>
         /// Creates a new service of the specified type in all scopes.
@@ -183,16 +135,6 @@ namespace dipp
         [[nodiscard]] void for_each_all(FuncTy&& func)
         {
             root_scope().template for_each_all<InjectableTy>(std::forward<FuncTy>(func));
-        }
-
-        /// <summary>
-        /// Creates a new service of the specified type in all scopes.
-        /// </summary>
-        template<service_descriptor_type DescTy, typename FuncTy>
-        void for_each_all(FuncTy&& func)
-        {
-            using descriptor_type = DescTy;
-            root_scope().template for_each_all<descriptor_type>(std::forward<FuncTy>(func));
         }
 
     private:

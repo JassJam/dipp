@@ -17,10 +17,12 @@ local function add_test(opts)
     target_end()
 end
 
-add_test({name = "test_basic_services", path = "basic_services"})
-add_test({name = "test_readme", path = "readme"})
-add_test({name = "test_abstract_services", path = "abstract_services"})
-add_test({name = "test_exceptions", path = "exceptions"})
-add_test({name = "test_dependency", path = "dependency"})
-add_test({name = "test_decay", path = "decay"})
-add_test({name = "test_inheritance", path = "inheritance"})
+local tests_dir = os.projectdir() .. "/tests/"
+print("Adding tests from directory: " .. tests_dir)
+-- for all folder in the tests directory
+for _, dir in ipairs(os.dirs(tests_dir .. "*/")) do
+    if os.isdir(dir) then
+        local test_name = path.filename(dir)
+        add_test({name = "test_" .. test_name, path = test_name})
+    end
+end
