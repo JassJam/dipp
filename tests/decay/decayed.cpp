@@ -54,12 +54,11 @@ using WorldService = dipp::injected_unique< //
 
 //
 
-BOOST_AUTO_TEST_CASE(GiveNonTransientServices_WhenFetched_ThenTheyCanBeDecayed)
+BOOST_AUTO_TEST_CASE(GivenNonTransientServices_WhenFetched_ThenTheyCanBeDecayed)
 {
     // Given
     dipp::default_service_collection collection;
     collection.add<CameraService>();
-
     collection.add<SceneService>();
     collection.add<WorldService>();
 

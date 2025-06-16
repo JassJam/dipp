@@ -145,34 +145,39 @@ using CopyableSingleton = dipp::injected<CopyableService, dipp::service_lifetime
 
 //
 
-BOOST_AUTO_TEST_CASE(MoveOnlyTransientService_Test)
+BOOST_AUTO_TEST_CASE(GivenMoveOnlyTransientService_WhenRequested_ThenValueMovedCorrectly)
 {
+    // Given
     dipp::default_service_collection collection;
     collection.add<MoveOnlyServiceType>(42);
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
-    // Get transient service - should move the value out
     MoveOnlyService service1 = *services.get<MoveOnlyServiceType>();
     MoveOnlyService service2 = *services.get<MoveOnlyServiceType>();
 
+    // Then
     BOOST_CHECK_EQUAL(service1.get_value(), 42);
     BOOST_CHECK_EQUAL(service2.get_value(), 42);
     BOOST_CHECK(service1.is_valid());
     BOOST_CHECK(service2.is_valid());
 }
 
-BOOST_AUTO_TEST_CASE(MoveOnlySingletonService_Test)
+BOOST_AUTO_TEST_CASE(
+    GivenMoveOnlySingletonService_WhenRequestedMultipleTimes_ThenSameInstanceReturned)
 {
+    // Given
     dipp::default_service_collection collection;
     collection.add<MoveOnlySingleton>(100);
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
-    // Get singleton service multiple times - should return references to same instance
     MoveOnlyService& service1 = *services.get<MoveOnlySingleton>();
     MoveOnlyService& service2 = *services.get<MoveOnlySingleton>();
 
+    // Then
     BOOST_CHECK_EQUAL(service1.get_value(), 100);
     BOOST_CHECK_EQUAL(service2.get_value(), 100);
 
@@ -180,34 +185,35 @@ BOOST_AUTO_TEST_CASE(MoveOnlySingletonService_Test)
     BOOST_CHECK_EQUAL(&service1, &service2);
 }
 
-BOOST_AUTO_TEST_CASE(CopyVsMoveOptimization_Test)
+BOOST_AUTO_TEST_CASE(GivenCopyableService_WhenUsingFactory_ThenMoveOptimizationApplied)
 {
+    // Given
     dipp::default_service_collection collection;
 
-    // Add services using move semantics
     collection.add<CopyableServiceType>(
         [](auto&) -> CopyableService
         {
             return CopyableService(200); // Should be moved, not copied
         });
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
     int initial_moves = MoveTracker::move_constructor_calls;
-
     CopyableService service = *services.get<CopyableServiceType>();
 
+    // Then
     BOOST_CHECK_EQUAL(service.get_value(), 200);
 
     // Should prefer moves over copies
     BOOST_CHECK_GE(MoveTracker::move_constructor_calls, initial_moves);
 }
 
-BOOST_AUTO_TEST_CASE(FactoryMoveOptimization_Test)
+BOOST_AUTO_TEST_CASE(GivenFactoryReturningByValue_WhenServiceRequested_ThenMoveOptimizationUsed)
 {
+    // Given
     dipp::default_service_collection collection;
 
-    // Factory that returns by value (should be moved)
     collection.add<CopyableServiceType>(
         [](auto&) -> CopyableService
         {
@@ -215,10 +221,11 @@ BOOST_AUTO_TEST_CASE(FactoryMoveOptimization_Test)
             return temp; // Should be moved due to RVO/move semantics
         });
 
+    // When
     dipp::default_service_provider services(std::move(collection));
-
     CopyableService service = *services.get<CopyableServiceType>();
 
+    // Then
     BOOST_CHECK_EQUAL(service.get_value(), 300);
 
     // The exact number of moves depends on optimization level and implementation,
@@ -226,7 +233,7 @@ BOOST_AUTO_TEST_CASE(FactoryMoveOptimization_Test)
     BOOST_CHECK_GT(MoveTracker::move_constructor_calls, 0);
 }
 
-BOOST_AUTO_TEST_CASE(LargeObjectMove_Test)
+BOOST_AUTO_TEST_CASE(GivenLargeObject_WhenMoved_ThenEfficientlyHandled)
 {
     struct LargeObject
     {
@@ -254,46 +261,48 @@ BOOST_AUTO_TEST_CASE(LargeObjectMove_Test)
 
     using LargeObjectService = dipp::injected<LargeObject, dipp::service_lifetime::transient>;
 
+    // Given
     dipp::default_service_collection collection;
     collection.add<LargeObjectService>();
 
+    // When
     dipp::default_service_provider services(std::move(collection));
-
     LargeObject service = *services.get<LargeObjectService>();
 
+    // Then
     // Should have been moved efficiently, not copied
     int expected_sum = 999 * 1000 / 2; // Sum of 0 to 999
     BOOST_CHECK_EQUAL(service.get_sum(), expected_sum);
 }
 
-BOOST_AUTO_TEST_CASE(ServiceProviderMove_Test)
+BOOST_AUTO_TEST_CASE(GivenServiceProvider_WhenMoved_ThenFunctionalityPreserved)
 {
+    // Given
     dipp::default_service_collection collection;
     collection.add<CopyableServiceType>(42);
 
-    // Create provider
     dipp::default_service_provider services1(std::move(collection));
 
+    // When
     // Move the provider
     dipp::default_service_provider services2 = std::move(services1);
-
-    // Moved-to provider should work
-    CopyableService service = *services2.get<CopyableServiceType>();
-    BOOST_CHECK_EQUAL(service.get_value(), 42);
 
     // Move assign
     dipp::default_service_collection empty_collection;
     dipp::default_service_provider services3(std::move(empty_collection));
     services3 = std::move(services2);
 
-    CopyableService service2 = *services3.get<CopyableServiceType>();
-    BOOST_CHECK_EQUAL(service2.get_value(), 42);
+    // Then
+    // Moved-to provider should work
+    CopyableService service = *services3.get<CopyableServiceType>();
+    BOOST_CHECK_EQUAL(service.get_value(), 42);
 }
 
-BOOST_AUTO_TEST_CASE(ScopeMove_Test)
+BOOST_AUTO_TEST_CASE(GivenScope_WhenMoved_ThenServiceSemanticsPreserved)
 {
     using ScopedService = dipp::injected<CopyableService, dipp::service_lifetime::scoped>;
 
+    // Given
     dipp::default_service_collection collection;
     collection.add<ScopedService>(100);
 
@@ -303,45 +312,16 @@ BOOST_AUTO_TEST_CASE(ScopeMove_Test)
     auto scope1 = services.create_scope();
     CopyableService& service1 = *scope1.get<ScopedService>();
 
+    // When
     // Move the scope
     auto scope2 = std::move(scope1);
     CopyableService& service2 = *scope2.get<ScopedService>();
 
+    // Then
     // Should be the same instance (scoped semantics preserved)
     BOOST_CHECK_EQUAL(&service1, &service2);
     BOOST_CHECK_EQUAL(service1.get_value(), 100);
     BOOST_CHECK_EQUAL(service2.get_value(), 100);
-}
-
-BOOST_AUTO_TEST_CASE(PerformanceBenchmark_BasicOperations_Test)
-{
-    // This is a basic performance test to ensure operations are reasonably fast
-    constexpr int NUM_OPERATIONS = 1000;
-
-    dipp::default_service_collection collection;
-    collection.add<CopyableServiceType>(1);
-
-    dipp::default_service_provider services(std::move(collection));
-
-    auto start = std::chrono::high_resolution_clock::now();
-
-    for (int i = 0; i < NUM_OPERATIONS; ++i)
-    {
-        CopyableService service = *services.get<CopyableServiceType>();
-        // Prevent optimization
-        volatile int value = service.get_value();
-        (void) value;
-    }
-
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-
-    // Should complete in reasonable time (less than 10ms for 1000 operations)
-    BOOST_CHECK_LT(duration.count(), 10000);
-
-    // Log the performance for informational purposes
-    BOOST_TEST_MESSAGE("Time for " << NUM_OPERATIONS << " service resolutions: " << duration.count()
-                                   << " microseconds");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

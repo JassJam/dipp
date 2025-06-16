@@ -237,20 +237,18 @@ using ApplicationServiceType = dipp::injected_unique< //
 
 //
 
-BOOST_AUTO_TEST_CASE(CompleteApplicationStack_Test)
+BOOST_AUTO_TEST_CASE(GivenCompleteApplicationStack_WhenUsersRegistered_ThenSystemWorksCorrectly)
 {
+    // Given
     dipp::default_service_collection collection;
-
-    // Configure the service stack
     collection.add_impl<LoggerService, ConsoleLogger>();
     collection.add_impl<DatabaseService, InMemoryDatabase>();
     collection.add<UserServiceType>();
     collection.add<NotificationServiceType>();
     collection.add<ApplicationServiceType>();
 
+    // When
     dipp::default_service_provider services(std::move(collection));
-
-    // Test the complete application
     ApplicationService& app = *services.get<ApplicationServiceType>();
 
     // Register some users
@@ -258,7 +256,7 @@ BOOST_AUTO_TEST_CASE(CompleteApplicationStack_Test)
     app.register_user("bob");
     app.register_user("alice"); // Should detect duplicate
 
-    // Verify the system worked correctly
+    // Then
     auto logs = app.get_logs();
 
     // Check that all expected log messages are present
@@ -305,7 +303,8 @@ BOOST_AUTO_TEST_CASE(CompleteApplicationStack_Test)
     BOOST_CHECK(foundAliceDuplicate);
 }
 
-BOOST_AUTO_TEST_CASE(MultipleLoggerConfiguration_Test)
+BOOST_AUTO_TEST_CASE(
+    GivenMultipleLoggerConfiguration_WhenLoggingToAll_ThenBothLoggersReceiveMessages)
 {
     using ConsoleLoggerService = dipp::injected_unique< //
         ILogger,
@@ -342,20 +341,19 @@ BOOST_AUTO_TEST_CASE(MultipleLoggerConfiguration_Test)
         }
     };
 
+    // Given
     dipp::default_service_collection collection;
-
     collection.add<ConsoleLoggerService>([](auto&) { return std::make_unique<ConsoleLogger>(); });
-
     collection.add<FileLoggerService>([](auto&)
                                       { return std::make_unique<FileLogger>("app.log"); });
-
     collection.add<MultiLoggerApp>();
 
+    // When
     dipp::default_service_provider services(std::move(collection));
-
     MultiLoggerAppImpl app = *services.get<MultiLoggerApp>();
     app.logToAll("Test message");
 
+    // Then
     auto consoleLogs = app.consoleLogger.get_logs();
     auto fileLogs = app.fileLogger.get_logs();
 
@@ -366,16 +364,18 @@ BOOST_AUTO_TEST_CASE(MultipleLoggerConfiguration_Test)
     BOOST_CHECK(fileLogs[0].find("[FILE:app.log] Test message") != std::string::npos);
 }
 
-BOOST_AUTO_TEST_CASE(ScopedApplicationInstances_Test)
+BOOST_AUTO_TEST_CASE(
+    GivenScopedApplicationInstances_WhenCreated_ThenSingletonsSharedButScopedSeparate)
 {
+    // Given
     dipp::default_service_collection collection;
-
     collection.add_impl<LoggerService, ConsoleLogger>();
     collection.add_impl<DatabaseService, InMemoryDatabase>();
     collection.add<UserServiceType>();
     collection.add<NotificationServiceType>();
     collection.add<ApplicationServiceType>();
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
     // Create two different scopes with separate application instances
@@ -385,14 +385,15 @@ BOOST_AUTO_TEST_CASE(ScopedApplicationInstances_Test)
     ApplicationService& app1 = *scope1.get<ApplicationServiceType>();
     ApplicationService& app2 = *scope2.get<ApplicationServiceType>();
 
+    UserService& user1 = *scope1.get<UserServiceType>();
+    UserService& user2 = *scope2.get<UserServiceType>();
+
+    // Then
     // Applications should be different instances (scoped lifetime)
     BOOST_CHECK_NE(&app1, &app2);
 
     // But should share the same singletons (logger, database, etc.)
-    auto user1 = scope1.get<UserServiceType>();
-    auto user2 = scope2.get<UserServiceType>();
-
-    BOOST_CHECK_EQUAL(user1->get().get(), user2->get().get()); // Same singleton
+    BOOST_CHECK_EQUAL(&user1, &user2); // Same singleton
 
     // Operations in one scope should be visible in the other (shared database)
     app1.register_user("shared_user");
@@ -405,7 +406,8 @@ BOOST_AUTO_TEST_CASE(ScopedApplicationInstances_Test)
     BOOST_CHECK_EQUAL(logs1.size(), logs2.size());
 }
 
-BOOST_AUTO_TEST_CASE(ConditionalServiceConfiguration_Test)
+BOOST_AUTO_TEST_CASE(
+    GivenConditionalServiceConfiguration_WhenDifferentEnvironments_ThenCorrectLoggersUsed)
 {
     enum class LogLevel
     {
@@ -433,6 +435,7 @@ BOOST_AUTO_TEST_CASE(ConditionalServiceConfiguration_Test)
         return collection;
     };
 
+    // Given / When / Then
     // Test debug configuration
     {
         auto debugCollection = configureServices(LogLevel::Debug);
@@ -462,8 +465,9 @@ BOOST_AUTO_TEST_CASE(ConditionalServiceConfiguration_Test)
     }
 }
 
-BOOST_AUTO_TEST_CASE(ServiceReplacement_Test)
+BOOST_AUTO_TEST_CASE(GivenServiceReplacement_WhenLastServiceWins_ThenReplacementSuccessful)
 {
+    // Given
     dipp::default_service_collection collection;
 
     // First, add a console logger
@@ -476,6 +480,7 @@ BOOST_AUTO_TEST_CASE(ServiceReplacement_Test)
     collection.add_impl<DatabaseService, InMemoryDatabase>();
     collection.add<NotificationServiceType>();
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
     NotificationService& notification = *services.get<NotificationServiceType>();
@@ -484,6 +489,7 @@ BOOST_AUTO_TEST_CASE(ServiceReplacement_Test)
     ILogger& logger = *services.get<LoggerService>();
     auto logs = logger.get_logs();
 
+    // Then
     // Should show file logger was used (replacement worked)
     bool foundFileLog = false;
     for (const auto& log : logs)

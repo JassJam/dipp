@@ -144,13 +144,15 @@ using TransientService = dipp::injected_unique< //
 
 //
 
-BOOST_AUTO_TEST_CASE(NestedScopeLifetime_Test)
+BOOST_AUTO_TEST_CASE(GivenNestedScopes_WhenCreatedAndDestroyed_ThenCorrectLifetimeManagement)
 {
+    // Given
     dipp::default_service_collection collection;
     collection.add<SingletonService>("GlobalSingleton");
     collection.add<ScopedService>("ScopedService");
     collection.add<TransientService>("TransientService");
 
+    // When / Then
     {
         dipp::default_service_provider provider(std::move(collection));
         expect("Singleton[GlobalSingleton] created");
@@ -183,8 +185,10 @@ BOOST_AUTO_TEST_CASE(NestedScopeLifetime_Test)
     validate();
 }
 
-BOOST_AUTO_TEST_CASE(TransientServiceInDifferentScopes_Test)
+BOOST_AUTO_TEST_CASE(
+    GivenTransientServices_WhenRequestedInDifferentScopes_ThenDistinctInstancesCreated)
 {
+    // Given
     dipp::default_service_collection collection;
     collection.add<SingletonService>("SharedSingleton");
     collection.add<TransientService>("TransientInstance");
@@ -193,6 +197,7 @@ BOOST_AUTO_TEST_CASE(TransientServiceInDifferentScopes_Test)
 
     std::vector<const TrackedTransient*> transientInstances;
 
+    // When
     {
         auto scope1 = provider.create_scope();
         TrackedTransient::Ptr transient1a = *scope1.get<TransientService>();
@@ -218,12 +223,13 @@ BOOST_AUTO_TEST_CASE(TransientServiceInDifferentScopes_Test)
         }
     }
 
+    // Then
     // Verify all instances are unique
     std::set uniqueTransients(transientInstances.begin(), transientInstances.end());
     BOOST_CHECK_EQUAL(uniqueTransients.size(), transientInstances.size());
 }
 
-BOOST_AUTO_TEST_CASE(ScopeIsolation_Test)
+BOOST_AUTO_TEST_CASE(GivenIsolatedScopedServices_WhenRequested_ThenProperIsolation)
 {
     using IsolatedScoped1 = dipp::injected_unique< //
         TrackedScoped,
@@ -237,11 +243,13 @@ BOOST_AUTO_TEST_CASE(ScopeIsolation_Test)
         dipp::dependency<SingletonService>,
         dipp::key("isolated2")>;
 
+    // Given
     dipp::default_service_collection collection;
     collection.add<SingletonService>("SharedSingleton");
     collection.add<IsolatedScoped1>("IsolatedService1");
     collection.add<IsolatedScoped2>("IsolatedService2");
 
+    // When
     dipp::default_service_provider provider(std::move(collection));
 
     auto scope1 = provider.create_scope();
@@ -254,6 +262,8 @@ BOOST_AUTO_TEST_CASE(ScopeIsolation_Test)
 
     // Same service type with same key should be same instance within a scope
     TrackedScoped* isolated1_scope1_again = *scope1.get<IsolatedScoped1>();
+
+    // Then
     BOOST_CHECK_EQUAL(isolated1_scope1, isolated1_scope1_again);
 
     // Different keys should be different instances
@@ -268,8 +278,9 @@ BOOST_AUTO_TEST_CASE(ScopeIsolation_Test)
     BOOST_CHECK_EQUAL(&isolated1_scope1->getSingleton(), &isolated2_scope2->getSingleton());
 }
 
-BOOST_AUTO_TEST_CASE(DeepScopeNesting_Test)
+BOOST_AUTO_TEST_CASE(GivenDeeplyNestedScopes_WhenCreated_ThenCorrectServiceInstantiation)
 {
+    // Given
     dipp::default_service_collection collection;
     collection.add<SingletonService>("DeepSingleton");
     collection.add<ScopedService>("DeepScoped");
@@ -279,6 +290,7 @@ BOOST_AUTO_TEST_CASE(DeepScopeNesting_Test)
     const TrackedSingleton* sharedSingleton = nullptr;
     std::vector<const TrackedScoped*> scopedInstances;
 
+    // When
     // Create deeply nested scopes
     auto scope1 = provider.create_scope();
     {
@@ -310,19 +322,22 @@ BOOST_AUTO_TEST_CASE(DeepScopeNesting_Test)
         }
     }
 
+    // Then
     // All scoped instances should be different
     std::set uniqueScopes(scopedInstances.begin(), scopedInstances.end());
     BOOST_CHECK_EQUAL(uniqueScopes.size(), scopedInstances.size());
 }
 
-BOOST_AUTO_TEST_CASE(ScopeMovingAndRootScope_Test)
+BOOST_AUTO_TEST_CASE(GivenMovableScopes_WhenMoved_ThenScopedInstancesPreserved)
 {
+    // Given
     dipp::default_service_collection collection;
     collection.add<SingletonService>("MovableSingleton");
     collection.add<ScopedService>("MovableScoped");
 
     dipp::default_service_provider provider(std::move(collection));
 
+    // When
     // Get service from root scope
     TrackedScoped* rootScoped = *provider.get<ScopedService>();
 
@@ -330,15 +345,16 @@ BOOST_AUTO_TEST_CASE(ScopeMovingAndRootScope_Test)
     auto childScope = provider.create_scope();
     TrackedScoped* childScoped = *childScope.get<ScopedService>();
 
+    // Move the scope
+    auto movedScope = std::move(childScope);
+    TrackedScoped* movedScoped = *movedScope.get<ScopedService>();
+
+    // Then
     // Root and child should have different scoped instances
     BOOST_CHECK_NE(rootScoped, childScoped);
 
     // But same singleton
     BOOST_CHECK_EQUAL(&rootScoped->getSingleton(), &childScoped->getSingleton());
-
-    // Move the scope
-    auto movedScope = std::move(childScope);
-    TrackedScoped* movedScoped = *movedScope.get<ScopedService>();
 
     // Moved scope should maintain the same scoped instance
     BOOST_CHECK_EQUAL(childScoped, movedScoped);
