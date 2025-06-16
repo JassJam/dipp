@@ -18,7 +18,6 @@ local function add_test(opts)
 end
 
 local tests_dir = os.projectdir() .. "/tests/"
-print("Adding tests from directory: " .. tests_dir)
 -- for all folder in the tests directory
 for _, dir in ipairs(os.dirs(tests_dir .. "*/")) do
     if os.isdir(dir) then

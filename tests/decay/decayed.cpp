@@ -16,7 +16,9 @@ struct Camera
 
     int fov;
 };
-using CameraService = dipp::injected<Camera, dipp::service_lifetime::singleton>;
+using CameraService = dipp::injected< //
+    Camera,
+    dipp::service_lifetime::singleton>;
 
 struct Scene
 {
@@ -29,8 +31,10 @@ struct Scene
     Camera camera;
     int max_entities;
 };
-using SceneService =
-    dipp::injected<Scene, dipp::service_lifetime::singleton, dipp::dependency<CameraService>>;
+using SceneService = dipp::injected< //
+    Scene,
+    dipp::service_lifetime::singleton,
+    dipp::dependency<CameraService>>;
 
 struct World
 {
@@ -43,15 +47,16 @@ struct World
     {
     }
 };
-using WorldService = dipp::injected_unique<World,
-                                           dipp::service_lifetime::singleton,
-                                           dipp::dependency<SceneService, CameraService>>;
+using WorldService = dipp::injected_unique< //
+    World,
+    dipp::service_lifetime::singleton,
+    dipp::dependency<SceneService, CameraService>>;
 
 //
 
 BOOST_AUTO_TEST_CASE(GiveNonTransientServices_WhenFetched_ThenTheyCanBeDecayed)
 {
-    //// Given
+    // Given
     dipp::default_service_collection collection;
     collection.add<CameraService>();
 
@@ -62,11 +67,6 @@ BOOST_AUTO_TEST_CASE(GiveNonTransientServices_WhenFetched_ThenTheyCanBeDecayed)
     auto rootScope = rootServices.create_scope();
 
     // When + Then
-    Camera camera = std::move(*rootServices.get<CameraService>());
-    (void) camera;
-
-    //
-
     Scene& sceneRef = *rootScope.get<SceneService>();
     (void) sceneRef; // can be decayed to Scene&
 
