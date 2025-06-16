@@ -16,7 +16,9 @@ struct Camera
 
     int fov;
 };
-using CameraService = dipp::injected<Camera, dipp::service_lifetime::transient>;
+using CameraService = dipp::injected< //
+    Camera,
+    dipp::service_lifetime::transient>;
 
 struct Scene
 {
@@ -29,8 +31,10 @@ struct Scene
     Camera camera;
     int max_entities;
 };
-using SceneService =
-    dipp::injected<Scene, dipp::service_lifetime::singleton, dipp::dependency<CameraService>>;
+using SceneService = dipp::injected< //
+    Scene,
+    dipp::service_lifetime::singleton,
+    dipp::dependency<CameraService>>;
 
 struct World
 {
@@ -43,8 +47,10 @@ struct World
     {
     }
 };
-using WorldService = dipp::
-    injected<World, dipp::service_lifetime::scoped, dipp::dependency<SceneService, CameraService>>;
+using WorldService = dipp::injected< //
+    World,
+    dipp::service_lifetime::scoped,
+    dipp::dependency<SceneService, CameraService>>;
 
 //
 
@@ -75,10 +81,13 @@ BOOST_AUTO_TEST_CASE(GivenTransientService_WhenRequestedTwice_ThenInstancesDiffe
 BOOST_AUTO_TEST_CASE(GivenExternalServiceReference_WhenResolved_ThenDependenciesCorrect)
 {
     // Given
-    using scene_service = dipp::injected_ref<Scene, dipp::service_lifetime::singleton>;
-    using world_service = dipp::injected<World,
-                                         dipp::service_lifetime::scoped,
-                                         dipp::dependency<scene_service, CameraService>>;
+    using scene_service = dipp::injected_ref< //
+        Scene,
+        dipp::service_lifetime::singleton>;
+    using world_service = dipp::injected< //
+        World,
+        dipp::service_lifetime::scoped,
+        dipp::dependency<scene_service, CameraService>>;
 
     Scene externalScene(Camera(89), 200);
     dipp::default_service_collection collection;

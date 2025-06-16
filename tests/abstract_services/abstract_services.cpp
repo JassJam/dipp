@@ -37,12 +37,17 @@ public:
 
 //
 
-using CameraService = dipp::injected_unique<ICamera, dipp::service_lifetime::transient>;
+using CameraService = dipp::injected_unique< //
+    ICamera,
+    dipp::service_lifetime::transient>;
 
-using PerspectiveCameraService =
-    dipp::injected_unique<PerspectiveCamera, dipp::service_lifetime::transient>;
-using OrthographicCameraService =
-    dipp::injected_unique<OrthographicCamera, dipp::service_lifetime::transient>;
+using PerspectiveCameraService = dipp::injected_unique< //
+    PerspectiveCamera,
+    dipp::service_lifetime::transient>;
+
+using OrthographicCameraService = dipp::injected_unique< //
+    OrthographicCamera,
+    dipp::service_lifetime::transient>;
 
 //
 
@@ -126,7 +131,9 @@ BOOST_AUTO_TEST_CASE(GivenCameraServices_WhenAddingToCollection_ThenCamerasAreCr
 BOOST_AUTO_TEST_CASE(
     GivenSingletonCameraServices_WhenQueryingFromCollection_ThenCamerasStaysTheSame)
 {
-    using singleton_service = dipp::injected_unique<ICamera, dipp::service_lifetime::singleton>;
+    using singleton_service = dipp::injected_unique< //
+        ICamera,
+        dipp::service_lifetime::singleton>;
 
     // Given
     dipp::default_service_collection collection;

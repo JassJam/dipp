@@ -29,12 +29,18 @@ public:
 
 //
 
-using InterfaceService = dipp::injected_unique<Interface, dipp::service_lifetime::transient>;
+using InterfaceService = dipp::injected_unique< //
+    Interface,
+    dipp::service_lifetime::transient>;
 
-using SomeClassService = dipp::injected_unique<SomeClass, dipp::service_lifetime::transient>;
+using SomeClassService = dipp::injected_unique< //
+    SomeClass,
+    dipp::service_lifetime::transient>;
 
-using ImplementationService = dipp::
-    injected<Implementation, dipp::service_lifetime::transient, dipp::dependency<SomeClassService>>;
+using ImplementationService = dipp::injected< //
+    Implementation,
+    dipp::service_lifetime::transient,
+    dipp::dependency<SomeClassService>>;
 
 //
 
