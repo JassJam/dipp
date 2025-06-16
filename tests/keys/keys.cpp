@@ -57,8 +57,9 @@ using MemoryCache = dipp::injected_unique< //
 
 //
 
-BOOST_AUTO_TEST_CASE(MultipleServicesWithKeys_Test)
+BOOST_AUTO_TEST_CASE(GivenMultipleServicesWithKeys_WhenRequested_ThenCorrectServicesReturned)
 {
+    // Given
     dipp::default_service_collection collection;
 
     // Add multiple database connections
@@ -70,15 +71,16 @@ BOOST_AUTO_TEST_CASE(MultipleServicesWithKeys_Test)
     collection.add<RedisCache>("redis");
     collection.add<MemoryCache>("memory");
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
-    // Verify each service is distinct
     DatabaseConnection& primary = *services.get<PrimaryDbService>();
     DatabaseConnection& secondary = *services.get<SecondaryDbService>();
     DatabaseConnection& readonly = *services.get<ReadOnlyDbService>();
     CacheManager& redis = *services.get<RedisCache>();
     CacheManager& memory = *services.get<MemoryCache>();
 
+    // Then
     BOOST_CHECK_EQUAL(primary.connectionString, "postgres://primary:5432/main");
     BOOST_CHECK_EQUAL(secondary.connectionString, "postgres://secondary:5432/backup");
     BOOST_CHECK_EQUAL(readonly.connectionString, "postgres://readonly:5432/reports");
@@ -91,15 +93,17 @@ BOOST_AUTO_TEST_CASE(MultipleServicesWithKeys_Test)
     BOOST_CHECK_NE(&redis, &memory);
 }
 
-BOOST_AUTO_TEST_CASE(ServiceHasWithKeys_Test)
+BOOST_AUTO_TEST_CASE(GivenRegisteredKeyedServices_WhenCheckingHas_ThenCorrectAvailabilityReported)
 {
+    // Given
     dipp::default_service_collection collection;
-
     collection.add<PrimaryDbService>("primary");
     collection.add<RedisCache>("redis");
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
+    // Then
     // Check that specific keyed services exist
     BOOST_CHECK(services.has<PrimaryDbService>());
     BOOST_CHECK(services.has<RedisCache>());
@@ -109,34 +113,39 @@ BOOST_AUTO_TEST_CASE(ServiceHasWithKeys_Test)
     BOOST_CHECK(!services.has<MemoryCache>());
 }
 
-BOOST_AUTO_TEST_CASE(EmplaceWithKeys_Test)
+BOOST_AUTO_TEST_CASE(GivenEmplaceWithKeys_WhenDuplicateKeyAdded_ThenFirstValueKept)
 {
+    // Given
     dipp::default_service_collection collection;
 
+    // When
     // First emplace should succeed
     bool added1 = collection.emplace<PrimaryDbService>("first");
-    BOOST_CHECK(added1);
 
     // Second emplace with same key should fail
     bool added2 = collection.emplace<PrimaryDbService>("second");
-    BOOST_CHECK(!added2);
 
     // Different key should succeed
     bool added3 = collection.emplace<SecondaryDbService>("different");
-    BOOST_CHECK(added3);
 
     dipp::default_service_provider services(std::move(collection));
 
     DatabaseConnection& primary = *services.get<PrimaryDbService>();
     DatabaseConnection& secondary = *services.get<SecondaryDbService>();
 
+    // Then
+    BOOST_CHECK(added1);
+    BOOST_CHECK(!added2);
+    BOOST_CHECK(added3);
+
     // Should have the first value, not the second
     BOOST_CHECK_EQUAL(primary.connectionString, "first");
     BOOST_CHECK_EQUAL(secondary.connectionString, "different");
 }
 
-BOOST_AUTO_TEST_CASE(ServiceCountWithKeys_Test)
+BOOST_AUTO_TEST_CASE(GivenServicesWithKeys_WhenCountingServices_ThenCorrectCountsReturned)
 {
+    // Given
     dipp::default_service_collection collection;
 
     // Add multiple services with same base type but different keys
@@ -148,8 +157,10 @@ BOOST_AUTO_TEST_CASE(ServiceCountWithKeys_Test)
     collection.add<PrimaryDbService>("primary2");
     collection.add<PrimaryDbService>("primary3");
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
+    // Then
     // Count services for specific keys
     BOOST_CHECK_EQUAL(services.count<PrimaryDbService>(), 3);
     BOOST_CHECK_EQUAL(services.count<SecondaryDbService>(), 1);
@@ -159,7 +170,8 @@ BOOST_AUTO_TEST_CASE(ServiceCountWithKeys_Test)
     BOOST_CHECK_EQUAL(services.count_all<PrimaryDbService>(), 5); // All DatabaseConnection services
 }
 
-BOOST_AUTO_TEST_CASE(DependencyWithSpecificKeys_Test)
+BOOST_AUTO_TEST_CASE(
+    GivenDependencyWithSpecificKeys_WhenServiceResolved_ThenCorrectDependenciesInjected)
 {
     using DataProcessor = dipp::injected< //
         struct DataProcessorImpl,
@@ -178,32 +190,35 @@ BOOST_AUTO_TEST_CASE(DependencyWithSpecificKeys_Test)
         }
     };
 
+    // Given
     dipp::default_service_collection collection;
-
     collection.add<PrimaryDbService>("primary-connection");
     collection.add<SecondaryDbService>("secondary-connection");
     collection.add<RedisCache>("redis-cache");
     collection.add<MemoryCache>("memory-cache");
     collection.add<DataProcessor>();
 
+    // When
     dipp::default_service_provider services(std::move(collection));
-
     DataProcessorImpl& processor = *services.get<DataProcessor>();
 
+    // Then
     BOOST_CHECK_EQUAL(processor.primaryDb.connectionString, "primary-connection");
     BOOST_CHECK_EQUAL(processor.cache.cacheType, "redis-cache");
 }
 
-BOOST_AUTO_TEST_CASE(ForEachWithKeys_Test)
+BOOST_AUTO_TEST_CASE(
+    GivenMultipleServicesWithKeys_WhenIteratingWithForEach_ThenCorrectServicesProcessed)
 {
+    // Given
     dipp::default_service_collection collection;
-
     collection.add<PrimaryDbService>("conn1");
     collection.add<PrimaryDbService>("conn2");
     collection.add<PrimaryDbService>("conn3");
     collection.add<SecondaryDbService>("backup1");
     collection.add<SecondaryDbService>("backup2");
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
     // Test for_each with specific key
@@ -212,16 +227,17 @@ BOOST_AUTO_TEST_CASE(ForEachWithKeys_Test)
         [&](const DatabaseConnection& service)
         { primaryConnections.emplace(service.connectionString); });
 
-    BOOST_CHECK_EQUAL(primaryConnections.size(), 3);
-    BOOST_CHECK(primaryConnections.contains("conn1"));
-    BOOST_CHECK(primaryConnections.contains("conn2"));
-    BOOST_CHECK(primaryConnections.contains("conn3"));
-
     // Test for_each_all (all keys of DatabaseConnection type)
     std::set<std::string> allConnections;
     services.for_each_all<PrimaryDbService>( //
         [&](const DatabaseConnection& service)
         { allConnections.emplace(service.connectionString); });
+
+    // Then
+    BOOST_CHECK_EQUAL(primaryConnections.size(), 3);
+    BOOST_CHECK(primaryConnections.contains("conn1"));
+    BOOST_CHECK(primaryConnections.contains("conn2"));
+    BOOST_CHECK(primaryConnections.contains("conn3"));
 
     BOOST_CHECK_EQUAL(allConnections.size(), 5); // 3 primary + 2 secondary
 }

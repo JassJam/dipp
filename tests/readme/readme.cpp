@@ -38,25 +38,28 @@ struct Engine2
 
 //
 
-BOOST_AUTO_TEST_CASE(SingletonAndScoped_Test)
+BOOST_AUTO_TEST_CASE(GivenSingletonAndScopedServices_WhenCreatingScopes_ThenCorrectLifetimeBehavior)
 {
     // we define the service with the class, lifetime and optionally the scope and key identifier
     // for unique services the service will be injected as a singleton, meaning that it will be
     // created once and shared across all consumers
-    using WindowService = dipp::injected<Window, dipp::service_lifetime::singleton>;
+    using WindowService = dipp::injected< //
+        Window,
+        dipp::service_lifetime::singleton>;
 
     // Similarly, the engine will be injected as a scoped service, meaning that it will be created
     // once per scope
-    using EngineService =
-        dipp::injected<Engine, dipp::service_lifetime::scoped, dipp::dependency<WindowService>>;
+    using EngineService = dipp::injected< //
+        Engine,
+        dipp::service_lifetime::scoped,
+        dipp::dependency<WindowService>>;
 
+    // Given
     dipp::default_service_collection collection;
-
-    // add the services to the collection
     collection.add<WindowService>();
     collection.add<EngineService>();
 
-    // create a service provider with the collection
+    // When
     dipp::default_service_provider services(std::move(collection));
 
     // get the engine service
@@ -74,6 +77,7 @@ BOOST_AUTO_TEST_CASE(SingletonAndScoped_Test)
     // get the window service from the scope
     auto window = scope.get<WindowService>();
 
+    // Then
     // since the window is a singleton, the window from the scope should be the same as the window
     // from the engine
     BOOST_CHECK_EQUAL(&engine.window, &engine2.window);
@@ -82,30 +86,32 @@ BOOST_AUTO_TEST_CASE(SingletonAndScoped_Test)
     BOOST_CHECK_NE(&engine, &engine2);
 }
 
-BOOST_AUTO_TEST_CASE(TwoDifferentSingletons_Test)
+BOOST_AUTO_TEST_CASE(GivenTwoDifferentSingletons_WhenCreated_ThenDistinctInstancesProvided)
 {
     // we define the service with the class, lifetime and optionally the scope and key identifier
     // for unique services the service will be injected as a singleton, meaning that it will be
     // created once and shared across all consumers
-    using WindowService1 = dipp::injected<Window, dipp::service_lifetime::singleton>;
-    using WindowService2 = dipp::injected<Window,
-                                          dipp::service_lifetime::singleton,
-                                          dipp::dependency<>,
-                                          dipp::key("UNIQUE")>;
+    using WindowService1 = dipp::injected< //
+        Window,
+        dipp::service_lifetime::singleton>;
+    using WindowService2 = dipp::injected< //
+        Window,
+        dipp::service_lifetime::singleton,
+        dipp::dependency<>,
+        dipp::key("UNIQUE")>;
 
-    using EngineService = dipp::injected<Engine2,
-                                         dipp::service_lifetime::scoped,
-                                         dipp::dependency<WindowService1, WindowService2>>;
+    using EngineService = dipp::injected< //
+        Engine2,
+        dipp::service_lifetime::scoped,
+        dipp::dependency<WindowService1, WindowService2>>;
 
-    // create a collection to hold our services
+    // Given
     dipp::default_service_collection collection;
-
-    // add the services to the collection
     collection.add<WindowService1>();
     collection.add<WindowService2>();
     collection.add<EngineService>();
 
-    // create a service provider with the collection
+    // When
     dipp::default_service_provider services(std::move(collection));
 
     // get the engine service
@@ -117,6 +123,7 @@ BOOST_AUTO_TEST_CASE(TwoDifferentSingletons_Test)
     auto& window1 = engine.window1;
     auto& window2 = engine.window2;
 
+    // Then
     // both window services shouldn't be the same
     BOOST_CHECK_NE(&window1, &window2);
 }

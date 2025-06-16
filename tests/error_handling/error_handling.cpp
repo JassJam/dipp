@@ -59,7 +59,7 @@ using ThrowingService = dipp::injected< //
 
 //
 
-BOOST_AUTO_TEST_CASE(ServiceNotFound_MultipleTypes_Test)
+BOOST_AUTO_TEST_CASE(GivenUnregisteredServices_WhenCheckingMultipleTypes_ThenCorrectlyIdentified)
 {
     using UnregisteredService1 = dipp::injected<SimpleService,
                                                 dipp::service_lifetime::singleton,
@@ -71,15 +71,15 @@ BOOST_AUTO_TEST_CASE(ServiceNotFound_MultipleTypes_Test)
                                                 dipp::dependency<>,
                                                 dipp::key("unregistered2")>;
 
+    // Given
     dipp::default_service_collection collection;
     collection.add<SimpleServiceType>(42);
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
-    // Registered service should work
+    // Then
     BOOST_CHECK(services.has<SimpleServiceType>());
-
-    // Unregistered services should not be found
     BOOST_CHECK(!services.has<UnregisteredService1>());
     BOOST_CHECK(!services.has<UnregisteredService2>());
 
@@ -111,8 +111,9 @@ BOOST_AUTO_TEST_CASE(ServiceNotFound_MultipleTypes_Test)
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(CircularDependency_Detection_Test)
+BOOST_AUTO_TEST_CASE(GivenCircularDependencies_WhenDetected_ThenCompilationErrorsGenerated)
 {
+    // Given / When / Then
     // Note: This test demonstrates that circular dependencies will cause compilation errors
     // In a real scenario, these would be caught at compile time, not runtime
 
@@ -126,11 +127,12 @@ BOOST_AUTO_TEST_CASE(CircularDependency_Detection_Test)
     BOOST_CHECK(true); // Placeholder - circular deps are caught at compile time
 }
 
-BOOST_AUTO_TEST_CASE(InvalidFactoryReturnType_Test)
+BOOST_AUTO_TEST_CASE(GivenInvalidFactoryReturnType_WhenDetected_ThenCompilationErrorsGenerated)
 {
-    // Test that factories with incompatible return types are caught at compile time
+    // Given
     dipp::default_service_collection collection;
 
+    // When
     // This should compile fine - compatible types
     collection.add<SimpleServiceType>([](auto&) -> SimpleService { return SimpleService(123); });
 
@@ -140,13 +142,15 @@ BOOST_AUTO_TEST_CASE(InvalidFactoryReturnType_Test)
     // );
 
     dipp::default_service_provider services(std::move(collection));
-    SimpleService service = *services.get<SimpleServiceType>();
 
+    // Then
+    SimpleService service = *services.get<SimpleServiceType>();
     BOOST_CHECK_EQUAL(service.value, 123);
 }
 
-BOOST_AUTO_TEST_CASE(FactoryThrowsException_Test)
+BOOST_AUTO_TEST_CASE(GivenFactoryThatThrows_WhenServiceRequested_ThenExceptionPropagates)
 {
+    // Given
     dipp::default_service_collection collection;
 
     collection.add<SimpleServiceType>(
@@ -156,28 +160,37 @@ BOOST_AUTO_TEST_CASE(FactoryThrowsException_Test)
             return SimpleService(0);
         });
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
+    // Then
     // Factory exceptions should propagate
     BOOST_CHECK_THROW((void) services.get<SimpleServiceType>(), std::runtime_error);
 }
 
-BOOST_AUTO_TEST_CASE(ConstructorThrowsException_Test)
+BOOST_AUTO_TEST_CASE(GivenConstructorThatThrows_WhenServiceRequested_ThenExceptionPropagates)
 {
+    // Given
     dipp::default_service_collection collection;
     collection.add<ThrowingService>();
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
+    // Then
     // Constructor exceptions should propagate
     BOOST_CHECK_THROW((void) services.get<ThrowingService>(), std::runtime_error);
 }
 
-BOOST_AUTO_TEST_CASE(EmptyCollection_Test)
+BOOST_AUTO_TEST_CASE(GivenEmptyCollection_WhenServicesRequested_ThenNoServicesFound)
 {
+    // Given
     dipp::default_service_collection collection;
+
+    // When
     dipp::default_service_provider services(std::move(collection));
 
+    // Then
     // Empty provider should have no services
     BOOST_CHECK(!services.has<SimpleServiceType>());
     BOOST_CHECK_EQUAL(services.count<SimpleServiceType>(), 0);
@@ -191,28 +204,31 @@ BOOST_AUTO_TEST_CASE(EmptyCollection_Test)
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(NullptrFactoryResult_Test)
+BOOST_AUTO_TEST_CASE(GivenNullptrFactory_WhenServiceRequested_ThenNullptrReturned)
 {
     using PtrService = dipp::injected_unique<SimpleService, dipp::service_lifetime::transient>;
 
+    // Given
     dipp::default_service_collection collection;
-
     collection.add<PtrService>([](auto&) { return nullptr; });
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
+    // Then
     // This should work but return a null pointer wrapped in the service
     auto service = services.get<PtrService>();
     BOOST_REQUIRE(service.has_value());
     BOOST_CHECK(!service->get()); // The unique_ptr should be null
 }
 
-BOOST_AUTO_TEST_CASE(FactoryWithResultError_Test)
+BOOST_AUTO_TEST_CASE(GivenFactoryWithResultError_WhenServiceRequested_ThenErrorHandled)
 {
     struct not_found_error
     {
     };
 
+    // Given
     dipp::default_service_collection collection;
 
     collection.add<SimpleServiceType>(
@@ -225,8 +241,10 @@ BOOST_AUTO_TEST_CASE(FactoryWithResultError_Test)
 #endif
         });
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
+    // Then
 #ifdef DIPP_USE_RESULT
     bool found_error = false;
     boost::leaf::try_handle_some(
@@ -247,12 +265,14 @@ BOOST_AUTO_TEST_CASE(FactoryWithResultError_Test)
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(ServiceNotFoundException_Test)
+BOOST_AUTO_TEST_CASE(GivenUnregisteredService_WhenRequested_ThenServiceNotFoundThrown)
 {
     using service = dipp::injected<Class, dipp::service_lifetime::transient>;
 
+    // Given
     dipp::default_service_provider services({});
 
+    // When / Then
     BOOST_CHECK_EQUAL(services.has<service>(), false);
 
 #ifdef DIPP_USE_RESULT
@@ -280,25 +300,33 @@ BOOST_AUTO_TEST_CASE(ServiceNotFoundException_Test)
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(ServiceNotFoundException_WrongType_Test)
+BOOST_AUTO_TEST_CASE(GivenWrongServiceType_WhenRequested_ThenServiceNotFoundThrown)
 {
-    using actual_descriptor = dipp::local_service_descriptor<Class,
-                                                             dipp::service_lifetime::singleton,
-                                                             dipp::default_service_scope>;
+    using actual_descriptor = dipp::local_service_descriptor< //
+        Class,
+        dipp::service_lifetime::singleton,
+        dipp::default_service_scope>;
 
-    using wrong_descriptor = dipp::local_service_descriptor<std::reference_wrapper<Class>,
-                                                            dipp::service_lifetime::singleton,
-                                                            dipp::default_service_scope>;
+    using wrong_descriptor = dipp::local_service_descriptor< //
+        std::reference_wrapper<Class>,
+        dipp::service_lifetime::singleton,
+        dipp::default_service_scope>;
 
-    using actual_injected = dipp::base_injected<actual_descriptor, 0>;
-    using wrong_injected = dipp::base_injected<wrong_descriptor, 0>;
+    using actual_injected = dipp::base_injected< //
+        actual_descriptor,
+        0>;
+    using wrong_injected = dipp::base_injected< //
+        wrong_descriptor,
+        0>;
 
+    // Given
     dipp::default_service_collection collection;
-
     collection.add<actual_injected>();
 
+    // When
     dipp::default_service_provider services(std::move(collection));
 
+    // Then
     BOOST_CHECK_EQUAL(services.has<actual_injected>(), true);
     BOOST_CHECK_EQUAL(services.has<wrong_injected>(), false);
 
