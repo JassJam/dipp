@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-namespace dipp
+namespace dipp::details
 {
     struct string_hash
     {
@@ -50,4 +50,4 @@ namespace dipp
     {
         return string_hash(str).value;
     }
-} // namespace dipp
+}

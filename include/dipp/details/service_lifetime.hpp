@@ -1,6 +1,6 @@
 #pragma once
 
-namespace dipp
+namespace dipp::details
 {
     enum class service_lifetime : unsigned char
     {
@@ -8,4 +8,4 @@ namespace dipp
         transient,
         scoped
     };
-} // namespace dipp
+}

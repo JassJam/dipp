@@ -81,9 +81,9 @@ public:
         values.push_back(value);
     }
 
-    dipp::default_service_collection initialize_services()
+    dipp::service_collection initialize_services()
     {
-        dipp::default_service_collection services;
+        dipp::service_collection services;
 
         services.add<AService>(std::ref(*this));
         services.add<BService>(std::ref(*this));
@@ -102,7 +102,7 @@ BOOST_FIXTURE_TEST_CASE(
 
     // When
     {
-        dipp::default_service_provider provider(std::move(services));
+        dipp::service_provider provider(std::move(services));
         [[maybe_unused]] auto a = provider.get<AService>();
         [[maybe_unused]] auto b = provider.get<BService>();
         [[maybe_unused]] auto c = provider.get<CService>();
@@ -130,7 +130,7 @@ BOOST_FIXTURE_TEST_CASE(GivenDependencyChain_WhenResolvingServices_ThenConstruct
     auto services = initialize_services();
 
     // When
-    dipp::default_service_provider provider(std::move(services));
+    dipp::service_provider provider(std::move(services));
     [[maybe_unused]] auto c = *provider.get<CService>();
 
     // Then

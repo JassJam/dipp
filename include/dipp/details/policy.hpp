@@ -9,7 +9,7 @@
 #include "type_key_pair.hpp"
 #include "move_only_any.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     using service_info = std::vector<move_only_any>;
 
@@ -57,9 +57,10 @@ namespace dipp
 
         ~default_service_storage_memory_type()
         {
-            for (size_t i = 0; i < m_Instances.size(); i++)
+            // destroy all instances in reverse order
+            for (auto it = m_Instances.rbegin(); it != m_Instances.rend(); ++it)
             {
-                m_Instances[m_Instances.size() - i - 1].reset();
+                it->reset();
             }
         }
 
@@ -94,4 +95,4 @@ namespace dipp
     };
     static_assert(service_storage_memory_type<default_service_storage_memory_type>,
                   "default_service_storage_memory_type is not a service_storage_memory_type");
-} // namespace dipp
+}

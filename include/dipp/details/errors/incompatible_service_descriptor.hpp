@@ -2,7 +2,7 @@
 
 #include "base_error.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     class incompatible_service_descriptor final : public details::base_error
     {
@@ -19,4 +19,4 @@ namespace dipp
             return incompatible_service_descriptor(typeid(Ty).name());
         }
     };
-} // namespace dipp
+}

@@ -2,7 +2,7 @@
 
 #include "base_error.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     class service_not_found final : public details::base_error
     {
@@ -19,4 +19,4 @@ namespace dipp
             return service_not_found(typeid(Ty).name());
         }
     };
-} // namespace dipp
+}

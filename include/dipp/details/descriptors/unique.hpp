@@ -2,7 +2,7 @@
 
 #include "functor.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     template<typename Ty,
              service_lifetime Lifetime,
@@ -31,12 +31,13 @@ namespace dipp
             return unique_service_descriptor(
                 [args = std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable
                 {
-                    return dipp::apply<DepsTy>(
+                    return dipp::details::apply<DepsTy>(
                         scope,
                         [](auto&&... params) mutable
                         {
-                            return dipp::make_any<std::unique_ptr<Ty>>(std::make_unique<ImplTy>(
-                                std::forward<decltype(params)>(params)...));
+                            return dipp::details::make_any<std::unique_ptr<Ty>>(
+                                std::make_unique<ImplTy>(
+                                    std::forward<decltype(params)>(params)...));
                         },
                         std::move(args));
                 });
@@ -51,11 +52,11 @@ namespace dipp
             return unique_service_descriptor(
                 [args = std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable
                 {
-                    return dipp::apply<implementation_dependency_type>(
+                    return dipp::details::apply<implementation_dependency_type>(
                         scope,
                         [](auto&&... params) mutable
                         {
-                            return dipp::make_any<std::unique_ptr<Ty>>(
+                            return dipp::details::make_any<std::unique_ptr<Ty>>(
                                 std::make_unique<implementation_type>(
                                     std::forward<decltype(params)>(params)...));
                         },
@@ -63,4 +64,4 @@ namespace dipp
                 });
         }
     };
-} // namespace dipp
+}

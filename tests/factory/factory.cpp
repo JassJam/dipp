@@ -77,12 +77,12 @@ using ComplexServiceType = dipp::injected_unique< //
 BOOST_AUTO_TEST_CASE(GivenFactoryReturningResult_WhenServiceRequested_ThenCorrectValueReturned)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<BaseServiceType>([](auto&) -> dipp::result<BaseService::Ptr>
                                     { return std::make_unique<ConcreteService>(42); });
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     BaseService& service = *services.get<BaseServiceType>();
 
     // Then
@@ -92,12 +92,12 @@ BOOST_AUTO_TEST_CASE(GivenFactoryReturningResult_WhenServiceRequested_ThenCorrec
 BOOST_AUTO_TEST_CASE(GivenFactoryReturningRawPointer_WhenServiceRequested_ThenCorrectValueReturned)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<BaseServiceType>([](auto&) -> std::unique_ptr<BaseService>
                                     { return std::make_unique<ConcreteService>(100); });
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     BaseService& service = *services.get<BaseServiceType>();
 
     // Then
@@ -107,12 +107,12 @@ BOOST_AUTO_TEST_CASE(GivenFactoryReturningRawPointer_WhenServiceRequested_ThenCo
 BOOST_AUTO_TEST_CASE(GivenFactoryWithDependencies_WhenServiceRequested_ThenDependenciesResolved)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<BaseServiceType>([](auto&) { return std::make_unique<ConcreteService>(10); });
     collection.add<ComplexServiceType>("TestService", 5, 10);
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     ComplexService& complex = *services.get<ComplexServiceType>();
 
     // Then
@@ -148,13 +148,13 @@ BOOST_AUTO_TEST_CASE(
     std::string environment = "production";
     int scaleFactor = 3;
 
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<ConfigServiceType>(
         [environment, scaleFactor](auto&)
         { return std::make_unique<ConfigurableService>(environment, scaleFactor); });
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     ConfigurableService& config = *services.get<ConfigServiceType>();
 
     // Then
@@ -171,13 +171,13 @@ BOOST_AUTO_TEST_CASE(
     static ConcreteService staticService(999);
 
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<RefServiceType>(
         [](auto&) -> dipp::result<std::reference_wrapper<ConcreteService>>
         { return std::ref(staticService); });
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     ConcreteService& service = *services.get<RefServiceType>();
 
     // Then
@@ -190,12 +190,12 @@ BOOST_AUTO_TEST_CASE(GivenFactoryWithExternalCapture_WhenServiceRequested_ThenCa
     // Given
     int capturedValue = 123;
 
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<BaseServiceType>([capturedValue](auto&)
                                     { return std::make_unique<ConcreteService>(capturedValue); });
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     BaseService& service = *services.get<BaseServiceType>();
 
     // Then
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE(GivenConditionalFactory_WhenServiceRequested_ThenCorrectBra
     // Given
     bool useHighValue = true;
 
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<BaseServiceType>(
         [useHighValue](auto&)
         {
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(GivenConditionalFactory_WhenServiceRequested_ThenCorrectBra
         });
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     BaseService& service = *services.get<BaseServiceType>();
 
     // Then
@@ -232,12 +232,12 @@ BOOST_AUTO_TEST_CASE(GivenConditionalFactory_WhenServiceRequested_ThenCorrectBra
 BOOST_AUTO_TEST_CASE(GivenMutableLambdaFactory_WhenSingletonRequested_ThenCounterIncrementsOnce)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<BaseServiceType>([counter = 0](auto&) mutable
                                     { return std::make_unique<ConcreteService>(++counter); });
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     // Since it's a singleton, the counter should only increment once
     BaseService& service1 = *services.get<BaseServiceType>();

@@ -148,11 +148,11 @@ using CopyableSingleton = dipp::injected<CopyableService, dipp::service_lifetime
 BOOST_AUTO_TEST_CASE(GivenMoveOnlyTransientService_WhenRequested_ThenValueMovedCorrectly)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<MoveOnlyServiceType>(42);
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     MoveOnlyService service1 = *services.get<MoveOnlyServiceType>();
     MoveOnlyService service2 = *services.get<MoveOnlyServiceType>();
@@ -168,11 +168,11 @@ BOOST_AUTO_TEST_CASE(
     GivenMoveOnlySingletonService_WhenRequestedMultipleTimes_ThenSameInstanceReturned)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<MoveOnlySingleton>(100);
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     MoveOnlyService& service1 = *services.get<MoveOnlySingleton>();
     MoveOnlyService& service2 = *services.get<MoveOnlySingleton>();
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE(
 BOOST_AUTO_TEST_CASE(GivenCopyableService_WhenUsingFactory_ThenMoveOptimizationApplied)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
 
     collection.add<CopyableServiceType>(
         [](auto&) -> CopyableService
@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE(GivenCopyableService_WhenUsingFactory_ThenMoveOptimizationA
         });
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     int initial_moves = MoveTracker::move_constructor_calls;
     CopyableService service = *services.get<CopyableServiceType>();
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(GivenCopyableService_WhenUsingFactory_ThenMoveOptimizationA
 BOOST_AUTO_TEST_CASE(GivenFactoryReturningByValue_WhenServiceRequested_ThenMoveOptimizationUsed)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
 
     collection.add<CopyableServiceType>(
         [](auto&) -> CopyableService
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(GivenFactoryReturningByValue_WhenServiceRequested_ThenMoveO
         });
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     CopyableService service = *services.get<CopyableServiceType>();
 
     // Then
@@ -262,11 +262,11 @@ BOOST_AUTO_TEST_CASE(GivenLargeObject_WhenMoved_ThenEfficientlyHandled)
     using LargeObjectService = dipp::injected<LargeObject, dipp::service_lifetime::transient>;
 
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<LargeObjectService>();
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     LargeObject service = *services.get<LargeObjectService>();
 
     // Then
@@ -278,18 +278,18 @@ BOOST_AUTO_TEST_CASE(GivenLargeObject_WhenMoved_ThenEfficientlyHandled)
 BOOST_AUTO_TEST_CASE(GivenServiceProvider_WhenMoved_ThenFunctionalityPreserved)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<CopyableServiceType>(42);
 
-    dipp::default_service_provider services1(std::move(collection));
+    dipp::service_provider services1(std::move(collection));
 
     // When
     // Move the provider
-    dipp::default_service_provider services2 = std::move(services1);
+    dipp::service_provider services2 = std::move(services1);
 
     // Move assign
-    dipp::default_service_collection empty_collection;
-    dipp::default_service_provider services3(std::move(empty_collection));
+    dipp::service_collection empty_collection;
+    dipp::service_provider services3(std::move(empty_collection));
     services3 = std::move(services2);
 
     // Then
@@ -303,10 +303,10 @@ BOOST_AUTO_TEST_CASE(GivenScope_WhenMoved_ThenServiceSemanticsPreserved)
     using ScopedService = dipp::injected<CopyableService, dipp::service_lifetime::scoped>;
 
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<ScopedService>(100);
 
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     // Create scope and get service
     auto scope1 = services.create_scope();

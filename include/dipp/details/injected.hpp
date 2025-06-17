@@ -1,9 +1,9 @@
 #pragma once
 
-#include "descriptor.hpp"
+#include "descriptors.hpp"
 #include "scope.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     template<service_descriptor_type DescTy, size_t Key>
     class base_injected
@@ -134,7 +134,7 @@ namespace dipp
              service_lifetime Lifetime,
              dependency_container_type DepsTy = dependency<>,
              size_t Key = size_t{},
-             service_scope_type ScopeTy = default_service_scope>
+             service_scope_type ScopeTy = service_scope>
     struct injected_functor
         : public base_injected<functor_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>
     {
@@ -177,7 +177,7 @@ namespace dipp
              service_lifetime Lifetime,
              dependency_container_type DepsTy = dependency<>,
              size_t Key = size_t{},
-             service_scope_type ScopeTy = default_service_scope>
+             service_scope_type ScopeTy = service_scope>
     struct injected_unique
         : public base_injected<unique_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>
     {
@@ -251,7 +251,7 @@ namespace dipp
              service_lifetime Lifetime,
              dependency_container_type DepsTy = dependency<>,
              size_t Key = size_t{},
-             service_scope_type ScopeTy = default_service_scope>
+             service_scope_type ScopeTy = service_scope>
     struct injected_shared
         : public base_injected<shared_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>
     {
@@ -325,7 +325,7 @@ namespace dipp
              service_lifetime Lifetime,
              dependency_container_type DepsTy = dependency<>,
              size_t Key = size_t{},
-             service_scope_type ScopeTy = default_service_scope>
+             service_scope_type ScopeTy = service_scope>
         requires(Lifetime != service_lifetime::transient)
     struct injected_ref
         : public base_injected<
@@ -371,7 +371,7 @@ namespace dipp
              service_lifetime Lifetime,
              dependency_container_type DepsTy = dependency<>,
              size_t Key = size_t{},
-             service_scope_type ScopeTy = default_service_scope>
+             service_scope_type ScopeTy = service_scope>
     struct injected
         : public base_injected<local_service_descriptor<Ty, Lifetime, ScopeTy, DepsTy>, Key>
     {
@@ -418,4 +418,4 @@ namespace dipp
             return std::addressof(static_cast<Ty&>(*this));
         }
     };
-} // namespace dipp
+}

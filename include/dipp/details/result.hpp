@@ -5,7 +5,7 @@
 #ifdef DIPP_USE_RESULT
     #include <boost/leaf.hpp>
 
-namespace dipp
+namespace dipp::details
 {
     template<typename Ty>
     using result = boost::leaf::result<Ty>;
@@ -21,13 +21,13 @@ namespace dipp
     {
         return boost::leaf::new_error(error);
     }
-} // namespace dipp
+}
 
     #define DIPP_RETURN_ERROR return
 
 #else
 
-namespace dipp
+namespace dipp::details
 {
     template<typename Ty>
     struct result
@@ -152,13 +152,13 @@ namespace dipp
     {
         throw error;
     }
-} // namespace dipp
+}
 
     #define DIPP_RETURN_ERROR
 
 #endif
 
-namespace dipp
+namespace dipp::details
 {
     template<typename Ty>
     struct is_result_type : std::false_type

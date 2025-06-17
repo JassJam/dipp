@@ -8,10 +8,10 @@
 #include "errors/incompatible_service_descriptor.hpp"
 #include "errors/mismatched_service_type.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     template<service_policy_type PolicyTy>
-    class service_storage
+    class base_service_storage
     {
     public:
         template<service_scope_type ScopeTy,
@@ -389,4 +389,4 @@ namespace dipp
     private:
         service_map_type m_Descriptors;
     };
-} // namespace dipp
+}

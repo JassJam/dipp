@@ -2,13 +2,13 @@
 
 #include "storage.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     template<service_policy_type StoragePolicyTy>
-    class service_collection
+    class base_service_collection
     {
         template<service_policy_type, service_storage_memory_type, service_storage_memory_type>
-        friend class service_provider;
+        friend class base_service_provider;
 
     public:
         /// <summary>
@@ -109,9 +109,7 @@ namespace dipp
             {
                 auto wrapped_factory = [factory = std::forward<FactoryTy>(factory)](
                                            scope_type& scope) mutable -> move_only_any
-                {
-                    return dipp::make_any<value_type>(factory(scope));
-                };
+                { return dipp::details::make_any<value_type>(factory(scope)); };
                 add(descriptor_type(std::move(wrapped_factory)), InjectableTy::key);
             }
             else
@@ -248,9 +246,7 @@ namespace dipp
             {
                 auto wrapped_factory = [factory = std::forward<FactoryTy>(factory)](
                                            scope_type& scope) mutable -> move_only_any
-                {
-                    return dipp::make_any<value_type>(factory(scope));
-                };
+                { return dipp::details::make_any<value_type>(factory(scope)); };
                 return emplace(descriptor_type(std::move(wrapped_factory)), InjectableTy::key);
             }
             else
@@ -308,8 +304,8 @@ namespace dipp
         }
 
     private:
-        service_storage<StoragePolicyTy> m_Storage;
+        base_service_storage<StoragePolicyTy> m_Storage;
     };
 
-    using default_service_collection = service_collection<default_service_policy>;
-} // namespace dipp
+    using service_collection = base_service_collection<default_service_policy>;
+}

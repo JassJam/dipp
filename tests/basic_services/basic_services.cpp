@@ -57,11 +57,11 @@ using WorldService = dipp::injected< //
 BOOST_AUTO_TEST_CASE(GivenTransientService_WhenRequestedTwice_ThenInstancesDiffer)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<CameraService>();
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     auto cameraA = *services.get<CameraService>();
     auto cameraB = *services.get<CameraService>();
 
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(GivenExternalServiceReference_WhenResolved_ThenDependencies
         dipp::dependency<scene_service, CameraService>>;
 
     Scene externalScene(Camera(89), 200);
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
 
     collection.add<CameraService>();
     collection.add<scene_service>(
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(GivenExternalServiceReference_WhenResolved_ThenDependencies
     collection.add<world_service>();
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     Scene& scene = *services.get<scene_service>();
     World& world = *services.get<world_service>();
 
@@ -121,13 +121,13 @@ BOOST_AUTO_TEST_CASE(GivenExternalServiceReference_WhenResolved_ThenDependencies
 BOOST_AUTO_TEST_CASE(GivenMixedServiceLifetimes_WhenResolved_ThenDependenciesHonorLifetimes)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<CameraService>();
     collection.add<SceneService>();
     collection.add<WorldService>();
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     auto [camera, scene, world] = std::make_tuple(*services.get<CameraService>(),
                                                   *services.get<SceneService>(),
                                                   *services.get<WorldService>());
@@ -151,12 +151,12 @@ BOOST_AUTO_TEST_CASE(GivenMixedServiceLifetimes_WhenResolved_ThenDependenciesHon
 BOOST_AUTO_TEST_CASE(GivenScopedServices_WhenCreatingNewScope_ThenInstanceBehaviorMatchesLifetime)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<CameraService>();
     collection.add<SceneService>();
     collection.add<WorldService>();
 
-    dipp::default_service_provider rootServices(std::move(collection));
+    dipp::service_provider rootServices(std::move(collection));
     auto rootScope = rootServices.create_scope();
 
     // When

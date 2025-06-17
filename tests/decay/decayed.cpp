@@ -57,12 +57,12 @@ using WorldService = dipp::injected_unique< //
 BOOST_AUTO_TEST_CASE(GivenNonTransientServices_WhenFetched_ThenTheyCanBeDecayed)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<CameraService>();
     collection.add<SceneService>();
     collection.add<WorldService>();
 
-    dipp::default_service_provider rootServices(std::move(collection));
+    dipp::service_provider rootServices(std::move(collection));
     auto rootScope = rootServices.create_scope();
 
     // When + Then

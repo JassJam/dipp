@@ -240,7 +240,7 @@ using ApplicationServiceType = dipp::injected_unique< //
 BOOST_AUTO_TEST_CASE(GivenCompleteApplicationStack_WhenUsersRegistered_ThenSystemWorksCorrectly)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add_impl<LoggerService, ConsoleLogger>();
     collection.add_impl<DatabaseService, InMemoryDatabase>();
     collection.add<UserServiceType>();
@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE(GivenCompleteApplicationStack_WhenUsersRegistered_ThenSyste
     collection.add<ApplicationServiceType>();
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     ApplicationService& app = *services.get<ApplicationServiceType>();
 
     // Register some users
@@ -342,14 +342,14 @@ BOOST_AUTO_TEST_CASE(
     };
 
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<ConsoleLoggerService>([](auto&) { return std::make_unique<ConsoleLogger>(); });
     collection.add<FileLoggerService>([](auto&)
                                       { return std::make_unique<FileLogger>("app.log"); });
     collection.add<MultiLoggerApp>();
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     MultiLoggerAppImpl app = *services.get<MultiLoggerApp>();
     app.logToAll("Test message");
 
@@ -368,7 +368,7 @@ BOOST_AUTO_TEST_CASE(
     GivenScopedApplicationInstances_WhenCreated_ThenSingletonsSharedButScopedSeparate)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add_impl<LoggerService, ConsoleLogger>();
     collection.add_impl<DatabaseService, InMemoryDatabase>();
     collection.add<UserServiceType>();
@@ -376,7 +376,7 @@ BOOST_AUTO_TEST_CASE(
     collection.add<ApplicationServiceType>();
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     // Create two different scopes with separate application instances
     auto scope1 = services.create_scope();
@@ -417,7 +417,7 @@ BOOST_AUTO_TEST_CASE(
 
     auto configureServices = [](LogLevel level)
     {
-        dipp::default_service_collection collection;
+        dipp::service_collection collection;
 
         if (level == LogLevel::Debug)
         {
@@ -439,7 +439,7 @@ BOOST_AUTO_TEST_CASE(
     // Test debug configuration
     {
         auto debugCollection = configureServices(LogLevel::Debug);
-        dipp::default_service_provider debugServices(std::move(debugCollection));
+        dipp::service_provider debugServices(std::move(debugCollection));
 
         ILogger& logger = *debugServices.get<LoggerService>();
 
@@ -453,7 +453,7 @@ BOOST_AUTO_TEST_CASE(
     // Test production configuration
     {
         auto prodCollection = configureServices(LogLevel::Production);
-        dipp::default_service_provider prodServices(std::move(prodCollection));
+        dipp::service_provider prodServices(std::move(prodCollection));
 
         ILogger& logger = *prodServices.get<LoggerService>();
 
@@ -468,7 +468,7 @@ BOOST_AUTO_TEST_CASE(
 BOOST_AUTO_TEST_CASE(GivenServiceReplacement_WhenLastServiceWins_ThenReplacementSuccessful)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
 
     // First, add a console logger
     collection.add_impl<LoggerService, ConsoleLogger>();
@@ -481,7 +481,7 @@ BOOST_AUTO_TEST_CASE(GivenServiceReplacement_WhenLastServiceWins_ThenReplacement
     collection.add<NotificationServiceType>();
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     NotificationService& notification = *services.get<NotificationServiceType>();
     notification.send("Test replacement");

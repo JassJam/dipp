@@ -140,7 +140,7 @@ struct UserServiceService
 using DippLoggerService = dipp::injected_shared<ILogger, dipp::service_lifetime::singleton>;
 struct DippLoggerServiceConfig
 {
-    static void setup(dipp::default_service_collection& collection)
+    static void setup(dipp::service_collection& collection)
     {
         collection.add_impl<DippLoggerService, ConsoleLogger>();
     }
@@ -149,7 +149,7 @@ struct DippLoggerServiceConfig
 using DippDatabaseService = dipp::injected_shared<IDatabase, dipp::service_lifetime::singleton>;
 struct DippDatabaseServiceConfig
 {
-    static void setup(dipp::default_service_collection& collection)
+    static void setup(dipp::service_collection& collection)
     {
         collection.add_impl<DippDatabaseService, SQLDatabase>();
     }
@@ -161,7 +161,7 @@ using DippUserServiceService =
                           dipp::dependency<DippLoggerService, DippDatabaseService>>;
 struct DippUserServiceServiceConfig
 {
-    static void setup(dipp::default_service_collection& collection)
+    static void setup(dipp::service_collection& collection)
     {
         collection.add_impl<DippUserServiceService, UserService>();
     }
@@ -169,15 +169,15 @@ struct DippUserServiceServiceConfig
 
 struct DippConfiguration
 {
-    static dipp::default_service_provider setup()
+    static dipp::service_provider setup()
     {
-        dipp::default_service_collection collection;
+        dipp::service_collection collection;
 
         DippLoggerServiceConfig::setup(collection);
         DippDatabaseServiceConfig::setup(collection);
         DippUserServiceServiceConfig::setup(collection);
 
-        return dipp::default_service_provider(std::move(collection));
+        return dipp::service_provider(std::move(collection));
     }
 };
 

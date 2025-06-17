@@ -47,12 +47,12 @@ using ImplementationService = dipp::injected< //
 BOOST_AUTO_TEST_CASE(GivenInterface_WhenInstantiated_ThenImplementationIsCreatedCorrectly)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<SomeClassService>();
     collection.add_impl<InterfaceService, ImplementationService>();
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     // Then
     BOOST_CHECK(services.get<InterfaceService>().has_value());
