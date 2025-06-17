@@ -4,7 +4,7 @@
 #include "type_key_pair.hpp"
 #include "move_only_any.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     template<class From, class To>
     concept convertible_to =
@@ -124,4 +124,4 @@ namespace dipp
         // Required types
         typename Ty::types;
     };
-} // namespace dipp
+}

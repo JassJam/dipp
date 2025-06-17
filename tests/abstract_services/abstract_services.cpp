@@ -72,12 +72,12 @@ BOOST_DATA_TEST_CASE(GivenCamera_WhenAddingToCollection_ThenCameraIsCreated,
                      test_case)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
 
     collection.add<CameraService>([&](auto&) { return test_case.factory(); });
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     // Then
     std::unique_ptr<ICamera> camera = std::move(*services.get<CameraService>());
@@ -94,14 +94,14 @@ BOOST_DATA_TEST_CASE(GivenCamera_WhenAddingToCollection_ThenCameraIsCreated,
 BOOST_AUTO_TEST_CASE(GivenCameraServices_WhenAddingToCollection_ThenCamerasAreCreated)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
 
     collection.add_impl<CameraService, PerspectiveCamera>();
     collection.add_impl<CameraService, OrthographicCamera>();
     collection.add_impl<CameraService, OrthographicCamera>();
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     // Then
     auto camera_count = services.count<CameraService>();
@@ -136,14 +136,14 @@ BOOST_AUTO_TEST_CASE(
         dipp::service_lifetime::singleton>;
 
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
 
     collection.add_impl<singleton_service, PerspectiveCamera>();
     collection.add_impl<singleton_service, OrthographicCamera>();
     collection.add_impl<singleton_service, OrthographicCamera>();
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     auto fetch_cameras = [&]()
     {

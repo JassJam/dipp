@@ -2,34 +2,34 @@
 
 #include "scope.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     template<service_policy_type StoragePolicyTy,
              service_storage_memory_type SingletonPolicyTy,
              service_storage_memory_type ScopedPolicyTy>
-    class service_provider
+    class base_service_provider
     {
     public:
         using singleton_memory_type = SingletonPolicyTy;
-        using storage_type = service_storage<StoragePolicyTy>;
-        using scope_type = service_scope<StoragePolicyTy, SingletonPolicyTy, ScopedPolicyTy>;
-        using collection_type = service_collection<StoragePolicyTy>;
+        using storage_type = base_service_storage<StoragePolicyTy>;
+        using scope_type = base_service_scope<StoragePolicyTy, SingletonPolicyTy, ScopedPolicyTy>;
+        using collection_type = base_service_collection<StoragePolicyTy>;
 
     public:
-        explicit service_provider(collection_type collection) noexcept(
+        explicit base_service_provider(collection_type collection) noexcept(
             std::is_nothrow_move_constructible_v<storage_type>)
             : m_Storage(std::move(collection.m_Storage))
             , m_RootScope(&m_Storage, &m_SingletonStorage)
         {
         }
 
-        service_provider(service_provider&& services) noexcept
+        base_service_provider(base_service_provider&& services) noexcept
             : m_Storage(std::move(services.m_Storage))
             , m_RootScope(&m_Storage, &m_SingletonStorage, std::move(services.m_RootScope))
         {
         }
 
-        service_provider& operator=(service_provider&& services)
+        base_service_provider& operator=(base_service_provider&& services)
         {
             if (this != &services)
             {
@@ -40,10 +40,10 @@ namespace dipp
             return *this;
         }
 
-        service_provider(const service_provider&) = delete;
-        service_provider& operator=(const service_provider&) = delete;
+        base_service_provider(const base_service_provider&) = delete;
+        base_service_provider& operator=(const base_service_provider&) = delete;
 
-        ~service_provider() = default;
+        ~base_service_provider() = default;
 
     public:
         /// <summary>
@@ -143,10 +143,10 @@ namespace dipp
         scope_type m_RootScope;
     };
 
-    using default_service_provider = service_provider<default_service_policy,
-                                                      default_service_storage_memory_type,
-                                                      default_service_storage_memory_type>;
+    using service_provider = base_service_provider<default_service_policy,
+                                                   default_service_storage_memory_type,
+                                                   default_service_storage_memory_type>;
 
-    static_assert(service_provider_type<default_service_provider>,
+    static_assert(service_provider_type<service_provider>,
                   "default_service_provider is not a service_provider");
-} // namespace dipp
+}

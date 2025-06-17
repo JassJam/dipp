@@ -60,7 +60,7 @@ using MemoryCache = dipp::injected_unique< //
 BOOST_AUTO_TEST_CASE(GivenMultipleServicesWithKeys_WhenRequested_ThenCorrectServicesReturned)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
 
     // Add multiple database connections
     collection.add<PrimaryDbService>("postgres://primary:5432/main");
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(GivenMultipleServicesWithKeys_WhenRequested_ThenCorrectServ
     collection.add<MemoryCache>("memory");
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     DatabaseConnection& primary = *services.get<PrimaryDbService>();
     DatabaseConnection& secondary = *services.get<SecondaryDbService>();
@@ -96,12 +96,12 @@ BOOST_AUTO_TEST_CASE(GivenMultipleServicesWithKeys_WhenRequested_ThenCorrectServ
 BOOST_AUTO_TEST_CASE(GivenRegisteredKeyedServices_WhenCheckingHas_ThenCorrectAvailabilityReported)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<PrimaryDbService>("primary");
     collection.add<RedisCache>("redis");
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     // Then
     // Check that specific keyed services exist
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(GivenRegisteredKeyedServices_WhenCheckingHas_ThenCorrectAva
 BOOST_AUTO_TEST_CASE(GivenEmplaceWithKeys_WhenDuplicateKeyAdded_ThenFirstValueKept)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
 
     // When
     // First emplace should succeed
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(GivenEmplaceWithKeys_WhenDuplicateKeyAdded_ThenFirstValueKe
     // Different key should succeed
     bool added3 = collection.emplace<SecondaryDbService>("different");
 
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     DatabaseConnection& primary = *services.get<PrimaryDbService>();
     DatabaseConnection& secondary = *services.get<SecondaryDbService>();
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(GivenEmplaceWithKeys_WhenDuplicateKeyAdded_ThenFirstValueKe
 BOOST_AUTO_TEST_CASE(GivenServicesWithKeys_WhenCountingServices_ThenCorrectCountsReturned)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
 
     // Add multiple services with same base type but different keys
     collection.add<PrimaryDbService>("primary");
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(GivenServicesWithKeys_WhenCountingServices_ThenCorrectCount
     collection.add<PrimaryDbService>("primary3");
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     // Then
     // Count services for specific keys
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(
     };
 
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<PrimaryDbService>("primary-connection");
     collection.add<SecondaryDbService>("secondary-connection");
     collection.add<RedisCache>("redis-cache");
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(
     collection.add<DataProcessor>();
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
     DataProcessorImpl& processor = *services.get<DataProcessor>();
 
     // Then
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(
     GivenMultipleServicesWithKeys_WhenIteratingWithForEach_ThenCorrectServicesProcessed)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<PrimaryDbService>("conn1");
     collection.add<PrimaryDbService>("conn2");
     collection.add<PrimaryDbService>("conn3");
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE(
     collection.add<SecondaryDbService>("backup2");
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     // Test for_each with specific key
     std::set<std::string> primaryConnections;

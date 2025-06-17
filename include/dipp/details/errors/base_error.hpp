@@ -26,4 +26,4 @@ namespace dipp::details
         }
     };
 #endif
-} // namespace dipp::details
+}
