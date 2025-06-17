@@ -3,7 +3,7 @@
 #include <functional>
 #include "base.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     template<typename Ty,
              service_lifetime Lifetime,
@@ -39,4 +39,4 @@ namespace dipp
     private:
         functor_type m_Functor{};
     };
-} // namespace dipp
+}

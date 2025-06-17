@@ -5,7 +5,7 @@
 #include <memory>
 #include "result.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     enum class any_storage_type
     {
@@ -348,12 +348,4 @@ namespace dipp
     {
         return move_only_any::make<Ty>(std::forward<ArgsTy>(args)...);
     }
-} // namespace dipp
-
-namespace std
-{
-    inline void swap(dipp::move_only_any& lhs, dipp::move_only_any& rhs) noexcept
-    {
-        lhs.swap(rhs);
-    }
-} // namespace std
+}

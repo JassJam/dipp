@@ -2,7 +2,7 @@
 
 #include <utility>
 
-namespace dipp
+namespace dipp::details
 {
     // type is the type of the service/descriptor/instance
     // key is the key identifier of the service/descriptor/instance
@@ -15,4 +15,4 @@ namespace dipp
     {
         return std::make_pair(type, key);
     }
-} // namespace dipp
+}

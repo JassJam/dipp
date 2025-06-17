@@ -55,12 +55,12 @@ BOOST_AUTO_TEST_CASE(GivenSingletonAndScopedServices_WhenCreatingScopes_ThenCorr
         dipp::dependency<WindowService>>;
 
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<WindowService>();
     collection.add<EngineService>();
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     // get the engine service
     // the engine service will create a window service and inject it into the engine
@@ -106,13 +106,13 @@ BOOST_AUTO_TEST_CASE(GivenTwoDifferentSingletons_WhenCreated_ThenDistinctInstanc
         dipp::dependency<WindowService1, WindowService2>>;
 
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<WindowService1>();
     collection.add<WindowService2>();
     collection.add<EngineService>();
 
     // When
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     // get the engine service
     // the engine service will create a window service and inject it into the engine

@@ -2,7 +2,7 @@
 
 #include "../apply.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     template<typename Ty, service_lifetime Lifetime, dependency_container_type DepsTy>
     struct base_service_descriptor
@@ -15,4 +15,4 @@ namespace dipp
 
         using dependency_type = DepsTy;
     };
-} // namespace dipp
+}

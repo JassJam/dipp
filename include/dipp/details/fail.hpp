@@ -24,4 +24,4 @@ namespace dipp::details
     {
         return make_error(Error::template error<Ty>());
     }
-} // namespace dipp::details
+}

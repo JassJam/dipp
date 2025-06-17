@@ -147,14 +147,14 @@ using TransientService = dipp::injected_unique< //
 BOOST_AUTO_TEST_CASE(GivenNestedScopes_WhenCreatedAndDestroyed_ThenCorrectLifetimeManagement)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<SingletonService>("GlobalSingleton");
     collection.add<ScopedService>("ScopedService");
     collection.add<TransientService>("TransientService");
 
     // When / Then
     {
-        dipp::default_service_provider provider(std::move(collection));
+        dipp::service_provider provider(std::move(collection));
         expect("Singleton[GlobalSingleton] created");
 
         {
@@ -189,11 +189,11 @@ BOOST_AUTO_TEST_CASE(
     GivenTransientServices_WhenRequestedInDifferentScopes_ThenDistinctInstancesCreated)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<SingletonService>("SharedSingleton");
     collection.add<TransientService>("TransientInstance");
 
-    dipp::default_service_provider provider(std::move(collection));
+    dipp::service_provider provider(std::move(collection));
 
     std::vector<const TrackedTransient*> transientInstances;
 
@@ -244,13 +244,13 @@ BOOST_AUTO_TEST_CASE(GivenIsolatedScopedServices_WhenRequested_ThenProperIsolati
         dipp::key("isolated2")>;
 
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<SingletonService>("SharedSingleton");
     collection.add<IsolatedScoped1>("IsolatedService1");
     collection.add<IsolatedScoped2>("IsolatedService2");
 
     // When
-    dipp::default_service_provider provider(std::move(collection));
+    dipp::service_provider provider(std::move(collection));
 
     auto scope1 = provider.create_scope();
     auto scope2 = provider.create_scope();
@@ -281,11 +281,11 @@ BOOST_AUTO_TEST_CASE(GivenIsolatedScopedServices_WhenRequested_ThenProperIsolati
 BOOST_AUTO_TEST_CASE(GivenDeeplyNestedScopes_WhenCreated_ThenCorrectServiceInstantiation)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<SingletonService>("DeepSingleton");
     collection.add<ScopedService>("DeepScoped");
 
-    dipp::default_service_provider provider(std::move(collection));
+    dipp::service_provider provider(std::move(collection));
 
     const TrackedSingleton* sharedSingleton = nullptr;
     std::vector<const TrackedScoped*> scopedInstances;
@@ -331,11 +331,11 @@ BOOST_AUTO_TEST_CASE(GivenDeeplyNestedScopes_WhenCreated_ThenCorrectServiceInsta
 BOOST_AUTO_TEST_CASE(GivenMovableScopes_WhenMoved_ThenScopedInstancesPreserved)
 {
     // Given
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
     collection.add<SingletonService>("MovableSingleton");
     collection.add<ScopedService>("MovableScoped");
 
-    dipp::default_service_provider provider(std::move(collection));
+    dipp::service_provider provider(std::move(collection));
 
     // When
     // Get service from root scope

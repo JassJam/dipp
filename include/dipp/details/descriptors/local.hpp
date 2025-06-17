@@ -2,7 +2,7 @@
 
 #include "functor.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     template<typename Ty,
              service_lifetime Lifetime,
@@ -29,12 +29,15 @@ namespace dipp
             return local_service_descriptor(
                 [args = std::make_tuple(std::forward<ArgsTy>(args)...)](ScopeTy& scope) mutable
                 {
-                    return dipp::apply<DepsTy>(
+                    return dipp::details::apply<DepsTy>(
                         scope,
                         [](auto&&... params) mutable
-                        { return dipp::make_any<Ty>(std::forward<decltype(params)>(params)...); },
+                        {
+                            return dipp::details::make_any<Ty>(
+                                std::forward<decltype(params)>(params)...);
+                        },
                         std::move(args));
                 });
         }
     };
-} // namespace dipp
+}

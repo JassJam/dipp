@@ -2,7 +2,7 @@
 
 #include "base_error.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     class mismatched_service_type final : public details::base_error
     {
@@ -19,4 +19,4 @@ namespace dipp
             return mismatched_service_type(typeid(Ty).name());
         }
     };
-} // namespace dipp
+}

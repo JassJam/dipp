@@ -4,41 +4,41 @@
 #include "policy.hpp"
 #include "string_hash.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     template<service_policy_type StoragePolicyTy,
              service_storage_memory_type SingletonPolicyTy,
              service_storage_memory_type ScopedPolicyTy>
-    class service_scope
+    class base_service_scope
     {
     public:
-        using storage_type = service_storage<StoragePolicyTy>;
+        using storage_type = base_service_storage<StoragePolicyTy>;
         using singleton_storage_type = SingletonPolicyTy;
         using scoped_storage_type = ScopedPolicyTy;
 
     public:
-        service_scope(storage_type* storage, singleton_storage_type* singleton_storage)
+        base_service_scope(storage_type* storage, singleton_storage_type* singleton_storage)
             : m_Storage(storage)
             , m_SingletonStorage(singleton_storage)
         {
         }
 
-        service_scope(storage_type* storage,
-                      singleton_storage_type* singleton_storage,
-                      service_scope&& scope)
+        base_service_scope(storage_type* storage,
+                           singleton_storage_type* singleton_storage,
+                           base_service_scope&& scope)
             : m_Storage(storage)
             , m_SingletonStorage(singleton_storage)
             , m_LocalStorage(std::move(scope.m_LocalStorage))
         {
         }
 
-        service_scope(const service_scope&) = delete;
-        service_scope& operator=(const service_scope&) = delete;
+        base_service_scope(const base_service_scope&) = delete;
+        base_service_scope& operator=(const base_service_scope&) = delete;
 
-        service_scope(service_scope&&) = default;
-        service_scope& operator=(service_scope&&) = default;
+        base_service_scope(base_service_scope&&) = default;
+        base_service_scope& operator=(base_service_scope&&) = default;
 
-        ~service_scope() = default;
+        ~base_service_scope() = default;
 
     public:
         /// <summary>
@@ -109,10 +109,10 @@ namespace dipp
         scoped_storage_type m_LocalStorage;
     };
 
-    using default_service_scope = service_scope<default_service_policy,
-                                                default_service_storage_memory_type,
-                                                default_service_storage_memory_type>;
+    using service_scope = base_service_scope<default_service_policy,
+                                             default_service_storage_memory_type,
+                                             default_service_storage_memory_type>;
 
-    static_assert(service_scope_type<default_service_scope>,
+    static_assert(service_scope_type<service_scope>,
                   "default_service_scope is not a service_scope_type");
-} // namespace dipp
+}

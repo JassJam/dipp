@@ -2,7 +2,7 @@
 
 #include "concepts.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     template<base_injected_type... Deps>
     struct dependency
@@ -39,4 +39,4 @@ namespace dipp
         return get_tuple_from_scope<DepsTy>(
             scope, std::make_index_sequence<std::tuple_size_v<dependencies>>{});
     }
-} // namespace dipp
+}

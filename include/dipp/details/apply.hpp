@@ -3,7 +3,7 @@
 #include "concepts.hpp"
 #include "dependency.hpp"
 
-namespace dipp
+namespace dipp::details
 {
     /// <summary>
     /// Applies a factory function to a tuple of dependencies and arguments.
@@ -20,14 +20,14 @@ namespace dipp
         }
         else if constexpr (std::tuple_size_v<args_type> == 0)
         {
-            auto dependencies = dipp::get_tuple_from_scope<DepsTy>(scope);
+            auto dependencies = dipp::details::get_tuple_from_scope<DepsTy>(scope);
             return std::apply(std::forward<FactoryTy>(factory), std::move(dependencies));
         }
         else
         {
-            auto dependencies = dipp::get_tuple_from_scope<DepsTy>(scope);
+            auto dependencies = dipp::details::get_tuple_from_scope<DepsTy>(scope);
             return std::apply(std::forward<FactoryTy>(factory),
                               std::tuple_cat(std::move(dependencies), std::forward<ArgsTy>(args)));
         }
     }
-} // namespace dipp
+}
