@@ -17,11 +17,4 @@ namespace dipp::details
         std::terminate();
     }
 #endif
-
-    template<typename Error, typename Ty>
-        requires std::is_base_of_v<base_error, Error>
-    [[noreturn]] auto fail()
-    {
-        return make_error(Error::template error<Ty>());
-    }
 }

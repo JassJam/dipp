@@ -136,7 +136,7 @@ namespace dipp::details
 
             if (it == m_Descriptors.end()) [[unlikely]]
             {
-                DIPP_RETURN_ERROR details::fail<service_not_found, service_type>();
+                DIPP_RETURN_ERROR(service_not_found::error<service_type>());
             }
 
             auto& last_service = it->second.back();
@@ -304,8 +304,7 @@ namespace dipp::details
                     auto descriptor = service.cast<descriptor_type>();
                     if (!descriptor) [[unlikely]]
                     {
-                        DIPP_RETURN_ERROR
-                        details::fail<incompatible_service_descriptor, service_type>();
+                        DIPP_RETURN_ERROR(incompatible_service_descriptor::error<service_type>());
                     }
 
                     instance_iter = singleton_storage.emplace(handle, descriptor->value(), scope);
@@ -317,10 +316,10 @@ namespace dipp::details
 #ifdef DIPP_USE_RESULT
                     if (instance)
                     {
-                        DIPP_RETURN_ERROR instance->error();
+                        return instance->error();
                     }
 #endif
-                    DIPP_RETURN_ERROR details::fail<mismatched_service_type, service_type>();
+                    DIPP_RETURN_ERROR(mismatched_service_type::error<service_type>());
                 }
 
                 return make_result<InjectableTy>(instance->value());
@@ -336,7 +335,7 @@ namespace dipp::details
                     auto descriptor = service.cast<descriptor_type>();
                     if (!descriptor) [[unlikely]]
                     {
-                        details::fail<incompatible_service_descriptor, service_type>();
+                        DIPP_RETURN_ERROR(incompatible_service_descriptor::error<service_type>());
                     }
 
                     instance_iter = scoped_storage.emplace(handle, descriptor->value(), scope);
@@ -348,10 +347,10 @@ namespace dipp::details
 #ifdef DIPP_USE_RESULT
                     if (instance)
                     {
-                        DIPP_RETURN_ERROR instance->error();
+                        return instance->error();
                     }
 #endif
-                    DIPP_RETURN_ERROR details::fail<mismatched_service_type, service_type>();
+                    DIPP_RETURN_ERROR(mismatched_service_type::error<service_type>());
                 }
 
                 return make_result<InjectableTy>(instance->value());
@@ -361,8 +360,7 @@ namespace dipp::details
                 auto descriptor = service.cast<descriptor_type>();
                 if (!descriptor) [[unlikely]]
                 {
-                    DIPP_RETURN_ERROR
-                    details::fail<incompatible_service_descriptor, service_type>();
+                    DIPP_RETURN_ERROR(incompatible_service_descriptor::error<service_type>());
                 }
 
                 auto loaded_instance = descriptor->value().load(scope);
@@ -372,10 +370,10 @@ namespace dipp::details
 #ifdef DIPP_USE_RESULT
                     if (instance)
                     {
-                        DIPP_RETURN_ERROR instance->error();
+                        return instance->error();
                     }
 #endif
-                    DIPP_RETURN_ERROR details::fail<mismatched_service_type, service_type>();
+                    DIPP_RETURN_ERROR(mismatched_service_type::error<service_type>());
                 }
 
                 return make_result<InjectableTy>(std::move(instance->value()));
