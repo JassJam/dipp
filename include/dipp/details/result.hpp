@@ -23,7 +23,7 @@ namespace dipp::details
     }
 }
 
-    #define DIPP_RETURN_ERROR return
+    #define DIPP_RETURN_ERROR(x) return dipp::details::make_error(x)
 
 #else
 
@@ -154,7 +154,7 @@ namespace dipp::details
     }
 }
 
-    #define DIPP_RETURN_ERROR
+    #define DIPP_RETURN_ERROR(x) throw dipp::details::make_error(x)
 
 #endif
 
