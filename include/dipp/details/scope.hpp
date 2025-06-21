@@ -86,7 +86,7 @@ namespace dipp::details
         /// Get a service from the storage.
         /// </summary>
         template<base_injected_type InjectableTy, typename FuncTy>
-        [[nodiscard]] void for_each(FuncTy&& func)
+        void for_each(FuncTy&& func)
         {
             m_Storage->template for_each<InjectableTy>(
                 std::forward<FuncTy>(func), *this, *m_SingletonStorage, m_LocalStorage);
@@ -97,7 +97,7 @@ namespace dipp::details
         /// Get a service from the storage.
         /// </summary>
         template<base_injected_type InjectableTy, typename FuncTy>
-        [[nodiscard]] void for_each_all(FuncTy&& func)
+        void for_each_all(FuncTy&& func)
         {
             m_Storage->template for_each_all<InjectableTy>(
                 std::forward<FuncTy>(func), *this, *m_SingletonStorage, m_LocalStorage);

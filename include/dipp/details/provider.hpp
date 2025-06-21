@@ -122,7 +122,7 @@ namespace dipp::details
         /// Creates a new service of the specified type in the root scope.
         /// </summary>
         template<base_injected_type InjectableTy, typename FuncTy>
-        [[nodiscard]] void for_each(FuncTy&& func)
+        void for_each(FuncTy&& func)
         {
             root_scope().template for_each<InjectableTy>(std::forward<FuncTy>(func));
         }
@@ -132,7 +132,7 @@ namespace dipp::details
         /// Creates a new service of the specified type in all scopes.
         /// </summary>
         template<base_injected_type InjectableTy, typename FuncTy>
-        [[nodiscard]] void for_each_all(FuncTy&& func)
+        void for_each_all(FuncTy&& func)
         {
             root_scope().template for_each_all<InjectableTy>(std::forward<FuncTy>(func));
         }

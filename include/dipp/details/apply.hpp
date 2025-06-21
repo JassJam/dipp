@@ -21,13 +21,37 @@ namespace dipp::details
         else if constexpr (std::tuple_size_v<args_type> == 0)
         {
             auto dependencies = dipp::details::get_tuple_from_scope<DepsTy>(scope);
-            return std::apply(std::forward<FactoryTy>(factory), std::move(dependencies));
+
+            using result_type = decltype(std::apply(std::forward<FactoryTy>(factory),
+                                                    std::move(dependencies.value())));
+
+#ifdef DIPP_USE_RESULT
+            if (dependencies.has_error())
+            {
+                return move_only_any::make_error(dependencies.error());
+            }
+#endif
+
+            return std::apply(std::forward<FactoryTy>(factory), std::move(dependencies.value()));
         }
         else
         {
             auto dependencies = dipp::details::get_tuple_from_scope<DepsTy>(scope);
-            return std::apply(std::forward<FactoryTy>(factory),
-                              std::tuple_cat(std::move(dependencies), std::forward<ArgsTy>(args)));
+
+            using result_type = decltype(std::apply(
+                std::forward<FactoryTy>(factory),
+                std::tuple_cat(std::move(dependencies.value()), std::forward<ArgsTy>(args))));
+
+#ifdef DIPP_USE_RESULT
+            if (dependencies.has_error())
+            {
+                return move_only_any::make_error(dependencies.error());
+            }
+#endif
+
+            return std::apply(
+                std::forward<FactoryTy>(factory),
+                std::tuple_cat(std::move(dependencies.value()), std::forward<ArgsTy>(args)));
         }
     }
 }
