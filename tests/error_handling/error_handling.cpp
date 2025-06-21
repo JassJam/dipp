@@ -14,6 +14,13 @@ struct SimpleService
     }
 };
 
+struct SimpleSubService
+{
+    explicit SimpleSubService(SimpleService)
+    {
+    }
+};
+
 struct NonCopyable
 {
     int value;
@@ -48,6 +55,11 @@ struct OtherClass
 using SimpleServiceType = dipp::injected< //
     SimpleService,
     dipp::service_lifetime::transient>;
+
+using SimpleSubServiceType = dipp::injected< //
+    SimpleSubService,
+    dipp::service_lifetime::transient,
+    dipp::dependency<SimpleServiceType>>;
 
 using NonCopyableService = dipp::injected< //
     NonCopyable,
@@ -106,25 +118,38 @@ BOOST_AUTO_TEST_CASE(GivenUnregisteredServices_WhenCheckingMultipleTypes_ThenCor
     BOOST_CHECK(found_error);
 #else
     // Test exception-based error handling
-    BOOST_CHECK_THROW(services.get<UnregisteredService1>(), dipp::service_not_found);
-    BOOST_CHECK_THROW(services.get<UnregisteredService2>(), dipp::service_not_found);
+    BOOST_CHECK_THROW((void) services.get<UnregisteredService1>(), dipp::service_not_found);
+    BOOST_CHECK_THROW((void) services.get<UnregisteredService2>(), dipp::service_not_found);
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(GivenCircularDependencies_WhenDetected_ThenCompilationErrorsGenerated)
+BOOST_AUTO_TEST_CASE(GivenMissingDependency_WhenServiceRequested_ThenErrorHandled)
 {
-    // Given / When / Then
-    // Note: This test demonstrates that circular dependencies will cause compilation errors
-    // In a real scenario, these would be caught at compile time, not runtime
+    // Given
+    dipp::service_collection collection;
+    collection.add<SimpleSubServiceType>();
 
-    // This is an example of what would cause a circular dependency:
-    // struct ServiceA { ServiceB& b; };
-    // struct ServiceB { ServiceA& a; };
-    // using ServiceAType = dipp::injected<ServiceA, lifetime, dependency<ServiceBType>>;
-    // using ServiceBType = dipp::injected<ServiceB, lifetime, dependency<ServiceAType>>;
+    // When
+    dipp::service_provider services(std::move(collection));
 
-    // The above would fail to compile due to incomplete types
-    BOOST_CHECK(true); // Placeholder - circular deps are caught at compile time
+    // Then
+#ifdef DIPP_USE_RESULT
+    bool found_service_not_found_error = false;
+    boost::leaf::try_handle_some(
+        [&]() -> boost::leaf::result<void>
+        {
+            auto result = services.get<SimpleSubServiceType>();
+            if (!result.has_value())
+            {
+                return result.error();
+            }
+            return {};
+        },
+        [&](const dipp::service_not_found&) { found_service_not_found_error = true; });
+    BOOST_CHECK(found_service_not_found_error);
+#else
+    BOOST_CHECK_THROW((void) services.get<SimpleSubServiceType>(), dipp::service_not_found);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(GivenInvalidFactoryReturnType_WhenDetected_ThenCompilationErrorsGenerated)
@@ -200,7 +225,7 @@ BOOST_AUTO_TEST_CASE(GivenEmptyCollection_WhenServicesRequested_ThenNoServicesFo
     auto result = services.get<SimpleServiceType>();
     BOOST_CHECK(!result.has_value());
 #else
-    BOOST_CHECK_THROW(services.get<SimpleServiceType>(), dipp::service_not_found);
+    BOOST_CHECK_THROW((void) services.get<SimpleServiceType>(), dipp::service_not_found);
 #endif
 }
 
@@ -217,8 +242,7 @@ BOOST_AUTO_TEST_CASE(GivenNullptrFactory_WhenServiceRequested_ThenNullptrReturne
 
     // Then
     // This should work but return a null pointer wrapped in the service
-    auto service = services.get<PtrService>();
-    BOOST_REQUIRE(service.has_value());
+    PtrService service = *services.get<PtrService>();
     BOOST_CHECK(!service->get()); // The unique_ptr should be null
 }
 
@@ -261,7 +285,7 @@ BOOST_AUTO_TEST_CASE(GivenFactoryWithResultError_WhenServiceRequested_ThenErrorH
     BOOST_CHECK(found_error);
 
 #else
-    BOOST_CHECK_THROW(services.get<SimpleServiceType>(), std::runtime_error);
+    BOOST_CHECK_THROW((void) services.get<SimpleServiceType>(), not_found_error);
 #endif
 }
 
@@ -351,6 +375,96 @@ BOOST_AUTO_TEST_CASE(GivenWrongServiceType_WhenRequested_ThenServiceNotFoundThro
 #else
 
     BOOST_CHECK_THROW((void) services.get<wrong_injected>(), dipp::service_not_found);
+
+#endif
+}
+
+BOOST_AUTO_TEST_CASE(GivenDependencyChainWithMissingIntermediate_WhenServiceRequested_ThenError)
+{
+    struct BaseService
+    {
+        int value = 42;
+    };
+
+    struct MiddleService
+    {
+        BaseService& base;
+
+        explicit MiddleService(BaseService& b)
+            : base(b)
+        {
+        }
+    };
+
+    struct TopService
+    {
+        MiddleService& middle;
+
+        explicit TopService(MiddleService& m)
+            : middle(m)
+        {
+        }
+    };
+
+    using BaseServiceType = dipp::injected< //
+        BaseService,
+        dipp::service_lifetime::singleton>;
+
+    using MiddleServiceType = dipp::injected< //
+        MiddleService,
+        dipp::service_lifetime::singleton,
+        dipp::dependency<BaseServiceType>>;
+
+    using TopServiceType = dipp::injected< //
+        TopService,
+        dipp::service_lifetime::transient,
+        dipp::dependency<MiddleServiceType>>;
+
+    // Given
+    dipp::service_collection collection;
+
+    collection.add<BaseServiceType>();
+    // collection.add<MiddleServiceType>();
+    collection.add<TopServiceType>();
+
+    // When
+    dipp::service_provider services(std::move(collection));
+
+    // Then
+    // Base and Top services should be registered, but Middle should not be
+    BOOST_CHECK(services.has<BaseServiceType>());
+    BOOST_CHECK(!services.has<MiddleServiceType>());
+    BOOST_CHECK(services.has<TopServiceType>());
+
+#ifdef DIPP_USE_RESULT
+
+    bool found_service_not_found_error = false;
+
+    auto x = boost::leaf::try_handle_some(
+        [&]() -> boost::leaf::result<int>
+        {
+            auto result = services.get<TopServiceType>();
+            if (!result.has_value())
+            {
+                return result.error();
+            }
+            return 1;
+        },
+        [&](const dipp::service_not_found&) -> boost::leaf::result<int>
+        {
+            found_service_not_found_error = true;
+            return 1;
+        });
+
+    if (x.has_value())
+    {
+    }
+
+    BOOST_CHECK(found_service_not_found_error);
+
+#else
+
+    BOOST_CHECK_THROW((void) services.get<TopServiceType>(), dipp::service_not_found);
 
 #endif
 }

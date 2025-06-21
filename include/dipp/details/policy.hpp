@@ -2,17 +2,17 @@
 
 #include <concepts>
 #include <any>
-#include <vector>
 #include <map>
 
 #include "concepts.hpp"
 #include "type_key_pair.hpp"
 #include "move_only_any.hpp"
 
+#include "service_info.hpp"
+#include "instance_info.hpp"
+
 namespace dipp::details
 {
-    using service_info = std::vector<move_only_any>;
-
     struct default_service_policy
     {
         using service_map_type = std::map<type_key_pair, service_info>;
@@ -21,23 +21,6 @@ namespace dipp::details
                   "default_service_policy is not a service_policy_type");
 
     //
-
-    struct instance_info
-    {
-        template<service_descriptor_type DescTy, service_scope_type ScopeTy>
-        instance_info(DescTy& descriptor, ScopeTy& scope)
-            : Instance(descriptor.load(scope))
-        {
-        }
-
-        template<typename Ty>
-        constexpr auto cast() noexcept
-        {
-            return Instance.cast<Ty>();
-        }
-
-        move_only_any Instance;
-    };
 
     struct default_service_storage_memory_type
     {
@@ -68,6 +51,7 @@ namespace dipp::details
         /// <summary>
         /// Finds the instance by the handle.
         /// </summary>
+        [[nodiscard]]
         auto find(const type_key_pair& handle)
         {
             auto it = m_InstanceRefs.find(handle);
@@ -78,6 +62,7 @@ namespace dipp::details
         /// Emplace a new instance into the storage.
         /// </summary>
         template<service_descriptor_type DescTy, service_scope_type ScopeTy>
+        [[nodiscard]]
         auto emplace(const type_key_pair& handle, DescTy& descriptor, ScopeTy& scope)
         {
             auto instance = std::make_unique<instance_info>(descriptor, scope);

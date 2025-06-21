@@ -10,6 +10,8 @@ namespace dipp::details
     template<typename Ty>
     using result = boost::leaf::result<Ty>;
 
+    using error_id = boost::leaf::error_id;
+
     template<typename Ty, typename... Args>
     inline result<Ty> make_result(Args&&... args)
     {
@@ -33,21 +35,18 @@ namespace dipp::details
     struct result
     {
     public:
-        constexpr explicit result(Ty&& value) noexcept(
-            std::is_nothrow_move_constructible<Ty>::value)
+        constexpr result(Ty&& value) noexcept(std::is_nothrow_move_constructible<Ty>::value)
             : m_Value(std::forward<Ty>(value))
         {
         }
 
-        constexpr explicit result(const Ty& value) noexcept(
-            std::is_nothrow_copy_constructible<Ty>::value)
+        constexpr result(const Ty& value) noexcept(std::is_nothrow_copy_constructible<Ty>::value)
             : m_Value(value)
         {
         }
 
         template<typename... Args>
-        constexpr explicit result(Args&&... args) noexcept(
-            std::is_nothrow_constructible<Ty, Args...>::value)
+        constexpr result(Args&&... args) noexcept(std::is_nothrow_constructible<Ty, Args...>::value)
             : m_Value(std::forward<Args>(args)...)
         {
         }
@@ -58,40 +57,36 @@ namespace dipp::details
         constexpr result& operator=(const result& other) = default;
         constexpr result& operator=(result&& other) = default;
 
-        constexpr result& operator=(Ty&& value) noexcept(std::is_nothrow_move_assignable<Ty>::value)
-        {
-            m_Value = std::forward<Ty>(value);
-            return *this;
-        }
-        constexpr result& operator=(const Ty& value) noexcept(
-            std::is_nothrow_copy_assignable<Ty>::value)
-        {
-            m_Value = value;
-            return *this;
-        }
-
         constexpr ~result() = default;
 
+    public:
         [[nodiscard]]
-        constexpr Ty& operator*()
+        constexpr Ty& operator*() &
         {
             return m_Value;
         }
 
         [[nodiscard]]
-        constexpr const Ty& operator*() const
+        constexpr Ty&& operator*() &&
+        {
+            return std::move(m_Value);
+        }
+
+        [[nodiscard]]
+        constexpr const Ty& operator*() const&
         {
             return m_Value;
         }
 
+        [[nodiscard]]
+        constexpr const Ty&& operator*() const&&
+        {
+            return std::move(m_Value);
+        }
+
+    public:
         [[nodiscard]]
         constexpr operator Ty&() &
-        {
-            return m_Value;
-        }
-
-        [[nodiscard]]
-        constexpr operator const Ty&() const&
         {
             return m_Value;
         }
@@ -103,33 +98,58 @@ namespace dipp::details
         }
 
         [[nodiscard]]
-        constexpr Ty& value()
+        constexpr operator const Ty&() const&
         {
             return m_Value;
         }
 
         [[nodiscard]]
-        constexpr const Ty& value() const
+        constexpr operator const Ty&&() const&&
+        {
+            return std::move(m_Value);
+        }
+
+    public:
+        [[nodiscard]]
+        constexpr Ty& value() &
         {
             return m_Value;
         }
 
+        [[nodiscard]]
+        constexpr Ty&& value() &&
+        {
+            return std::move(m_Value);
+        }
+
+        [[nodiscard]]
+        constexpr const Ty& value() const&
+        {
+            return m_Value;
+        }
+
+        [[nodiscard]]
+        constexpr const Ty&& value() const&&
+        {
+            return std::move(m_Value);
+        }
+
+    public:
         [[nodiscard]]
         constexpr bool has_value() const
         {
-            return true; // Always has value in this implementation
+            return true;
         }
 
-        [[nodiscard]]
-        constexpr bool operator!() const
+        explicit operator bool() const noexcept
         {
-            return false; // Always valid in this implementation
+            return has_value();
         }
 
         [[nodiscard]]
         constexpr bool has_error() const
         {
-            return false; // No error handling in this implementation
+            return false;
         }
 
         constexpr void error() const
@@ -154,7 +174,7 @@ namespace dipp::details
     }
 }
 
-    #define DIPP_RETURN_ERROR(x) throw dipp::details::make_error(x)
+    #define DIPP_RETURN_ERROR(x) dipp::details::make_error(x)
 
 #endif
 

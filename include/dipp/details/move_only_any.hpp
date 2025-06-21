@@ -192,11 +192,6 @@ namespace dipp::details
             reset();
         }
 
-        [[nodiscard]] static move_only_any make_empty() noexcept
-        {
-            return move_only_any{};
-        }
-
         template<typename Ty, typename... Args>
         [[nodiscard]] static move_only_any make(Args&&... args)
         {
@@ -204,6 +199,14 @@ namespace dipp::details
             any.emplace<Ty>(std::forward<Args>(args)...);
             return any;
         }
+
+#ifdef DIPP_USE_RESULT
+        template<typename... Args>
+        [[nodiscard]] static move_only_any make_error(Args&&... args)
+        {
+            return make<error_id>(std::forward<Args>(args)...);
+        }
+#endif
 
     public:
         constexpr void reset()
@@ -228,7 +231,7 @@ namespace dipp::details
         }
 
         template<typename Ty>
-        constexpr result<Ty>* cast() noexcept
+        [[nodiscard]] result<Ty>* cast() noexcept
         {
             using resulty_type = result<Ty>;
 
@@ -250,12 +253,24 @@ namespace dipp::details
             return nullptr;
         }
 
-        constexpr bool empty() const noexcept
+        [[nodiscard]] constexpr bool empty() const noexcept
         {
             return m_Storage.type == any_storage_type::null;
         }
 
-        constexpr const std::type_info& type() const noexcept
+#ifdef DIPP_USE_RESULT
+        [[nodiscard]] error_id error() noexcept
+        {
+            return cast<error_id>()->value();
+        }
+
+        [[nodiscard]] constexpr bool has_error() const noexcept
+        {
+            return m_Storage.type_info == &typeid(error_id);
+        }
+#endif
+
+        [[nodiscard]] constexpr const std::type_info& type() const noexcept
         {
             if (empty())
             {

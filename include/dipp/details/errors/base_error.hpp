@@ -10,6 +10,8 @@ namespace dipp::details
 #ifdef DIPP_USE_RESULT
     struct base_error
     {
+        constexpr base_error() = default;
+
         constexpr explicit base_error(const char* typeName)
             : TypeName(typeName)
         {
