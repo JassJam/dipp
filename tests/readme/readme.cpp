@@ -9,16 +9,25 @@ BOOST_AUTO_TEST_SUITE(ReadMe_Test)
 //
 
 // We define a normal class with our logic
-struct Window
+class Window
 {
-    std::mutex x;
+public:
+    Window() = default;
+
+    Window(const Window&) = delete;
+    Window(Window&&) = delete;
+
+    Window& operator=(const Window&) = delete;
+    Window& operator=(Window&&) = delete;
+
+    ~Window() = default;
 };
 
 struct Engine
 {
     Window& window; // singleton window
 
-    Engine(Window& window)
+    explicit Engine(Window& window)
         : window(window)
     {
     }

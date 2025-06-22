@@ -94,16 +94,19 @@ namespace dipp::details
             any_storage_type type{any_storage_type::null};
         };
 
-    public:
         template<typename Ty>
-        static constexpr bool is_trivial =
-            std::is_trivially_move_constructible_v<Ty> && std::is_trivially_move_assignable_v<Ty> &&
-            alignof(Ty) <= alignof(std::max_align_t) && sizeof(Ty) <= SMALL_BUFFER_SIZE;
+        static constexpr bool is_trivial = std::is_trivially_move_constructible_v<Ty> &&         //
+                                           std::is_trivially_move_constructible_v<result<Ty>> && //
+                                           std::is_trivially_move_assignable_v<Ty> &&            //
+                                           std::is_trivially_move_assignable_v<result<Ty>> &&    //
+                                           alignof(result<Ty>) <= alignof(std::max_align_t) &&   //
+                                           sizeof(result<Ty>) <= SMALL_BUFFER_SIZE;
 
         template<typename Ty>
-        static constexpr bool is_small =
-            std::is_move_constructible_v<Ty> && alignof(Ty) <= alignof(std::max_align_t) &&
-            sizeof(Ty) <= SMALL_BUFFER_SIZE;
+        static constexpr bool is_small = std::is_move_constructible_v<Ty> &&         //
+                                         std::is_move_constructible_v<result<Ty>> && //
+                                         alignof(result<Ty>) <= alignof(std::max_align_t) && //
+                                         sizeof(result<Ty>) <= SMALL_BUFFER_SIZE;
 
         template<typename Ty>
         static constexpr bool is_large = !is_trivial<Ty> && !is_small<Ty>;
@@ -237,11 +240,11 @@ namespace dipp::details
 
             if (m_Storage.type_info == &typeid(Ty))
             {
-                if constexpr (is_trivial<resulty_type>)
+                if constexpr (is_trivial<Ty>)
                 {
                     return std::bit_cast<resulty_type*>(&m_Storage.u.trivial_type.buffer);
                 }
-                else if constexpr (is_small<resulty_type>)
+                else if constexpr (is_small<Ty>)
                 {
                     return std::bit_cast<resulty_type*>(&m_Storage.u.small_type.buffer);
                 }
@@ -292,7 +295,7 @@ namespace dipp::details
             using pointer_type = std::add_pointer_t<result_type>;
 
             m_Storage.type_info = &typeid(Ty);
-            if constexpr (is_trivial<result_type>)
+            if constexpr (is_trivial<Ty>)
             {
                 auto obj = std::bit_cast<pointer_type>(&m_Storage.u.trivial_type.buffer);
                 construct_result(obj, std::forward<Args>(args)...);
@@ -301,7 +304,7 @@ namespace dipp::details
 
                 return *obj;
             }
-            else if constexpr (is_small<result_type>)
+            else if constexpr (is_small<Ty>)
             {
                 auto obj = std::bit_cast<pointer_type>(&m_Storage.u.small_type.buffer);
                 construct_result(obj, std::forward<Args>(args)...);
