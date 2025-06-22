@@ -1,4 +1,3 @@
-
 local function install_benchmark_packages()
     if is_config("benchmark", true) then
         add_requires("benchmark")
