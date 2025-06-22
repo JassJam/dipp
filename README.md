@@ -24,8 +24,9 @@ using WindowService = dipp::injected<Window, dipp::service_lifetime::singleton>;
 struct Engine
 {
     Window& window; // singleton window
-    
-    Engine(std::reference_wrapper<Window> window) : window1(window)
+
+    explicit Engine(Window& window)
+        : window(window)
     {
     }
 };
@@ -36,35 +37,35 @@ using EngineService = dipp::injected<Engine, dipp::service_lifetime::scoped, dip
 int main()
 {
     // create a collection to hold our services
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
 
     // add the services to the collection
     collection.add<WindowService>();
     collection.add<EngineService>();
 
     // create a service provider with the collection
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     // get the engine service
     // the engine service will create a window service and inject it into the engine
     // if the scope is at the root level, the engine will be treated as a singleton
-    auto engine = services.get<EngineService>();
+    Engine& engine = services.get<EngineService>();
 
     // create a scope
     auto scope = services.create_scope();
 
     // get the engine service from the scope
     // the engine will be destroyed when the scope is destroyed
-    auto engine2 = scope.get<EngineService>();
+    Engine& engine2 = scope.get<EngineService>();
 
     // get the window service from the scope
-    auto window = scope.get<WindowService>();
+    Window& window = scope.get<WindowService>();
 
     // since the window is a singleton, the window from the scope should be the same as the window from the engine
-    assert(&engine->window == &engine2->window);
+    assert(&engine.window == &engine2.window);
 
     // and the engine from the scope should be different from the engine from the root scope
-    assert(engine.ptr() != engine2.ptr());
+    assert(&engine != &engine2);
 
     return 0;
 }
@@ -87,18 +88,14 @@ struct Window
 // the service will be injected as a singleton, meaning that it will be created once and shared across all consumers
 using WindowService1 = dipp::injected<Window, dipp::service_lifetime::singleton>;
 using WindowService2 = dipp::injected<Window, dipp::service_lifetime::singleton, dipp::dependency<>, dipp::key("UNIQUE")>;
-static_assert(dipp::base_injected_type<WindowService1>);
-static_assert(dipp::base_injected_type<WindowService2>);
 
 struct Engine
 {
     Window& window1; // singleton window
     Window& window2; // singleton window
 
-    Engine(std::reference_wrapper<Window> window1,
-           std::reference_wrapper<Window> window2) :
-           window1(window1),
-           window2(window2)
+    Engine(Window& window1, Window& window2) :
+           window1(window1), window2(window2)
     {
     }
 };
@@ -109,7 +106,7 @@ using EngineService =
 int mai2()
 {
     // create a collection to hold our services
-    dipp::default_service_collection collection;
+    dipp::service_collection collection;
 
     // add the services to the collection
     collection.add<WindowService1>();
@@ -117,19 +114,19 @@ int mai2()
     collection.add<EngineService>();
 
     // create a service provider with the collection
-    dipp::default_service_provider services(std::move(collection));
+    dipp::service_provider services(std::move(collection));
 
     // get the engine service
     // the engine service will create a window service and inject it into the engine
     // if the scope is at the root level, the engine will be treated as a singleton
-    auto engine = services.get<EngineService>();
+    Engine& engine = services.get<EngineService>();
 
     // get the window service from the engine
-    auto& window1 = engine->window1;
-    auto& window2 = engine->window2;
+    auto& window1 = engine.window1;
+    auto& window2 = engine.window2;
 
     // both window services shouldn't be the same
-    assert(window1.ptr() != window2.ptr());
+    assert(&window1 != &window2);
 
     return 0;
 }
@@ -148,7 +145,8 @@ int mai2()
 ## Requirements
 
 * XMake 2.9.6 or later
-* C++ 20 compiler
+* C++20/C++23 compiler
+* Boost.Leaf (optional, for error handling), will be installed automatically by xmake
 * Boost.Test (optional, for tests), will be installed automatically by xmake
 
 ## Build the project
@@ -162,7 +160,8 @@ $ xmake install -o install
 ## Run the tests
 
 ```bash
-$ xmake f --no-test=n # to enable/disable tests
+$ xmake f --menu # to configure the project
+$ xmake f --test=n # to enable/disable tests
 $ xmake run <test_name> # tests found in project/test.lua
 ```
 
@@ -171,22 +170,22 @@ $ xmake run <test_name> # tests found in project/test.lua
 
 Benchmarks were done using the [Google Benchmark library](https://github.com/google/benchmark). The benchmarks were run on a Windows 11 machine with the following specs:
 
-Run on (8 X 2208 MHz CPU s)
+Run on (12 X 2688 MHz CPU s)
 
 - CPU Caches:
-    - L1 Data 32 KiB (x4)
-    - L1 Instruction 32 KiB (x4)
-    - L2 Unified 256 KiB (x4)
-    - L3 Unified 6144 KiB (x1)
+    - L1 Data 48 KiB (x6)
+    - L1 Instruction 32 KiB (x6)
+    - L2 Unified 1280 KiB (x6)
+    - L3 Unified 12288 KiB (x1)
 
 | Benchmark                    | Time             | CPU           | Iterations | Library                                         |
 |------------------------------|------------------|---------------|------------| ----------------------------------------------- |
-| BM_FruitContainerCreation    | 18159 ns         | 10010 ns      | 64000      | [Google Fruit](https://github.com/google/fruit) | 
-| BM_FruitResolution           | 5.2015e+12 ns    | 781250000 ns  | 1          | [Google Fruit](https://github.com/google/fruit) |
-| BM_KangaruContainerCreation  | 15125 ns         | 10619 ns      | 64743      | [Kangaru](https://github.com/gracicot/kangaru)  |
-| BM_KangaruResolution         | 5.2036e+12 ns    | 2125000000 ns | 1          | [Kangaru](https://github.com/gracicot/kangaru)  |
-| BM_DippContainerCreation     | 1559 ns          | 1360 ns       | 448000     | [dipp](#)                                       |
-| BM_DippResolution            | 5.2045e+12 ns    | 2890625000 ns | 1          | [dipp](#)                                       |
+| BM_FruitContainerCreation    | 6147 ns          | 5781 ns       | 100000     | [Google Fruit](https://github.com/google/fruit) | 
+| BM_FruitResolution           | 1.1190e+14 ns    | 640625000 ns  | 1          | [Google Fruit](https://github.com/google/fruit) |
+| BM_KangaruContainerCreation  | 1999 ns          | 1944 ns       | 329602     | [Kangaru](https://github.com/gracicot/kangaru)  |
+| BM_KangaruResolution         | 1.1190e+14 ns    | 2171875000 ns | 1          | [Kangaru](https://github.com/gracicot/kangaru)  |
+| BM_DippContainerCreation     | 799 ns           | 785 ns        | 896000     | [dipp](#)                                       |
+| BM_DippResolution            | 1.1190e+14 ns    | 2968750000 ns | 1          | [dipp](#)                                       |
 
 
 ## Acknowledgements
