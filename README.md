@@ -162,7 +162,7 @@ $ xmake install -o install
 ```bash
 $ xmake f --menu # to configure the project
 $ xmake f --test=n # to enable/disable tests
-$ xmake run <test_name> # tests found in project/test.lua
+$ xmake test # tests found in project/test.lua
 ```
 
 

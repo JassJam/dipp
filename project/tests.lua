@@ -6,6 +6,7 @@ local function add_test(opts)
     target(opts.name)
         set_group("tests")
         set_kind("binary")
+        add_tests("default")
 
         add_deps("dipp")
         add_packages("boost")
