@@ -30,12 +30,15 @@ namespace dipp::details
 
         constexpr base_injected(const service_type& value) noexcept(
             std::is_nothrow_copy_constructible_v<service_type>)
+            requires(std::copy_constructible<service_type>)
             : m_Value(value)
         {
         }
 
         constexpr base_injected(service_type& value) noexcept(
             std::is_nothrow_copy_constructible_v<service_type>)
+            requires(((descriptor_type::lifetime == service_lifetime::singleton) ||
+                      (descriptor_type::lifetime == service_lifetime::scope)))
             : m_Value(value)
         {
         }
