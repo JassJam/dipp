@@ -236,7 +236,14 @@ namespace dipp::details
                     continue;
                 }
 
-                func(*instance);
+                if constexpr (descriptor_type::lifetime == service_lifetime::transient)
+                {
+                    func(instance->detach());
+                }
+                else
+                {
+                    func(*instance);
+                }
             }
         }
 
@@ -270,7 +277,14 @@ namespace dipp::details
                             continue;
                         }
 
-                        func(*instance);
+                        if constexpr (descriptor_type::lifetime == service_lifetime::transient)
+                        {
+                            func(instance->detach());
+                        }
+                        else
+                        {
+                            func(*instance);
+                        }
                     }
                 }
             }
