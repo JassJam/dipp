@@ -54,6 +54,29 @@ using WorldService = dipp::injected< //
 
 //
 
+BOOST_AUTO_TEST_CASE(GiveServiceProvider_WhenMoved_ShouldPreserveOldServices)
+{
+    // Given
+    dipp::service_collection collection;
+    collection.add<CameraService>();
+    collection.add<SceneService>();
+
+    // When
+    dipp::service_provider servicesA(std::move(collection));
+    Scene& sceneA = *servicesA.get<SceneService>();
+
+    dipp::service_provider servicesB(std::move(servicesA));
+    Scene& sceneB = *servicesB.get<SceneService>();
+
+    // Then
+    BOOST_TEST_CONTEXT("Should preserve service instances after move")
+    {
+        BOOST_CHECK_EQUAL(&sceneA, &sceneB);
+        BOOST_CHECK_EQUAL(sceneB.camera.fov, 90);
+        BOOST_CHECK_EQUAL(sceneB.max_entities, 100);
+    }
+}
+
 BOOST_AUTO_TEST_CASE(GivenTransientService_WhenRequestedTwice_ThenInstancesDiffer)
 {
     // Given
