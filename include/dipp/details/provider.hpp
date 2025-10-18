@@ -24,7 +24,8 @@ namespace dipp::details
         }
 
         base_service_provider(base_service_provider&& services) noexcept
-            : m_Storage(std::move(services.m_Storage))
+            : m_SingletonStorage(std::move(services.m_SingletonStorage))
+            , m_Storage(std::move(services.m_Storage))
             , m_RootScope(&m_Storage, &m_SingletonStorage, std::move(services.m_RootScope))
         {
         }
@@ -33,6 +34,7 @@ namespace dipp::details
         {
             if (this != &services)
             {
+                m_SingletonStorage = std::move(services.m_SingletonStorage);
                 m_Storage = std::move(services.m_Storage);
                 m_RootScope =
                     scope_type(&m_Storage, &m_SingletonStorage, std::move(services.m_RootScope));
