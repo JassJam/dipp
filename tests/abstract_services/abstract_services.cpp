@@ -108,9 +108,9 @@ BOOST_AUTO_TEST_CASE(GivenCameraServices_WhenAddingToCollection_ThenCamerasAreCr
     BOOST_CHECK_EQUAL(camera_count, 3);
 
     services.for_each<CameraService>(
-        [&](const CameraService& cameraService)
+        [&](const dipp::result<CameraService>& cameraService)
         {
-            auto& camera = cameraService.get();
+            auto& camera = cameraService->get();
             BOOST_CHECK_NE(camera.get(), nullptr);
 
             if (dynamic_cast<PerspectiveCamera*>(camera.get()))
@@ -148,8 +148,9 @@ BOOST_AUTO_TEST_CASE(
     auto fetch_cameras = [&]()
     {
         std::vector<const ICamera*> cameras;
-        services.for_each<singleton_service>([&](const singleton_service& cameraService)
-                                             { cameras.push_back(cameraService->get()); });
+        services.for_each<singleton_service>(
+            [&](const dipp::result<singleton_service>& cameraService)
+            { cameras.push_back((*cameraService)->get()); });
         return cameras;
     };
 

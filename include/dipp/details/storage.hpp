@@ -230,20 +230,7 @@ namespace dipp::details
             service_loader loader{scope, singleton_storage, scoped_storage};
             for (auto& descriptor : it->second)
             {
-                auto instance = loader.load<InjectableTy>(descriptor);
-                if (!instance)
-                {
-                    continue;
-                }
-
-                if constexpr (descriptor_type::lifetime == service_lifetime::transient)
-                {
-                    func(instance->detach());
-                }
-                else
-                {
-                    func(*instance);
-                }
+                func(loader.load<InjectableTy>(descriptor));
             }
         }
 
@@ -271,20 +258,7 @@ namespace dipp::details
                 {
                     for (auto& service : iter->second)
                     {
-                        auto instance = loader.load<InjectableTy>(service);
-                        if (!instance)
-                        {
-                            continue;
-                        }
-
-                        if constexpr (descriptor_type::lifetime == service_lifetime::transient)
-                        {
-                            func(instance->detach());
-                        }
-                        else
-                        {
-                            func(*instance);
-                        }
+                        func(loader.load<InjectableTy>(service));
                     }
                 }
             }
