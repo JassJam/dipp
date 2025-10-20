@@ -53,6 +53,7 @@ namespace dipp::details
         }(std::make_index_sequence<dependencies_size>{});
     }
 
+#ifdef DIPP_USE_RESULT
     template<dependency_container_type DepsTy, typename ResultTy>
     auto get_error_from_tuple(ResultTy& deps) -> error_id
     {
@@ -68,6 +69,7 @@ namespace dipp::details
             return err_id;
         }(std::make_index_sequence<dependencies_size>{});
     }
+#endif
 
     template<dependency_container_type DepsTy, typename ResultTy>
     auto unwrap_tuple_values(ResultTy&& deps)

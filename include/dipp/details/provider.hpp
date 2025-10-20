@@ -1,6 +1,7 @@
 #pragma once
 
 #include "scope.hpp"
+#include "result.hpp"
 
 namespace dipp::details
 {
@@ -121,22 +122,13 @@ namespace dipp::details
 
     public:
         /// <summary>
-        /// Creates a new service of the specified type in the root scope.
+        /// Gets all services from the storage with the specified type and key.
         /// </summary>
-        template<base_injected_type InjectableTy, typename FuncTy>
-        void for_each(FuncTy&& func)
+        template<base_injected_type InjectableTy,
+                 container_type ContainerTy = std::vector<dipp::details::result<InjectableTy>>>
+        ContainerTy get_all()
         {
-            root_scope().template for_each<InjectableTy>(std::forward<FuncTy>(func));
-        }
-
-    public:
-        /// <summary>
-        /// Creates a new service of the specified type in all scopes.
-        /// </summary>
-        template<base_injected_type InjectableTy, typename FuncTy>
-        void for_each_all(FuncTy&& func)
-        {
-            root_scope().template for_each_all<InjectableTy>(std::forward<FuncTy>(func));
+            return root_scope().template get_all<InjectableTy, ContainerTy>();
         }
 
     private:
