@@ -20,7 +20,7 @@ namespace dipp::details
     /// Get a tuple of dependencies from a scope.
     /// </summary>
     template<dependency_container_type DepsTy, service_scope_type ScopeTy, std::size_t... Is>
-    auto get_tuple_from_scope(ScopeTy& scope, std::index_sequence<Is...>)
+    auto get_tuple_from_scope_impl(ScopeTy& scope, std::index_sequence<Is...>)
     {
         using dependencies = typename DepsTy::types;
 
@@ -37,31 +37,47 @@ namespace dipp::details
         constexpr auto dependencies_size = std::tuple_size_v<std::decay_t<dependencies_type>>;
 
         // load all dependencies from the scope
-        auto dependencies = get_tuple_from_scope<DepsTy>(
+        return get_tuple_from_scope_impl<DepsTy>(
             scope, std::make_index_sequence<std::tuple_size_v<dependencies_type>>{});
+    }
 
-#ifdef DIPP_USE_RESULT
-        // Check if any results have errors
-        error_id first_error;
-        bool has_error = [&]<size_t... I>(std::index_sequence<I...>)
+    template<dependency_container_type DepsTy, typename ResultTy>
+    bool has_error_in_tuple(const ResultTy& deps)
+    {
+        using dependencies_type = typename DepsTy::types;
+        constexpr auto dependencies_size = std::tuple_size_v<std::decay_t<dependencies_type>>;
+
+        return [&]<size_t... I>(std::index_sequence<I...>)
         {
-            return ((std::get<I>(dependencies).has_error() &&
-                     (first_error = std::get<I>(dependencies).error(), true)) ||
-                    ...);
+            return ((std::get<I>(deps).has_error()) || ...);
         }(std::make_index_sequence<dependencies_size>{});
+    }
 
-        // If any errors, return the first error
-        // we found
-        if (has_error)
-        {
-            return result<dependencies_type>{first_error};
-        }
-#endif
+    template<dependency_container_type DepsTy, typename ResultTy>
+    auto get_error_from_tuple(ResultTy& deps) -> error_id
+    {
+        using dependencies_type = typename DepsTy::types;
+        constexpr auto dependencies_size = std::tuple_size_v<std::decay_t<dependencies_type>>;
 
-        // All results are valid, combine values with move
-        return [&]<std::size_t... I>(std::index_sequence<I...>) -> result<dependencies_type>
+        return [&]<std::size_t... I>(std::index_sequence<I...>)
         {
-            return std::make_tuple(std::move(std::get<I>(dependencies).value())...);
+            error_id err_id{};
+            ((void) (!err_id && (std::get<I>(deps).has_error() ? err_id = std::get<I>(deps).error()
+                                                               : error_id{})),
+             ...);
+            return err_id;
+        }(std::make_index_sequence<dependencies_size>{});
+    }
+
+    template<dependency_container_type DepsTy, typename ResultTy>
+    auto unwrap_tuple_values(ResultTy&& deps)
+    {
+        using dependencies_type = typename DepsTy::types;
+        constexpr auto dependencies_size = std::tuple_size_v<std::decay_t<dependencies_type>>;
+
+        return [&]<std::size_t... I>(std::index_sequence<I...>) -> dependencies_type
+        {
+            return std::make_tuple(std::move(std::get<I>(deps).value())...);
         }(std::make_index_sequence<dependencies_size>{});
     }
 }

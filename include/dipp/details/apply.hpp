@@ -22,36 +22,36 @@ namespace dipp::details
         {
             auto dependencies = dipp::details::get_tuple_from_scope<DepsTy>(scope);
 
-            using result_type = decltype(std::apply(std::forward<FactoryTy>(factory),
-                                                    std::move(dependencies.value())));
+            bool has_error = dipp::details::has_error_in_tuple<DepsTy>(dependencies);
 
 #ifdef DIPP_USE_RESULT
-            if (dependencies.has_error())
+            if (has_error)
             {
-                return move_only_any::make_error(dependencies.error());
+                return move_only_any::make_error(dipp::details::get_error_from_tuple<DepsTy>(dependencies));
             }
 #endif
 
-            return std::apply(std::forward<FactoryTy>(factory), std::move(dependencies.value()));
+            return std::apply(std::forward<FactoryTy>(factory),
+                              dipp::details::unwrap_tuple_values<DepsTy>(std::move(dependencies)));
         }
         else
         {
             auto dependencies = dipp::details::get_tuple_from_scope<DepsTy>(scope);
 
-            using result_type = decltype(std::apply(
-                std::forward<FactoryTy>(factory),
-                std::tuple_cat(std::move(dependencies.value()), std::forward<ArgsTy>(args))));
+            bool has_error = dipp::details::has_error_in_tuple<DepsTy>(dependencies);
 
 #ifdef DIPP_USE_RESULT
-            if (dependencies.has_error())
+            if (has_error)
             {
-                return move_only_any::make_error(dependencies.error());
+                return move_only_any::make_error(
+                    dipp::details::get_error_from_tuple<DepsTy>(dependencies));
             }
 #endif
 
             return std::apply(
                 std::forward<FactoryTy>(factory),
-                std::tuple_cat(std::move(dependencies.value()), std::forward<ArgsTy>(args)));
+                std::tuple_cat(dipp::details::unwrap_tuple_values<DepsTy>(std::move(dependencies)),
+                               std::forward<ArgsTy>(args)));
         }
     }
 }
