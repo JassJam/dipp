@@ -1,5 +1,7 @@
 #define BOOST_TEST_MODULE AbstractServices_Test
 
+#include <ranges>
+
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/debug.hpp>
@@ -35,6 +37,14 @@ public:
     }
 };
 
+class DependecyCamera
+{
+public:
+    DependecyCamera(std::unique_ptr<ICamera>)
+    {
+    }
+};
+
 //
 
 using CameraService = dipp::injected_unique< //
@@ -48,6 +58,11 @@ using PerspectiveCameraService = dipp::injected_unique< //
 using OrthographicCameraService = dipp::injected_unique< //
     OrthographicCamera,
     dipp::service_lifetime::transient>;
+
+using DependecyCameraService = dipp::injected_unique< //
+    DependecyCamera,
+    dipp::service_lifetime::transient,
+    dipp::dependency<CameraService>>;
 
 //
 
@@ -107,25 +122,24 @@ BOOST_AUTO_TEST_CASE(GivenCameraServices_WhenAddingToCollection_ThenCamerasAreCr
     auto camera_count = services.count<CameraService>();
     BOOST_CHECK_EQUAL(camera_count, 3);
 
-    services.for_each<CameraService>(
-        [&](const dipp::result<CameraService>& cameraService)
-        {
-            auto& camera = cameraService->get();
-            BOOST_CHECK_NE(camera.get(), nullptr);
+    for (auto&& cameraService : services.get_all<CameraService>())
+    {
+        std::unique_ptr<ICamera> camera = std::move(*cameraService);
+        BOOST_CHECK_NE(camera.get(), nullptr);
 
-            if (dynamic_cast<PerspectiveCamera*>(camera.get()))
-            {
-                BOOST_CHECK_EQUAL(camera->projection(), 1);
-            }
-            else if (dynamic_cast<OrthographicCamera*>(camera.get()))
-            {
-                BOOST_CHECK_EQUAL(camera->projection(), 2);
-            }
-            else
-            {
-                BOOST_CHECK(false);
-            }
-        });
+        if (dynamic_cast<PerspectiveCamera*>(camera.get()))
+        {
+            BOOST_CHECK_EQUAL(camera->projection(), 1);
+        }
+        else if (dynamic_cast<OrthographicCamera*>(camera.get()))
+        {
+            BOOST_CHECK_EQUAL(camera->projection(), 2);
+        }
+        else
+        {
+            BOOST_CHECK(false);
+        }
+    }
 }
 
 BOOST_AUTO_TEST_CASE(
@@ -148,9 +162,10 @@ BOOST_AUTO_TEST_CASE(
     auto fetch_cameras = [&]()
     {
         std::vector<const ICamera*> cameras;
-        services.for_each<singleton_service>(
-            [&](const dipp::result<singleton_service>& cameraService)
-            { cameras.push_back((*cameraService)->get()); });
+        for (auto&& cameraService : services.get_all<singleton_service>())
+        {
+            cameras.emplace_back(*cameraService);
+        }
         return cameras;
     };
 
@@ -160,6 +175,50 @@ BOOST_AUTO_TEST_CASE(
     // Then
     BOOST_CHECK_EQUAL(first_cameras.size(), 3);
     BOOST_TEST(first_cameras == second_cameras, boost::test_tools::per_element());
+}
+
+BOOST_AUTO_TEST_CASE(
+    GivenIncompleteCameraService_WhenQueryingFromCollection_ShouldReturnServiceNotFoundError)
+{
+    // Given
+    dipp::service_collection collection;
+
+    collection.add<DependecyCameraService>();
+
+    // When
+    dipp::service_provider services(std::move(collection));
+
+// Then
+#ifdef DIPP_USE_RESULT
+    bool found_service_not_found_error = false;
+    boost::leaf::try_handle_some(
+        [&]() -> boost::leaf::result<void>
+        {
+            for (auto&& cameraService : services.get_all<DependecyCameraService>())
+            {
+                if (!cameraService.has_value())
+                {
+                    return cameraService.error();
+                }
+                return {};
+            }
+        },
+        [&](const dipp::service_not_found&) -> boost::leaf::result<void>
+        {
+            found_service_not_found_error = true;
+            return {};
+        });
+    BOOST_CHECK(found_service_not_found_error);
+#else
+    BOOST_CHECK_THROW(
+        {
+            for (auto&& cameraService : services.get_all<DependecyCameraService>())
+            {
+                (void) cameraService;
+            }
+        },
+        dipp::service_not_found);
+#endif
 }
 
 BOOST_AUTO_TEST_SUITE_END()

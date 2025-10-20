@@ -223,23 +223,17 @@ BOOST_AUTO_TEST_CASE(
 
     // Test for_each with specific key
     std::set<std::string> primaryConnections;
-    services.for_each<PrimaryDbService>( //
-        [&](const dipp::result<DatabaseConnection>& service)
-        { primaryConnections.emplace(service->connectionString); });
-
-    // Test for_each_all (all keys of DatabaseConnection type)
-    std::set<std::string> allConnections;
-    services.for_each_all<PrimaryDbService>( //
-        [&](const dipp::result<DatabaseConnection>& service)
-        { allConnections.emplace(service->connectionString); });
+    for (const dipp::result<PrimaryDbService>& service : services.get_all<PrimaryDbService>())
+    {
+        const DatabaseConnection& dbConn = *service;
+        primaryConnections.emplace(dbConn.connectionString);
+    }
 
     // Then
     BOOST_CHECK_EQUAL(primaryConnections.size(), 3);
     BOOST_CHECK(primaryConnections.contains("conn1"));
     BOOST_CHECK(primaryConnections.contains("conn2"));
     BOOST_CHECK(primaryConnections.contains("conn3"));
-
-    BOOST_CHECK_EQUAL(allConnections.size(), 5); // 3 primary + 2 secondary
 }
 
 BOOST_AUTO_TEST_SUITE_END()
