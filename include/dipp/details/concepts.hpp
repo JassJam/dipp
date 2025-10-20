@@ -94,9 +94,6 @@ namespace dipp::details
 
     template<typename Ty>
     concept base_injected_type = requires(Ty t) {
-        // has move contructor
-        requires std::is_move_constructible_v<Ty>;
-
         // Required types
         typename Ty::descriptor_type;
         typename Ty::value_type;
