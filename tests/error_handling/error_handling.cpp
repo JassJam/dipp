@@ -440,25 +440,21 @@ BOOST_AUTO_TEST_CASE(GivenDependencyChainWithMissingIntermediate_WhenServiceRequ
 
     bool found_service_not_found_error = false;
 
-    auto x = boost::leaf::try_handle_some(
-        [&]() -> boost::leaf::result<int>
+    boost::leaf::try_handle_some(
+        [&]() -> boost::leaf::result<void>
         {
             auto result = services.get<TopServiceType>();
             if (!result.has_value())
             {
                 return result.error();
             }
-            return 1;
+            return {};
         },
-        [&](const dipp::service_not_found&) -> boost::leaf::result<int>
+        [&](const dipp::service_not_found&) -> boost::leaf::result<void>
         {
             found_service_not_found_error = true;
-            return 1;
+            return {};
         });
-
-    if (x.has_value())
-    {
-    }
 
     BOOST_CHECK(found_service_not_found_error);
 

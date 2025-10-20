@@ -83,24 +83,14 @@ namespace dipp::details
 
     public:
         /// <summary>
-        /// Get a service from the storage.
+        /// Gets all services from the storage with the specified type and key.
         /// </summary>
-        template<base_injected_type InjectableTy, typename FuncTy>
-        void for_each(FuncTy&& func)
+        template<base_injected_type InjectableTy,
+                 container_type ContainerTy = std::vector<dipp::details::result<InjectableTy>>>
+        ContainerTy get_all()
         {
-            m_Storage->template for_each<InjectableTy>(
-                std::forward<FuncTy>(func), *this, *m_SingletonStorage, m_LocalStorage);
-        }
-
-    public:
-        /// <summary>
-        /// Get a service from the storage.
-        /// </summary>
-        template<base_injected_type InjectableTy, typename FuncTy>
-        void for_each_all(FuncTy&& func)
-        {
-            m_Storage->template for_each_all<InjectableTy>(
-                std::forward<FuncTy>(func), *this, *m_SingletonStorage, m_LocalStorage);
+            return m_Storage->template get_all<InjectableTy, ContainerTy>(
+                *this, *m_SingletonStorage, m_LocalStorage);
         }
 
     private:

@@ -202,18 +202,17 @@ namespace dipp::details
             return count;
         }
 
+    public:
         /// <summary>
-        /// Iterates over all services of the specified type in the storage and applies the provided
-        /// function to each service.
+        /// Gets all services from the storage with the specified type and key.
         /// </summary>
         template<base_injected_type InjectableTy,
+                 container_type ContainerTy,
                  service_storage_memory_type SingletonMemTy,
-                 service_storage_memory_type ScopedMemTy,
-                 typename FuncTy>
-        void for_each(FuncTy&& func,
-                      typename InjectableTy::descriptor_type::scope_type& scope,
-                      SingletonMemTy& singleton_storage,
-                      ScopedMemTy& scoped_storage)
+                 service_storage_memory_type ScopedMemTy>
+        ContainerTy get_all(typename InjectableTy::descriptor_type::scope_type& scope,
+                            SingletonMemTy& singleton_storage,
+                            ScopedMemTy& scoped_storage)
         {
             using descriptor_type = typename InjectableTy::descriptor_type;
             using service_type = typename descriptor_type::service_type;
@@ -222,46 +221,21 @@ namespace dipp::details
             auto handle = make_type_key(service_handle, InjectableTy::key);
             auto it = m_Descriptors.find(handle);
 
+            ContainerTy results;
             if (it == m_Descriptors.end())
             {
-                return;
+                return results;
             }
+
+            results.reserve(it->second.size());
 
             service_loader loader{scope, singleton_storage, scoped_storage};
-            for (auto& descriptor : it->second)
+            for (auto& service : it->second)
             {
-                func(loader.load<InjectableTy>(descriptor));
+                results.emplace_back(loader.load<InjectableTy>(service));
             }
-        }
 
-        /// <summary>
-        /// Iterates over all services of the specified type in the storage and applies the provided
-        /// </summary>
-        template<base_injected_type InjectableTy,
-                 service_storage_memory_type SingletonMemTy,
-                 service_storage_memory_type ScopedMemTy,
-                 typename FuncTy>
-        void for_each_all(FuncTy&& func,
-                          typename InjectableTy::descriptor_type::scope_type& scope,
-                          SingletonMemTy& singleton_storage,
-                          ScopedMemTy& scoped_storage)
-        {
-            using descriptor_type = typename InjectableTy::descriptor_type;
-            using service_type = typename descriptor_type::service_type;
-
-            auto service_handle = typeid(service_type).hash_code();
-            service_loader loader{scope, singleton_storage, scoped_storage};
-
-            for (auto iter = m_Descriptors.begin(); iter != m_Descriptors.end(); ++iter)
-            {
-                if (iter->first.first == service_handle)
-                {
-                    for (auto& service : iter->second)
-                    {
-                        func(loader.load<InjectableTy>(service));
-                    }
-                }
-            }
+            return results;
         }
 
     private:

@@ -94,6 +94,9 @@ namespace dipp::details
 
     template<typename Ty>
     concept base_injected_type = requires(Ty t) {
+        // has move contructor
+        requires std::is_move_constructible_v<Ty>;
+
         // Required types
         typename Ty::descriptor_type;
         typename Ty::value_type;
@@ -123,5 +126,23 @@ namespace dipp::details
     concept dependency_container_type = requires {
         // Required types
         typename Ty::types;
+    };
+
+    //
+
+    template<typename Ty>
+    concept container_type = requires(Ty t) {
+        // Required functions
+        // void reserve(size_t);
+        t.reserve(std::declval<size_t>());
+
+        // has emplace_back(Args&&...);
+        t.emplace_back(std::declval<typename Ty::value_type>());
+
+        // has move contructor
+        requires std::is_move_constructible_v<Ty>;
+
+        // has default constructor
+        requires std::is_default_constructible_v<Ty>;
     };
 }
