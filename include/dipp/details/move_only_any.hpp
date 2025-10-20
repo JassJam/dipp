@@ -103,8 +103,8 @@ namespace dipp::details
                                            sizeof(result<Ty>) <= SMALL_BUFFER_SIZE;
 
         template<typename Ty>
-        static constexpr bool is_small = std::is_move_constructible_v<Ty> &&         //
-                                         std::is_move_constructible_v<result<Ty>> && //
+        static constexpr bool is_small = std::is_move_constructible_v<Ty> &&                 //
+                                         std::is_move_constructible_v<result<Ty>> &&         //
                                          alignof(result<Ty>) <= alignof(std::max_align_t) && //
                                          sizeof(result<Ty>) <= SMALL_BUFFER_SIZE;
 
@@ -205,9 +205,11 @@ namespace dipp::details
 
 #ifdef DIPP_USE_RESULT
         template<typename... Args>
-        [[nodiscard]] static move_only_any make_error(Args&&... args)
+        [[nodiscard]] static move_only_any make_error(error_id id)
         {
-            return make<error_id>(std::forward<Args>(args)...);
+            move_only_any any;
+            any.emplace<error_id>(id);
+            return any;
         }
 #endif
 
@@ -264,7 +266,7 @@ namespace dipp::details
 #ifdef DIPP_USE_RESULT
         [[nodiscard]] error_id error() noexcept
         {
-            return cast<error_id>()->value();
+            return cast<error_id>()->error();
         }
 
         [[nodiscard]] constexpr bool has_error() const noexcept
