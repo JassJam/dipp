@@ -1,7 +1,6 @@
 #pragma once
 
 #include "scope.hpp"
-#include "result.hpp"
 
 namespace dipp::details
 {
@@ -11,7 +10,8 @@ namespace dipp::details
     class base_service_provider
     {
     public:
-        using singleton_memory_type = SingletonPolicyTy;
+        using singleton_storage_type = SingletonPolicyTy;
+        using scoped_storage_type = ScopedPolicyTy;
         using storage_type = base_service_storage<StoragePolicyTy>;
         using scope_type = base_service_scope<StoragePolicyTy, SingletonPolicyTy, ScopedPolicyTy>;
         using collection_type = base_service_collection<StoragePolicyTy>;
@@ -122,17 +122,19 @@ namespace dipp::details
 
     public:
         /// <summary>
-        /// Gets all services from the storage with the specified type and key.
+        /// Finds all services from the storage with the specified type and key.
         /// </summary>
-        template<base_injected_type InjectableTy,
-                 container_type ContainerTy = std::vector<dipp::details::result<InjectableTy>>>
-        ContainerTy get_all()
+        template<base_injected_type InjectableTy, typename FnTy>
+            requires std::is_invocable_v<
+                FnTy,
+                base_service_getter<InjectableTy, singleton_storage_type, scoped_storage_type>>
+        void find_all(FnTy&& callback)
         {
-            return root_scope().template get_all<InjectableTy, ContainerTy>();
+            return root_scope().template find_all<InjectableTy>(std::forward<FnTy>(callback));
         }
 
     private:
-        singleton_memory_type m_SingletonStorage;
+        singleton_storage_type m_SingletonStorage;
         storage_type m_Storage;
         scope_type m_RootScope;
     };

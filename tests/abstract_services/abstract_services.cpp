@@ -122,24 +122,25 @@ BOOST_AUTO_TEST_CASE(GivenCameraServices_WhenAddingToCollection_ThenCamerasAreCr
     auto camera_count = services.count<CameraService>();
     BOOST_CHECK_EQUAL(camera_count, 3);
 
-    for (auto&& cameraService : services.get_all<CameraService>())
-    {
-        std::unique_ptr<ICamera> camera = std::move(*cameraService);
-        BOOST_CHECK_NE(camera.get(), nullptr);
+    services.find_all<CameraService>(
+        [](dipp::service_getter<CameraService> serviceGetter)
+        {
+            std::unique_ptr<ICamera> camera = std::move(*serviceGetter());
+            BOOST_CHECK_NE(camera.get(), nullptr);
 
-        if (dynamic_cast<PerspectiveCamera*>(camera.get()))
-        {
-            BOOST_CHECK_EQUAL(camera->projection(), 1);
-        }
-        else if (dynamic_cast<OrthographicCamera*>(camera.get()))
-        {
-            BOOST_CHECK_EQUAL(camera->projection(), 2);
-        }
-        else
-        {
-            BOOST_CHECK(false);
-        }
-    }
+            if (dynamic_cast<PerspectiveCamera*>(camera.get()))
+            {
+                BOOST_CHECK_EQUAL(camera->projection(), 1);
+            }
+            else if (dynamic_cast<OrthographicCamera*>(camera.get()))
+            {
+                BOOST_CHECK_EQUAL(camera->projection(), 2);
+            }
+            else
+            {
+                BOOST_CHECK(false);
+            }
+        });
 }
 
 BOOST_AUTO_TEST_CASE(
@@ -162,10 +163,9 @@ BOOST_AUTO_TEST_CASE(
     auto fetch_cameras = [&]()
     {
         std::vector<const ICamera*> cameras;
-        for (auto&& cameraService : services.get_all<singleton_service>())
-        {
-            cameras.emplace_back(*cameraService);
-        }
+        services.find_all<singleton_service>(
+            [&](dipp::service_getter<singleton_service> cameraService)
+            { cameras.emplace_back(*cameraService()); });
         return cameras;
     };
 
@@ -188,37 +188,28 @@ BOOST_AUTO_TEST_CASE(
     // When
     dipp::service_provider services(std::move(collection));
 
-// Then
+    // Then
+    services.find_all<DependecyCameraService>(
+        [](dipp::service_getter<DependecyCameraService> cameraService)
+        {
 #ifdef DIPP_USE_RESULT
-    bool found_service_not_found_error = false;
-    boost::leaf::try_handle_some(
-        [&]() -> boost::leaf::result<void>
-        {
-            for (auto&& cameraService : services.get_all<DependecyCameraService>())
-            {
-                if (!cameraService.has_value())
+            bool found_service_not_found_error = false;
+            boost::leaf::try_handle_some(
+                [&]() -> boost::leaf::result<void>
                 {
-                    return cameraService.error();
-                }
-                return {};
-            }
-        },
-        [&](const dipp::service_not_found&) -> boost::leaf::result<void>
-        {
-            found_service_not_found_error = true;
-            return {};
-        });
-    BOOST_CHECK(found_service_not_found_error);
+                    BOOST_LEAF_AUTO([[maybe_unused]] service, cameraService());
+                    return {};
+                },
+                [&](const dipp::service_not_found&) -> boost::leaf::result<void>
+                {
+                    found_service_not_found_error = true;
+                    return {};
+                });
+            BOOST_CHECK(found_service_not_found_error);
 #else
-    BOOST_CHECK_THROW(
-        {
-            for (auto&& cameraService : services.get_all<DependecyCameraService>())
-            {
-                (void) cameraService;
-            }
-        },
-        dipp::service_not_found);
+            BOOST_CHECK_THROW({ (void) cameraService(); }, dipp::service_not_found);
 #endif
+        });
 }
 
 BOOST_AUTO_TEST_SUITE_END()
