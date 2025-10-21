@@ -83,14 +83,16 @@ namespace dipp::details
 
     public:
         /// <summary>
-        /// Gets all services from the storage with the specified type and key.
+        /// Finds all services from the storage with the specified type and key.
         /// </summary>
-        template<base_injected_type InjectableTy,
-                 container_type ContainerTy = std::vector<dipp::details::result<InjectableTy>>>
-        ContainerTy get_all()
+        template<base_injected_type InjectableTy, typename FnTy>
+            requires std::is_invocable_v<
+                FnTy,
+                base_service_getter<InjectableTy, singleton_storage_type, scoped_storage_type>>
+        void find_all(FnTy&& callback)
         {
-            return m_Storage->template get_all<InjectableTy, ContainerTy>(
-                *this, *m_SingletonStorage, m_LocalStorage);
+            return m_Storage->template find_all<InjectableTy>(
+                *this, std::forward<FnTy>(callback), *m_SingletonStorage, m_LocalStorage);
         }
 
     private:

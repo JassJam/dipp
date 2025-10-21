@@ -9,9 +9,12 @@
 namespace dipp
 {
     using details::base_service_collection;
+    using details::base_service_getter;
     using details::base_service_provider;
     using details::base_service_scope;
+
     using details::service_collection;
+    using details::service_getter;
     using details::service_lifetime;
     using details::service_provider;
     using details::service_scope;

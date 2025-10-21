@@ -57,7 +57,8 @@ namespace dipp::details
     template<typename Ty>
     concept service_provider_type = requires(Ty t) {
         // Required types
-        typename Ty::singleton_memory_type;
+        typename Ty::scoped_storage_type;
+        typename Ty::singleton_storage_type;
         typename Ty::storage_type;
         typename Ty::scope_type;
         typename Ty::collection_type;

@@ -223,11 +223,12 @@ BOOST_AUTO_TEST_CASE(
 
     // Test for_each with specific key
     std::set<std::string> primaryConnections;
-    for (const dipp::result<PrimaryDbService>& service : services.get_all<PrimaryDbService>())
-    {
-        const DatabaseConnection& dbConn = *service;
-        primaryConnections.emplace(dbConn.connectionString);
-    }
+    services.find_all<PrimaryDbService>(
+        [&primaryConnections](dipp::service_getter<PrimaryDbService> serviceGetter)
+        {
+            const DatabaseConnection& dbConn = *serviceGetter();
+            primaryConnections.emplace(dbConn.connectionString);
+        });
 
     // Then
     BOOST_CHECK_EQUAL(primaryConnections.size(), 3);
