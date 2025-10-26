@@ -52,16 +52,15 @@ namespace dipp::details
         {
             void (*destruct)(void* data);
 
-            template<typename Ty>
             void init()
             {
-                destruct = &do_destroy<Ty>;
+                destruct = &do_destroy;
             }
-
-            template<typename Ty>
             static void do_destroy(void* data)
             {
-                delete std::bit_cast<Ty*>(data);
+                auto storage = std::bit_cast<std::byte*>(data);
+                std::unique_ptr<std::byte[]> ptr(storage);
+                ptr.reset();
             }
         };
 
@@ -318,12 +317,16 @@ namespace dipp::details
             }
             else
             {
-                auto obj = new result_type(std::forward<Args>(args)...);
+                auto storage = std::make_unique<std::byte[]>(sizeof(result_type));
+                auto obj = std::bit_cast<pointer_type>(storage.get());
+
+                construct_result(obj, std::forward<Args>(args)...);
+
                 m_Storage.u.large_type.data = obj;
-
                 m_Storage.type = any_storage_type::large_type;
-                m_Storage.u.large_type.rtti.init<result_type>();
+                m_Storage.u.large_type.rtti.init();
 
+                storage.release();
                 return *obj;
             }
         }
