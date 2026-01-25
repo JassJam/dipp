@@ -197,7 +197,8 @@ BOOST_AUTO_TEST_CASE(
             boost::leaf::try_handle_some(
                 [&]() -> boost::leaf::result<void>
                 {
-                    BOOST_LEAF_AUTO([[maybe_unused]] service, cameraService());
+                    BOOST_LEAF_AUTO(service, cameraService());
+                    (void) service;
                     return {};
                 },
                 [&](const dipp::service_not_found&) -> boost::leaf::result<void>

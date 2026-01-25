@@ -119,14 +119,13 @@ namespace dipp::details
         constexpr move_only_any() noexcept = default;
 
         template<typename Ty>
-        constexpr move_only_any(result<Ty>&& value) noexcept(
-            std::is_nothrow_move_assignable_v<result<Ty>>)
+        move_only_any(result<Ty>&& value) noexcept(std::is_nothrow_move_assignable_v<result<Ty>>)
         {
             emplace_impl<Ty>(std::forward<result<Ty>>(value));
         }
 
         template<typename Ty>
-        constexpr move_only_any(Ty&& value) noexcept(std::is_nothrow_move_assignable_v<Ty>)
+        move_only_any(Ty&& value) noexcept(std::is_nothrow_move_assignable_v<Ty>)
         {
             emplace_impl<Ty>(std::forward<Ty>(value));
         }
@@ -208,13 +207,28 @@ namespace dipp::details
         }
 
 #ifdef DIPP_USE_RESULT
-        template<typename... Args>
+    #ifdef DIPP_USE_RESULT
         [[nodiscard]] static move_only_any make_error(error_id id)
         {
             move_only_any any;
-            any.emplace<error_id>(id);
+            any.m_Storage.type_info = &typeid(error_id);
+
+            if constexpr (sizeof(error_id) <= SMALL_BUFFER_SIZE &&
+                          alignof(error_id) <= alignof(std::max_align_t))
+            {
+                auto ptr = std::bit_cast<error_id*>(&any.m_Storage.u.trivial_type.buffer);
+                ::new (static_cast<void*>(ptr)) error_id(std::move(id));
+                any.m_Storage.type = any_storage_type::trivial_type;
+            }
+            else
+            {
+                static_assert(sizeof(error_id) <= SMALL_BUFFER_SIZE,
+                              "error_id is too large for small buffer");
+            }
+
             return any;
         }
+    #endif
 #endif
 
     public:
@@ -222,6 +236,8 @@ namespace dipp::details
         {
             switch (m_Storage.type)
             {
+                case any_storage_type::trivial_type:
+                    break;
                 case any_storage_type::small_type:
                     m_Storage.u.small_type.rtti.destruct(m_Storage.u.small_type.buffer);
                     break;
@@ -270,7 +286,26 @@ namespace dipp::details
 #ifdef DIPP_USE_RESULT
         [[nodiscard]] error_id error() noexcept
         {
-            return cast<error_id>()->error();
+            if (m_Storage.type_info == &typeid(error_id))
+            {
+                if (m_Storage.type == any_storage_type::trivial_type)
+                {
+                    auto ptr = std::bit_cast<error_id*>(&m_Storage.u.trivial_type.buffer);
+                    return *ptr;
+                }
+                if (m_Storage.type == any_storage_type::small_type)
+                {
+                    auto ptr = std::bit_cast<error_id*>(&m_Storage.u.small_type.buffer);
+                    return *ptr;
+                }
+                if (m_Storage.type == any_storage_type::large_type)
+                {
+                    auto ptr = std::bit_cast<error_id*>(m_Storage.u.large_type.data);
+                    return *ptr;
+                }
+            }
+
+            return error_id{};
         }
 
         [[nodiscard]] constexpr bool has_error() const noexcept
@@ -295,7 +330,7 @@ namespace dipp::details
 
     private:
         template<typename Ty, typename... Args>
-        constexpr result<Ty>& emplace_impl(Args&&... args)
+        result<Ty>& emplace_impl(Args&&... args)
         {
             using result_type = result<Ty>;
             using pointer_type = std::add_pointer_t<result_type>;

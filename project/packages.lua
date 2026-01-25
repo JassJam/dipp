@@ -1,8 +1,10 @@
+includes("custom/fruit")
+
 local function install_benchmark_packages()
     if is_config("benchmark", true) then
         add_requires("benchmark")
         add_requires("kangaru")
-        add_requires("fruit")
+        add_requires("fruit-custom")
     end
 end
 

@@ -10,8 +10,8 @@ namespace dipp::details
     {
     public:
         using descriptor_type = DescTy;
-        using value_type = typename descriptor_type::value_type;
-        using service_type = typename descriptor_type::service_type;
+        using value_type = descriptor_type::value_type;
+        using service_type = descriptor_type::service_type;
         static constexpr size_t key = Key;
 
         using reference_type = std::add_lvalue_reference_t<std::remove_cvref_t<value_type>>;
@@ -37,8 +37,8 @@ namespace dipp::details
 
         constexpr base_injected(service_type& value) noexcept(
             std::is_nothrow_copy_constructible_v<service_type>)
-            requires(((descriptor_type::lifetime == service_lifetime::singleton) ||
-                      (descriptor_type::lifetime == service_lifetime::scope)))
+            requires((descriptor_type::lifetime == service_lifetime::singleton) ||
+                     (descriptor_type::lifetime == service_lifetime::scoped))
             : m_Value(value)
         {
         }
@@ -55,9 +55,8 @@ namespace dipp::details
         /// <summary>
         /// Detach the service from the injected object.
         /// </summary>
-        template<
-            typename = std::enable_if_t<descriptor_type::lifetime == service_lifetime::transient>>
         [[nodiscard]] constexpr auto detach() noexcept
+            requires(descriptor_type::lifetime == service_lifetime::transient)
         {
             return std::move(m_Value);
         }

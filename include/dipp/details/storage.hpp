@@ -10,7 +10,7 @@ namespace dipp::details
     {
     public:
         using policy_type = PolicyTy;
-        using service_map_type = typename policy_type::service_map_type;
+        using service_map_type = policy_type::service_map_type;
 
     public:
         /// <summary>
@@ -27,7 +27,7 @@ namespace dipp::details
         template<service_descriptor_type DescTy>
         void clear(size_t key)
         {
-            auto service_type = typeid(typename DescTy::service_type).hash_code();
+            auto service_type = typeid(DescTy::service_type).hash_code();
             auto handle = make_type_key(service_type, key);
             auto iter = m_Descriptors.find(handle);
 
@@ -43,7 +43,7 @@ namespace dipp::details
         template<service_descriptor_type DescTy>
         void clear_all()
         {
-            auto service_type = typeid(typename DescTy::service_type).hash_code();
+            auto service_type = typeid(DescTy::service_type).hash_code();
             for (auto iter = m_Descriptors.begin(); iter != m_Descriptors.end();)
             {
                 if (iter->first.first == service_type)
@@ -104,8 +104,8 @@ namespace dipp::details
                                        SingletonMemTy& singleton_storage,
                                        ScopedMemTy& scoped_storage) -> result<InjectableTy>
         {
-            using descriptor_type = typename InjectableTy::descriptor_type;
-            using service_type = typename descriptor_type::service_type;
+            using descriptor_type = InjectableTy::descriptor_type;
+            using service_type = descriptor_type::service_type;
 
             auto service_handle = typeid(service_type).hash_code();
             auto handle = make_type_key(service_handle, InjectableTy::key);
@@ -119,7 +119,7 @@ namespace dipp::details
             auto& last_service = it->second.back();
 
             service_loader loader{scope, singleton_storage, scoped_storage};
-            return loader.load<InjectableTy>(last_service);
+            return loader.template load<InjectableTy>(last_service);
         }
 
     public:
@@ -129,9 +129,8 @@ namespace dipp::details
         template<base_injected_type InjectableTy>
         [[nodiscard]] bool has_service() const noexcept
         {
-            using descriptor_type = typename InjectableTy::descriptor_type;
-            using value_type = typename descriptor_type::value_type;
-            using service_type = typename descriptor_type::service_type;
+            using descriptor_type = InjectableTy::descriptor_type;
+            using service_type = descriptor_type::service_type;
 
             auto service_handle = typeid(service_type).hash_code();
             auto handle = make_type_key(service_handle, InjectableTy::key);
@@ -146,8 +145,8 @@ namespace dipp::details
         template<base_injected_type InjectableTy>
         [[nodiscard]] size_t count() const noexcept
         {
-            using descriptor_type = typename InjectableTy::descriptor_type;
-            using service_type = typename descriptor_type::service_type;
+            using descriptor_type = InjectableTy::descriptor_type;
+            using service_type = descriptor_type::service_type;
 
             auto service_handle = typeid(service_type).hash_code();
             auto handle = make_type_key(service_handle, InjectableTy::key);
@@ -162,8 +161,8 @@ namespace dipp::details
         template<base_injected_type InjectableTy>
         [[nodiscard]] size_t count_all() const noexcept
         {
-            using descriptor_type = typename InjectableTy::descriptor_type;
-            using service_type = typename descriptor_type::service_type;
+            using descriptor_type = InjectableTy::descriptor_type;
+            using service_type = descriptor_type::service_type;
 
             auto service_handle = typeid(service_type).hash_code();
             size_t count = 0;
@@ -189,13 +188,13 @@ namespace dipp::details
                  service_storage_memory_type ScopedMemTy>
             requires std::
                 is_invocable_v<FnTy, base_service_getter<InjectableTy, SingletonMemTy, ScopedMemTy>>
-            void find_all(typename InjectableTy::descriptor_type::scope_type& scope,
+            void find_all(InjectableTy::descriptor_type::scope_type& scope,
                           FnTy&& callback,
                           SingletonMemTy& singleton_storage,
                           ScopedMemTy& scoped_storage)
         {
-            using descriptor_type = typename InjectableTy::descriptor_type;
-            using service_type = typename descriptor_type::service_type;
+            using descriptor_type = InjectableTy::descriptor_type;
+            using service_type = descriptor_type::service_type;
             using service_getter_type =
                 base_service_getter<InjectableTy, SingletonMemTy, ScopedMemTy>;
 

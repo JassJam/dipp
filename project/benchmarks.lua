@@ -12,7 +12,7 @@ local function add_benchamrk(opts)
         add_packages("benchmark")
         
         add_packages("kangaru")
-        add_packages("fruit")
+        add_packages("fruit-custom")
 
         add_files(file_path .. "/**.cpp")
         add_headerfiles(file_path .. "/**.hpp")

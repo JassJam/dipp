@@ -32,17 +32,14 @@ namespace dipp::details
         /// <summary>
         /// Loads a service from the storage with the specified key.
         /// </summary>
-        template<base_injected_type InjectableTy,
-                 service_storage_memory_type SingletonMemTy,
-                 service_storage_memory_type ScopedMemTy>
+        template<base_injected_type InjectableTy>
         [[nodiscard]] static auto load_service_impl(
             move_only_any& service,
-            typename InjectableTy::descriptor_type::scope_type& scope,
+            InjectableTy::descriptor_type::scope_type& scope,
             SingletonMemTy& singleton_storage,
             ScopedMemTy& scoped_storage) -> result<InjectableTy>
         {
-            using descriptor_type = typename InjectableTy::descriptor_type;
-            using service_type = typename descriptor_type::service_type;
+            using descriptor_type = InjectableTy::descriptor_type;
 
             if constexpr (descriptor_type::lifetime == service_lifetime::singleton)
             {
@@ -58,7 +55,7 @@ namespace dipp::details
             }
             else
             {
-                details::unreachable();
+                unreachable();
             }
         }
 
@@ -67,14 +64,13 @@ namespace dipp::details
         /// Loads a scoped/singleton service from storage.
         /// </summary>
         template<base_injected_type InjectableTy, service_storage_memory_type MemTy>
-        [[nodiscard]] static auto load_mem_service(
-            move_only_any& service,
-            typename InjectableTy::descriptor_type::scope_type& scope,
-            MemTy& storage) -> result<InjectableTy>
+        [[nodiscard]] static auto load_mem_service(move_only_any& service,
+                                                   InjectableTy::descriptor_type::scope_type& scope,
+                                                   MemTy& storage) -> result<InjectableTy>
         {
-            using descriptor_type = typename InjectableTy::descriptor_type;
-            using service_type = typename descriptor_type::service_type;
-            using value_type = typename descriptor_type::value_type;
+            using descriptor_type = InjectableTy::descriptor_type;
+            using service_type = descriptor_type::service_type;
+            using value_type = descriptor_type::value_type;
 
             auto handle = make_type_key(typeid(descriptor_type).hash_code(),
                                         std::bit_cast<size_t>(std::addressof(service)));
@@ -98,7 +94,7 @@ namespace dipp::details
             }
 #endif
 
-            auto instance = instance_iter->cast<value_type>();
+            auto instance = instance_iter->template cast<value_type>();
             if (!instance || instance->has_error()) [[unlikely]]
             {
 #ifdef DIPP_USE_RESULT
@@ -119,11 +115,11 @@ namespace dipp::details
         template<base_injected_type InjectableTy>
         [[nodiscard]] static auto load_transient_service(
             move_only_any& service,
-            typename InjectableTy::descriptor_type::scope_type& scope) -> result<InjectableTy>
+            InjectableTy::descriptor_type::scope_type& scope) -> result<InjectableTy>
         {
-            using descriptor_type = typename InjectableTy::descriptor_type;
-            using service_type = typename descriptor_type::service_type;
-            using value_type = typename descriptor_type::value_type;
+            using descriptor_type = InjectableTy::descriptor_type;
+            using service_type = descriptor_type::service_type;
+            using value_type = descriptor_type::value_type;
 
             auto descriptor = service.cast<descriptor_type>();
             if (!descriptor) [[unlikely]]
@@ -139,7 +135,7 @@ namespace dipp::details
             }
 #endif
 
-            auto instance = loaded_instance.cast<value_type>();
+            auto instance = loaded_instance.template cast<value_type>();
             if (!instance || instance->has_error()) [[unlikely]]
             {
 #ifdef DIPP_USE_RESULT
