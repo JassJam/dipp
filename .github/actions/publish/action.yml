@@ -1,0 +1,45 @@
+inputs:
+  github_token:
+    description: 'GitHub token for uploading artifacts'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+        merge-multiple: false
+
+    - name: Create tar archives for each artifact
+      shell: pwsh
+      run: |
+          New-Item -Path "release-tars" -ItemType Directory -Force
+          $destDir = (Get-Item -Path "release-tars").FullName
+          
+          $artifactDirs = Get-ChildItem -Path "artifacts" -Directory
+          foreach ($dir in $artifactDirs) {
+            $artifactName = $dir.Name
+            Write-Host "Creating archive for $artifactName"
+            
+            Push-Location $dir.FullName
+            tar -czf "$destDir/$artifactName.tar.gz" *
+            Pop-Location
+          }
+          
+          Get-ChildItem -Path "release-tars" | Format-Table Name, Length
+
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      with:
+        name: Release ${{ github.ref_name }}
+        tag_name: ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+        files: release-tars/*.tar.gz
