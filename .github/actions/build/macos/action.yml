@@ -1,0 +1,38 @@
+inputs:
+  config-name:
+    description: 'Name of the configuration preset to use for the build'
+    required: true
+  config-os:
+    description: 'Operating system to use for the build'
+    required: true
+  config-preset:
+    description: 'Configuration preset to use for the build'
+    required: true
+  config-output:
+    description: 'Output directory for the build artifacts'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      shell: pwsh
+      run: |
+        brew install ninja
+
+    - name: Install dependencies (gcc)
+      if: contains(inputs.config-preset, 'gcc')
+      shell: pwsh
+      run: |
+        brew install gcc@14
+
+    - name: Build Artifacts
+      id: build
+      uses: ./.github/actions/build/common
+      with:
+        config-name: ${{ inputs.config-name }}
+        config-os: ${{ inputs.config-os }}
+        config-preset: ${{ inputs.config-preset }}
+        config-output: ${{ inputs.config-output }}

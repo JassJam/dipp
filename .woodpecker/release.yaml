@@ -1,0 +1,50 @@
+when:
+  - event: tag
+
+steps:
+  # Linux / Clang - x64
+  - name: build-linux-x64-clang-release
+    image: dockcross/linux-x64-clang
+    commands:
+      - cmake -S . -B build/unixlike-x64-clang-release --preset unixlike-x64-clang-release
+      - cmake --build build/unixlike-x64-clang-release --config Release
+    when:
+      - event: tag
+
+  # Linux / Clang - x86
+  - name: build-linux-x86-clang-release
+    image: dockcross/linux-x64-clang
+    commands:
+      - chmod +x ./.woodpecker/scripts/test/setup-clang-unix-x86.sh
+      - ./.woodpecker/scripts/test/setup-clang-unix-x86.sh
+      - cmake -S . -B build/unixlike-x86-clang-release --preset unixlike-x86-clang-release
+      - cmake --build build/unixlike-x86-clang-release --config Release
+    when:
+      - event: tag
+
+  # Linux / GCC - x64
+  - name: build-linux-x64-gcc-release
+    image: dockcross/linux-x86_64-full
+    commands:
+      - cmake -S . -B build/unixlike-x64-gcc-release --preset unixlike-x64-gcc-release
+      - cmake --build build/unixlike-x64-gcc-release --config Release
+    when:
+      - event: tag
+
+  # Linux / GCC - x86
+  - name: build-linux-x86-gcc-release
+    image: dockcross/linux-x86
+    commands:
+      - cmake -S . -B build/unixlike-x86-gcc-release --preset unixlike-x86-gcc-release
+      - cmake --build build/unixlike-x86-gcc-release --config Release
+    when:
+      - event: tag
+
+  # Emscripten
+  - name: build-emscripten-release
+    image: dockcross/web-wasm
+    commands:
+      - cmake -S . -B build/emscripten-release --preset emscripten-release
+      - cmake --build build/emscripten-release --config Release
+    when:
+      - event: tag

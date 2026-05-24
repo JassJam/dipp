@@ -1,0 +1,47 @@
+inputs:
+  config-name:
+    description: 'Name of the configuration preset to use for the build'
+    required: true
+  config-os:
+    description: 'Operating system to use for the build'
+    required: true
+  config-preset:
+    description: 'Configuration preset to use for the build'
+    required: true
+  config-output:
+    description: 'Output directory for the build artifacts'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies (clang x64)
+      if: contains(inputs.config-preset, 'clang') && !contains(inputs.config-preset, 'x86')
+      shell: bash
+      run: sudo apt-get install -y clang-18
+
+    - name: Install dependencies (clang x86)
+      if: contains(inputs.config-preset, 'clang') && contains(inputs.config-preset, 'x86')
+      shell: bash
+      run: sudo apt-get install -y clang-18 gcc-multilib g++-multilib
+
+    - name: Install dependencies (gcc x64)
+      if: contains(inputs.config-preset, 'gcc') && !contains(inputs.config-preset, 'x86')
+      shell: bash
+      run: sudo apt-get install -y g++-14
+
+    - name: Install dependencies (gcc x86)
+      if: contains(inputs.config-preset, 'gcc') && contains(inputs.config-preset, 'x86')
+      shell: bash
+      run: sudo apt-get install -y g++-14 gcc-multilib g++-multilib
+
+    - name: Build Artifacts
+      id: build
+      uses: ./.github/actions/build/common
+      with:
+        config-name: ${{ inputs.config-name }}
+        config-os: ${{ inputs.config-os }}
+        config-preset: ${{ inputs.config-preset }}
+        config-output: ${{ inputs.config-output }}
