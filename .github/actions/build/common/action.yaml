@@ -1,0 +1,110 @@
+permissions:
+  contents: write
+
+inputs:
+  config-name:
+    description: 'Name of the configuration preset to use for the build'
+    required: true
+  config-os:
+    description: 'Operating system to use for the build'
+    required: true
+  config-preset:
+    description: 'Configuration preset to use for the build'
+    required: true
+  config-output:
+    description: 'Output directory for the build artifacts'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Install CMake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '3.30.0'
+
+    - name: Setup build environment
+      shell: pwsh
+      run: |
+        Write-Host "=== Setting up build environment for ${{ inputs.config-name }} ==="
+        
+        # Get version (sanitize slashes)
+        $VERSION = $env:GITHUB_REF -replace 'refs/tags/', '' -replace '/', '-'
+        if (-not $VERSION) { $VERSION = "1.0.0-dev" }
+
+        # Unique artifact name
+        $ARTIFACT_NAME = "${{ inputs.config-output }}-$VERSION"
+        Add-Content -Path $env:GITHUB_ENV -Value "ARTIFACT_NAME=$ARTIFACT_NAME"
+
+    - name: Build project (${{ inputs.config-name }})
+      shell: pwsh
+      run: |
+        Write-Host "=== Building ${{ inputs.config-name }} using build script ==="
+        
+        # Use the new build script for production builds
+        & "${{ github.workspace }}/scripts/build.ps1" -Preset "${{ inputs.config-preset }}"
+        
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Build failed with exit code: $LASTEXITCODE"
+            exit $LASTEXITCODE
+        }
+        
+        Write-Host "Build completed successfully"
+
+    - name: Install artifacts (${{ inputs.config-name }})
+      shell: pwsh
+      run: |
+        Write-Host "=== Installing artifacts for ${{ inputs.config-name }} ==="
+        
+        # Use the install script to create distribution artifacts
+        & "${{ github.workspace }}/scripts/install.ps1" -Preset "${{ inputs.config-preset }}" -Prefix "${{ runner.temp }}/${{ inputs.config-output }}/install"
+        
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Install failed with exit code: $LASTEXITCODE"
+            exit $LASTEXITCODE
+        }
+        
+        # List installed files
+        $INSTALL_DIR = "${{ runner.temp }}/${{ inputs.config-output }}/install"
+        if (Test-Path $INSTALL_DIR) {
+          Write-Host "=== Installed Files ==="
+          Get-ChildItem -Path $INSTALL_DIR -Recurse | Format-Table Name, Length, LastWriteTime
+        }
+        
+        Write-Host "Installation completed successfully"
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.ARTIFACT_NAME }}
+        path: ${{ runner.temp }}/${{ inputs.config-output }}/install/
+        retention-days: 7
+
+    - name: Upload CMake error logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cmake-error-logs-${{ inputs.config-name }}-${{ github.run_number }}
+        path: |
+          **/CMakeFiles/CMakeError.log
+          **/CMakeFiles/CMakeConfigureLog.yaml
+          **/CMakeFiles/CMakeOutput.log
+          **/config.log
+        if-no-files-found: ignore
+        retention-days: 7
+
+    - name: Cleanup
+      if: always()
+      shell: pwsh
+      run: |
+        Write-Host "=== Cleaning up build environment ==="
+        & "${{ github.workspace }}/scripts/clean.ps1" -All -Force
+        
+        # Also clean up temporary install directory
+        $INSTALL_DIR = "${{ runner.temp }}/${{ inputs.config-output }}/install"
+        Remove-Item -Path $INSTALL_DIR -Recurse -Force -ErrorAction SilentlyContinue
+        
+        Write-Host "Cleanup completed."
+      

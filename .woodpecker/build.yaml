@@ -1,0 +1,41 @@
+when:
+  - event: [pull_request]
+    branch: [main, dev]
+
+steps:
+
+#################
+# BUILD PIPELINE #
+#################
+
+  # Linux / Clang - x86_x64
+  - name: build-linux-x86_x64-clang-debug
+    image: dockcross/linux-x64-clang
+    commands:
+      - cmake -S . -B build/unixlike-x64-clang-debug --preset unixlike-x64-clang-debug
+      - cmake --build build/unixlike-x64-clang-debug
+    when:
+    - event: [pull_request]
+      branch: [main, dev]
+
+  # Emscripten
+  - name: build-emscripten-debug
+    image: dockcross/web-wasm
+    commands:
+      - cmake -S . -B build/emscripten-debug --preset emscripten-debug
+      - cmake --build build/emscripten-debug --config Debug
+    when:
+      - event: tag
+
+#################
+# TEST PIPELINE #
+#################
+
+  # Linux / Clang - x86_x64
+  - name: test-linux-x86_x64-clang-debug
+    image: dockcross/linux-x64-clang
+    commands:
+      - ctest --test-dir build/unixlike-x64-clang-debug --build-config Debug --output-on-failure
+    when:
+      - event: [pull_request]
+        branch: [main, dev]

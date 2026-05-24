@@ -1,0 +1,74 @@
+inputs:
+  config-name:
+    description: 'Name of the configuration preset to use for the tests'
+    required: true
+  config-os:
+    description: 'Operating system to use for the tests'
+    required: true
+  config-preset:
+    description: 'Configuration preset to use for the tests'
+    required: true
+  config-output:
+    description: 'Output directory for the test artifacts'
+    required: true
+
+  ctest-site:
+    description: 'CTest dashboard site URL (optional)'
+    required: false
+  ctest-location:
+    description: 'CTest dashboard location path (optional)'
+    required: false
+  ctest-test-timeout:
+    description: 'Test timeout in seconds (optional)'
+    required: false
+    default: '300'
+  ctest-drop-method:
+    description: 'HTTP protocol for uploads (default: https)'
+    required: false
+    default: 'https'
+  ctest-auth-token:
+    description: 'CDash authentication token (optional)'
+    required: false
+  ctest-dashboard-model:
+    description: 'CDash dashboard model: Experimental, Nightly, or Experimental (default: Experimental)'
+    required: false
+    default: 'Experimental'
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Install system dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential ninja-build
+
+    - name: Install 32-bit dependencies
+      shell: bash
+      if: contains(matrix.config.name, 'x86')
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-multilib g++-multilib
+
+    - name: Install Clang
+      if: contains(inputs.config-preset, 'clang')
+      shell: bash
+      run: |
+        sudo apt-get install -y clang
+
+    - name: Run Tests
+      id: test
+      uses: ./.github/actions/test/common
+      with:
+        config-name: ${{ inputs.config-name }}
+        config-os: ${{ inputs.config-os }}
+        config-preset: ${{ inputs.config-preset }}
+        config-output: ${{ inputs.config-output }}
+        ctest-site: ${{ inputs.ctest-site }}
+        ctest-location: ${{ inputs.ctest-location }}
+        ctest-test-timeout: ${{ inputs.ctest-test-timeout }}
+        ctest-drop-method: ${{ inputs.ctest-drop-method }}
+        ctest-auth-token: ${{ inputs.ctest-auth-token }}
+        ctest-dashboard-model: ${{ inputs.ctest-dashboard-model }}

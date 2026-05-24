@@ -1,5 +1,7 @@
 #pragma once
 
+#include "fail.hpp"
+
 #include <bit>
 #include <typeinfo>
 #include <memory>
@@ -157,6 +159,8 @@ namespace dipp::details
                     m_Storage.u.large_type.data =
                         std::exchange(other.m_Storage.u.large_type.data, nullptr);
                     break;
+                default:
+                    unreachable();
             }
             other.m_Storage.type = any_storage_type::null;
         }
@@ -187,6 +191,8 @@ namespace dipp::details
                         m_Storage.u.large_type.data =
                             std::exchange(other.m_Storage.u.large_type.data, nullptr);
                         break;
+                    default:
+                        unreachable();
                 }
                 other.m_Storage.type = any_storage_type::null;
             }
@@ -243,6 +249,8 @@ namespace dipp::details
                     break;
                 case any_storage_type::large_type:
                     m_Storage.u.large_type.rtti.destruct(m_Storage.u.large_type.data);
+                    break;
+                default:
                     break;
             }
             m_Storage.type = any_storage_type::null;

@@ -1,0 +1,270 @@
+name: Cross-Platform CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, dev]
+    tags:
+      - '*'
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  test:
+    name: Test (${{ matrix.config.name }})
+    runs-on: ${{ matrix.config.os }}
+    continue-on-error: false
+    strategy:
+      fail-fast: true
+      max-parallel: 4
+      matrix:
+        config:
+          # Linux / Clang
+          - name: linux-x64-clang
+            os: ubuntu-latest
+            preset: unixlike-x64-clang-debug
+            output: linux-x64-clang
+          - name: linux-x86-clang
+            os: ubuntu-latest
+            preset: unixlike-x86-clang-debug
+            output: linux-x86-clang
+
+          # Linux / GCC
+          - name: linux-x64-gcc
+            os: ubuntu-latest
+            preset: unixlike-x64-gcc-debug
+            output: linux-x64-gcc
+          - name: linux-x86-gcc
+            os: ubuntu-latest
+            preset: unixlike-x86-gcc-debug
+            output: linux-x86-gcc
+
+          # macOS / Clang
+          - name: macos-x64-clang
+            os: macos-latest
+            preset: unixlike-x64-clang-debug
+            output: macos-x64-clang
+          - name: macos-arm64-clang
+            os: macos-latest
+            preset: unixlike-x64-clang-debug
+            output: macos-arm64-clang
+
+          # macOS / GCC
+          - name: macos-x64-gcc
+            os: macos-latest
+            preset: unixlike-x64-gcc-debug
+            output: macos-x64-gcc
+
+          # Windows / MSVC
+          - name: windows-x64-msvc
+            os: windows-latest
+            preset: windows-x64-msvc-debug
+            output: windows-x64-msvc
+          - name: windows-x86-msvc
+            os: windows-latest
+            preset: windows-x86-msvc-debug
+            output: windows-x86-msvc
+
+          # Windows / Clang
+          - name: windows-x64-clang
+            os: windows-latest
+            preset: windows-clang-debug
+            output: windows-x64-clang
+
+          # Emscripten
+          - name: emscripten-debug
+            os: ubuntu-latest
+            preset: emscripten-debug
+            output: wasm-debug
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run ${{ matrix.config.name }} Tests
+        uses: ./.github/actions/test/unix
+        if: contains(matrix.config.os, 'ubuntu')
+        with:
+          config-name: ${{ matrix.config.name }}
+          config-os: ${{ matrix.config.os }}
+          config-preset: ${{ matrix.config.preset }}
+          config-output: ${{ matrix.config.output }}
+          ctest-site: ${{ secrets.CTEST_DASHBOARD_SITE }}
+          ctest-location: ${{ secrets.CTEST_DASHBOARD_LOCATION }}
+          ctest-test-timeout: ${{ secrets.CTEST_TEST_TIMEOUT_PRESET || '300' }}
+          ctest-drop-method: ${{ secrets.CTEST_DROP_METHOD || 'https' }}
+          ctest-auth-token: ${{ secrets.CDASH_AUTH_TOKEN }}
+          ctest-dashboard-model: ${{ secrets.CTEST_DASHBOARD_MODEL || 'Experimental' }}
+
+      - name: Run ${{ matrix.config.name }} Tests
+        uses: ./.github/actions/test/macos
+        if: contains(matrix.config.os, 'macos')
+        with:
+          config-name: ${{ matrix.config.name }}
+          config-os: ${{ matrix.config.os }}
+          config-preset: ${{ matrix.config.preset }}
+          config-output: ${{ matrix.config.output }}
+          ctest-site: ${{ secrets.CTEST_DASHBOARD_SITE }}
+          ctest-location: ${{ secrets.CTEST_DASHBOARD_LOCATION }}
+          ctest-test-timeout: ${{ secrets.CTEST_TEST_TIMEOUT_PRESET || '300' }}
+          ctest-drop-method: ${{ secrets.CTEST_DROP_METHOD || 'https' }}
+          ctest-auth-token: ${{ secrets.CDASH_AUTH_TOKEN }}
+          ctest-dashboard-model: ${{ secrets.CTEST_DASHBOARD_MODEL || 'Experimental' }}
+
+      - name: Run ${{ matrix.config.name }} Tests
+        uses: ./.github/actions/test/windows
+        if: contains(matrix.config.os, 'windows')
+        with:
+          config-name: ${{ matrix.config.name }}
+          config-os: ${{ matrix.config.os }}
+          config-preset: ${{ matrix.config.preset }}
+          config-output: ${{ matrix.config.output }}
+          ctest-site: ${{ secrets.CTEST_DASHBOARD_SITE }}
+          ctest-location: ${{ secrets.CTEST_DASHBOARD_LOCATION }}
+          ctest-test-timeout: ${{ secrets.CTEST_TEST_TIMEOUT_PRESET || '300' }}
+          ctest-drop-method: ${{ secrets.CTEST_DROP_METHOD || 'https' }}
+          ctest-auth-token: ${{ secrets.CDASH_AUTH_TOKEN }}
+          ctest-dashboard-model: ${{ secrets.CTEST_DASHBOARD_MODEL || 'Experimental' }}
+
+      - name: Run ${{ matrix.config.name }} Tests
+        uses: ./.github/actions/test/emscripten
+        if: contains(matrix.config.name, 'emscripten')
+        with:
+          config-name: ${{ matrix.config.name }}
+          config-os: ${{ matrix.config.os }}
+          config-preset: ${{ matrix.config.preset }}
+          config-output: ${{ matrix.config.output }}
+          ctest-site: ${{ secrets.CTEST_DASHBOARD_SITE }}
+          ctest-location: ${{ secrets.CTEST_DASHBOARD_LOCATION }}
+          ctest-test-timeout: ${{ secrets.CTEST_TEST_TIMEOUT_PRESET || '300' }}
+          ctest-drop-method: ${{ secrets.CTEST_DROP_METHOD || 'https' }}
+          ctest-auth-token: ${{ secrets.CDASH_AUTH_TOKEN }}
+          ctest-dashboard-model: ${{ secrets.CTEST_DASHBOARD_MODEL || 'Experimental' }}
+
+  build:
+    name: Build (${{ matrix.config.name }})
+    runs-on: ${{ matrix.config.os }}
+    needs: test
+    continue-on-error: false
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        config:
+          # Linux / Clang
+          - name: linux-x64-clang
+            os: ubuntu-latest
+            preset: unixlike-x64-clang-release
+            output: linux-x64-clang
+          - name: linux-x86-clang
+            os: ubuntu-latest
+            preset: unixlike-x86-clang-release
+            output: linux-x86-clang
+
+          # Linux / GCC
+          - name: linux-x64-gcc
+            os: ubuntu-latest
+            preset: unixlike-x64-gcc-release
+            output: linux-x64-gcc
+          - name: linux-x86-gcc
+            os: ubuntu-latest
+            preset: unixlike-x86-gcc-release
+            output: linux-x86-gcc
+
+          # macOS / Clang
+          - name: macos-x64-clang
+            os: macos-latest
+            preset: unixlike-x64-clang-release
+            output: macos-x64-clang
+          - name: macos-arm64-clang
+            os: macos-latest
+            preset: unixlike-x64-clang-release
+            output: macos-arm64-clang
+
+          # macOS / GCC
+          - name: macos-x64-gcc
+            os: macos-latest
+            preset: unixlike-x64-gcc-release
+            output: macos-x64-gcc
+
+          # Windows / MSVC
+          - name: windows-x64-msvc
+            os: windows-latest
+            preset: windows-x64-msvc-release
+            output: windows-x64-msvc
+          - name: windows-x86-msvc
+            os: windows-latest
+            preset: windows-x86-msvc-release
+            output: windows-x86-msvc
+
+          # Windows / Clang
+          - name: windows-x64-clang
+            os: windows-latest
+            preset: windows-clang-release
+            output: windows-x64-clang
+
+          # Emscripten
+          - name: emscripten-release
+            os: ubuntu-latest
+            preset: emscripten-release
+            output: wasm-release
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run ${{ matrix.config.name }} Build
+        uses: ./.github/actions/build/unix
+        if: contains(matrix.config.name, 'linux')
+        with:
+          config-name: ${{ matrix.config.name }}
+          config-os: ${{ matrix.config.os }}
+          config-preset: ${{ matrix.config.preset }}
+          config-output: ${{ matrix.config.output }}
+
+      - name: Run ${{ matrix.config.name }} Build
+        uses: ./.github/actions/build/macos
+        if: contains(matrix.config.name, 'macos')
+        with:
+          config-name: ${{ matrix.config.name }}
+          config-os: ${{ matrix.config.os }}
+          config-preset: ${{ matrix.config.preset }}
+          config-output: ${{ matrix.config.output }}
+
+      - name: Run ${{ matrix.config.name }} Build
+        uses: ./.github/actions/build/windows
+        if: contains(matrix.config.name, 'windows')
+        with:
+          config-name: ${{ matrix.config.name }}
+          config-os: ${{ matrix.config.os }}
+          config-preset: ${{ matrix.config.preset }}
+          config-output: ${{ matrix.config.output }}
+
+      - name: Run ${{ matrix.config.name }} Build
+        uses: ./.github/actions/build/emscripten
+        if: contains(matrix.config.name, 'emscripten')
+        with:
+          config-name: ${{ matrix.config.name }}
+          config-os: ${{ matrix.config.os }}
+          config-preset: ${{ matrix.config.preset }}
+          config-output: ${{ matrix.config.output }}
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    continue-on-error: false
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Publish Artifacts
+        uses: ./.github/actions/publish
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}

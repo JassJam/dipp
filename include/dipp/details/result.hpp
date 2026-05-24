@@ -168,7 +168,7 @@ namespace dipp::details
 
     template<typename Error>
         requires std::is_base_of_v<std::exception, Error>
-    [[nodiscard]] constexpr inline void make_error(const Error& error)
+    constexpr inline void make_error(const Error& error)
     {
         throw error;
     }
