@@ -12,7 +12,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
 include(project/Policies)
 
-project(Dipp
+project(dipp
         VERSION "1.1.0"
         DESCRIPTION "Dependency Injection in C++"
         HOMEPAGE_URL "https://github.com/JassJam/dipp"
@@ -65,51 +65,66 @@ install_result_packages()
 #
 
 register_header_only_library(dipp
+        HEADER_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include
+
         INCLUDE_DIRS
         include
-        HEADER
-        include/details/apply.hpp
-        include/details/collection.hpp
-        include/details/concepts.hpp
-        include/details/dependency.hpp
-        include/details/descriptors.hpp
-        include/details/fail.hpp
-        include/details/getter.hpp
-        include/details/injected.hpp
-        include/details/instance_info.hpp
-        include/details/loader.hpp
-        include/details/move_only_any.hpp
-        include/details/policy.hpp
-        include/details/provider.hpp
-        include/details/result.hpp
-        include/details/scope.hpp
-        include/details/service_info.hpp
-        include/details/service_lifetime.hpp
-        include/details/storage.hpp
-        include/details/string_hash.hpp
-        include/details/type_key_pair.hpp
+        HEADERS
+        include/dipp/dipp.hpp
+        include/dipp/details/apply.hpp
+        include/dipp/details/collection.hpp
+        include/dipp/details/concepts.hpp
+        include/dipp/details/dependency.hpp
+        include/dipp/details/descriptors.hpp
+        include/dipp/details/fail.hpp
+        include/dipp/details/getter.hpp
+        include/dipp/details/injected.hpp
+        include/dipp/details/instance_info.hpp
+        include/dipp/details/loader.hpp
+        include/dipp/details/move_only_any.hpp
+        include/dipp/details/policy.hpp
+        include/dipp/details/provider.hpp
+        include/dipp/details/result.hpp
+        include/dipp/details/scope.hpp
+        include/dipp/details/service_info.hpp
+        include/dipp/details/service_lifetime.hpp
+        include/dipp/details/storage.hpp
+        include/dipp/details/string_hash.hpp
+        include/dipp/details/type_key_pair.hpp
 
-        include/details/descriptors/functor.hpp
-        include/details/descriptors/local.hpp
-        include/details/descriptors/shared.hpp
-        include/details/descriptors/unique.hpp
+        include/dipp/details/descriptors/base.hpp
+        include/dipp/details/descriptors/functor.hpp
+        include/dipp/details/descriptors/local.hpp
+        include/dipp/details/descriptors/shared.hpp
+        include/dipp/details/descriptors/unique.hpp
 
-        include/details/errors/base_error.hpp
-        include/details/errors/incompatible_service_descriptor.hpp
-        include/details/errors/mismatched_service_type.hpp
-        include/details/errors/service_not_found.hpp
+        include/dipp/details/errors/base_error.hpp
+        include/dipp/details/errors/incompatible_service_descriptor.hpp
+        include/dipp/details/errors/mismatched_service_type.hpp
+        include/dipp/details/errors/service_not_found.hpp
 
-        include/details/injected/base.hpp
-        include/details/injected/functor.hpp
-        include/details/injected/local.hpp
-        include/details/injected/ref.hpp
-        include/details/injected/shared.hpp
-        include/details/injected/unique.hpp
+        include/dipp/details/injected/base.hpp
+        include/dipp/details/injected/functor.hpp
+        include/dipp/details/injected/local.hpp
+        include/dipp/details/injected/ref.hpp
+        include/dipp/details/injected/shared.hpp
+        include/dipp/details/injected/unique.hpp
         LINK_LIBS
         ${DIPP_LIBS}
+
         CXX_STANDARD 23
+
+        NAMESPACE dipp
+        EXPORT_SET dipp
 )
 
 if (BUILD_TESTING)
     add_subdirectory(tests)
 endif ()
+
+register_package_config(
+    NAME         dipp
+    NAMESPACE    dipp
+    EXPORT_SET   dipp
+    COMPATIBILITY SameMajorVersion
+)

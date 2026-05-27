@@ -5,6 +5,7 @@
 #include <bit>
 #include <typeinfo>
 #include <memory>
+#include <cstring>
 #include "result.hpp"
 
 namespace dipp::details
