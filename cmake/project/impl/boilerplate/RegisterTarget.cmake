@@ -17,11 +17,11 @@ function(_register_target_common target)
     endif ()
 
     if (ARG_COMPILE_OPTIONS)
-        target_compile_options(${target} PRIVATE ${ARG_COMPILE_OPTIONS})
+        target_compile_options(${target} ${ARG_COMPILE_OPTIONS})
     endif ()
 
     if (ARG_COMPILE_DEFINITIONS)
-        target_compile_definitions(${target} PRIVATE ${ARG_COMPILE_DEFINITIONS})
+        target_compile_definitions(${target} ${ARG_COMPILE_DEFINITIONS})
     endif ()
 
     if (ARG_INCLUDE_DIRS)
@@ -53,7 +53,7 @@ function(_register_target_common target)
     endif ()
 
     if (ARG_LINK_LIBS)
-        target_link_libraries(${target} PUBLIC ${ARG_LINK_LIBS})
+        target_link_libraries(${target} ${ARG_LINK_LIBS})
     endif ()
 
     if (ARG_PROPERTIES)
@@ -155,28 +155,30 @@ endmacro()
 function(register_header_only_library name)
     cmake_parse_arguments(PARSE_ARGV 1 ARG
             ""
-            "NAMESPACE;EXPORT_SET;INSTALL_DESTINATION;CXX_STANDARD"
+            "NAMESPACE;EXPORT_SET;INSTALL_DESTINATION;CXX_STANDARD;HEADER_BASE_DIR"
             "HEADERS;INCLUDE_DIRS;LINK_LIBS;COMPILE_DEFINITIONS;PROPERTIES"
     )
 
     add_library(${name} INTERFACE)
     add_library(${name}::${name} ALIAS ${name})
 
+    if (NOT ARG_HEADER_BASE_DIR)
+        set(ARG_HEADER_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
+    endif ()
     if (ARG_HEADERS)
         target_sources(${name} INTERFACE
                 FILE_SET HEADERS
-                BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
+                BASE_DIRS "${ARG_HEADER_BASE_DIR}"
                 FILES ${ARG_HEADERS}
         )
     endif ()
 
     if (ARG_INCLUDE_DIRS)
         foreach (_inc IN LISTS ARG_INCLUDE_DIRS)
+            # INTERFACE libraries only support INTERFACE scope
             if (_inc STREQUAL "PUBLIC" OR _inc STREQUAL "PRIVATE" OR _inc STREQUAL "INTERFACE")
                 continue()
             endif ()
-            # Convert relative paths to absolute so CMake doesn't error on
-            # relative entries in INTERFACE_INCLUDE_DIRECTORIES.
             if (NOT IS_ABSOLUTE "${_inc}")
                 set(_inc "${CMAKE_CURRENT_SOURCE_DIR}/${_inc}")
             endif ()
@@ -226,16 +228,22 @@ endfunction()
 #     [PROPERTIES         <key val> …]
 #     [EXPORT_HEADER      <relative/path/export.hpp>]
 #     [EXPORT_MACRO_NAME  <MACRO>]
-#     [ENABLE_EXCEPTIONS ON|OFF]  [ENABLE_IPO ON|OFF]  [WARNINGS_AS_ERRORS ON|OFF]
-#     [ENABLE_SANITIZER_ADDRESS ON|OFF]  [ENABLE_SANITIZER_LEAK ON|OFF]
-#     [ENABLE_SANITIZER_UNDEFINED_BEHAVIOR ON|OFF]  [ENABLE_SANITIZER_THREAD ON|OFF]
-#     [ENABLE_SANITIZER_MEMORY ON|OFF]  [ENABLE_HARDENING ON|OFF]
-#     [ENABLE_CLANG_TIDY ON|OFF]  [ENABLE_CPPCHECK ON|OFF]
+#     [ENABLE_EXCEPTIONS ON|OFF]
+#     [ENABLE_IPO ON|OFF]
+#     [WARNINGS_AS_ERRORS ON|OFF]
+#     [ENABLE_SANITIZER_ADDRESS ON|OFF]
+#     [ENABLE_SANITIZER_LEAK ON|OFF]
+#     [ENABLE_SANITIZER_UNDEFINED_BEHAVIOR ON|OFF]
+#     [ENABLE_SANITIZER_THREAD ON|OFF]
+#     [ENABLE_SANITIZER_MEMORY ON|OFF]
+#     [ENABLE_HARDENING ON|OFF]
+#     [ENABLE_CLANG_TIDY ON|OFF]
+#     [ENABLE_CPPCHECK ON|OFF]
 # )
 function(register_library name)
     cmake_parse_arguments(PARSE_ARGV 1 ARG
             "STATIC;SHARED"
-            "NAMESPACE;EXPORT_SET;INSTALL_DESTINATION;CXX_STANDARD;EXPORT_HEADER;EXPORT_MACRO_NAME;
+            "NAMESPACE;EXPORT_SET;INSTALL_DESTINATION;CXX_STANDARD;EXPORT_HEADER;EXPORT_MACRO_NAME;HEADER_BASE_DIR;
          ENABLE_EXCEPTIONS;ENABLE_IPO;WARNINGS_AS_ERRORS;
          ENABLE_SANITIZER_ADDRESS;ENABLE_SANITIZER_LEAK;
          ENABLE_SANITIZER_UNDEFINED_BEHAVIOR;ENABLE_SANITIZER_THREAD;
@@ -259,10 +267,13 @@ function(register_library name)
         target_sources(${name} PRIVATE ${ARG_SOURCES})
     endif ()
 
+    if (NOT ARG_HEADER_BASE_DIR)
+        set(ARG_HEADER_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
+    endif ()
     if (ARG_HEADERS)
         target_sources(${name} PUBLIC
                 FILE_SET HEADERS
-                BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
+                BASE_DIRS "${ARG_HEADER_BASE_DIR}"
                 FILES ${ARG_HEADERS}
         )
     endif ()
@@ -354,16 +365,22 @@ endfunction()
 #     [COMPILE_OPTIONS     <opt> …]
 #     [COMPILE_DEFINITIONS <def> …]
 #     [PROPERTIES         <key val> …]
-#     [ENABLE_EXCEPTIONS ON|OFF]  [ENABLE_IPO ON|OFF]  [WARNINGS_AS_ERRORS ON|OFF]
-#     [ENABLE_SANITIZER_ADDRESS ON|OFF]  [ENABLE_SANITIZER_LEAK ON|OFF]
-#     [ENABLE_SANITIZER_UNDEFINED_BEHAVIOR ON|OFF]  [ENABLE_SANITIZER_THREAD ON|OFF]
-#     [ENABLE_SANITIZER_MEMORY ON|OFF]  [ENABLE_HARDENING ON|OFF]
-#     [ENABLE_CLANG_TIDY ON|OFF]  [ENABLE_CPPCHECK ON|OFF]
+#     [ENABLE_EXCEPTIONS ON|OFF]
+#     [ENABLE_IPO ON|OFF]
+#     [WARNINGS_AS_ERRORS ON|OFF]
+#     [ENABLE_SANITIZER_ADDRESS ON|OFF]
+#     [ENABLE_SANITIZER_LEAK ON|OFF]
+#     [ENABLE_SANITIZER_UNDEFINED_BEHAVIOR ON|OFF]
+#     [ENABLE_SANITIZER_THREAD ON|OFF]
+#     [ENABLE_SANITIZER_MEMORY ON|OFF]
+#     [ENABLE_HARDENING ON|OFF]
+#     [ENABLE_CLANG_TIDY ON|OFF]
+#     [ENABLE_CPPCHECK ON|OFF]
 # )
 function(register_executable name)
     cmake_parse_arguments(PARSE_ARGV 1 ARG
             ""
-            "NAMESPACE;EXPORT_SET;INSTALL_DESTINATION;CXX_STANDARD;
+            "NAMESPACE;EXPORT_SET;INSTALL_DESTINATION;CXX_STANDARD;HEADER_BASE_DIR;
          ENABLE_EXCEPTIONS;ENABLE_IPO;WARNINGS_AS_ERRORS;
          ENABLE_SANITIZER_ADDRESS;ENABLE_SANITIZER_LEAK;
          ENABLE_SANITIZER_UNDEFINED_BEHAVIOR;ENABLE_SANITIZER_THREAD;
@@ -378,10 +395,13 @@ function(register_executable name)
         target_sources(${name} PRIVATE ${ARG_SOURCES})
     endif ()
 
+    if (NOT ARG_HEADER_BASE_DIR)
+        set(ARG_HEADER_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
+    endif ()
     if (ARG_HEADERS)
         target_sources(${name} PRIVATE
                 FILE_SET HEADERS
-                BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
+                BASE_DIRS "${ARG_HEADER_BASE_DIR}"
                 FILES ${ARG_HEADERS}
         )
     endif ()
@@ -600,7 +620,6 @@ endfunction()
 function(register_emscripten name)
     if (NOT DEFINED EMSCRIPTEN)
         message(STATUS "[register_emscripten] Skipping '${name}' — not an Emscripten build")
-        # ── Sources / headers / modules — identical pattern to register_executable ─
         return()
     endif ()
 
