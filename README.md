@@ -136,29 +136,37 @@ int mai2()
 
 * Explicit, you control the lifetime, key and storage of your services.
 * No auto-registration, you must register your services explicitly.
-* Clean and simple API for simple cases, flexible enough for complex cases
-* Header only library
-* Clean diagnostics at compile-time.
+* Clean and simple API for simple cases, flexible enough for complex cases.
+* Header only library.
 * Extensible and flexible to define your own service storage.
 * Non intrusive, you can use it with your existing classes.
 
 ## Requirements
 
-* XMake 2.9.6 or later
+* XMake 2.9.6 or later (optional)
+* CMake 3.21 or later
 * C++20/C++23 compiler
 * Boost.Leaf (optional, for error handling), will be installed automatically by xmake
 * Boost.Test (optional, for tests), will be installed automatically by xmake
 
 ## Build the project
 
+Using xmake:
 ```bash
 $ xmake build
 $ xmake install -o install
 ```
 
+Using cmake:
+```bash
+$ cmake -S . -B build --preset <preset>
+$ cmake --build build
+```
+
 
 ## Run the tests
 
+using xmake:
 ```bash
 $ xmake f --menu # to configure the project
 $ xmake f --test=n # to enable/disable tests
