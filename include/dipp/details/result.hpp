@@ -29,6 +29,8 @@ namespace dipp::details
 
 #else
 
+#include <stdexcept>
+
 namespace dipp::details
 {
     template<typename Ty>

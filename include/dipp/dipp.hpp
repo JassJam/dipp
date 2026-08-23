@@ -22,6 +22,7 @@ namespace dipp
     using details::apply;
     using details::key;
     using details::make_any;
+    using details::move_only_any;
     using details::make_error;
     using details::make_result;
 
