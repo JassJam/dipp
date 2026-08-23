@@ -1,6 +1,8 @@
 #pragma once
 
 #include <utility>
+#include <exception>
+
 #include "result.hpp"
 #include "errors/base_error.hpp"
 
